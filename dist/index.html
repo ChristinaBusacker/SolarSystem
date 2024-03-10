@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Solar</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      #cameraSelector {
+        position: absolute;
+        top: 0;
+        right: 0;
+      }
+
+      .css-renderer {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none;
+      }
+
+      .css-renderer.hide {
+        display: none;
+      }
+    </style>
+  <script defer src="/bundle.f45308dff2db15c3a8d0.js"></script></head>
+  <body>
+    <select id="cameraSelector">
+      <option value="default">Default Camera</option>
+      <option value="sun">Sun Camera</option>
+      <option value="mercury">Mercury Camera</option>
+      <option value="venus">Venus Camera</option>
+      <option value="earth">Earth Camera</option>
+      <option value="moon">Moon Camera</option>
+    </select>
+  </body>
+</html>
