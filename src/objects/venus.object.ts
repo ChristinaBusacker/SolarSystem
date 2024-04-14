@@ -14,8 +14,8 @@ export class Venus extends Astronomical {
   public semiMajorAxis = venusData.semiMajorAxis;
   public semiMinorAxis = venusData.semiMinorAxis;
 
-  constructor() {
-    super("assets/textures/2k_venus_surface.jpg", venusData.size, false, true);
+  constructor(domElement: HTMLCanvasElement) {
+    super("assets/textures/2k_venus_surface.jpg", venusData.size, false, true, domElement);
 
     this.group.position.set(
       venusData.initialPosition.x,
@@ -34,7 +34,6 @@ export class Venus extends Astronomical {
       venusData.semiMajorAxis,
       venusData.semiMinorAxis
     );
-    this.camera = this.addCamera(new THREE.Vector3(-4, 4, 4));
 
     this.orbitalGroup.add(this.marker);
     this.orbitalGroup.rotateX(MathUtils.DEG2RAD * venusData.orbitalTilt);

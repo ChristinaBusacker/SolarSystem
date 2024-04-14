@@ -11,5 +11,4 @@ export interface AstronomicalObject {
   mesh: THREE.Mesh<THREE.SphereGeometry>;
   camera: THREE.PerspectiveCamera;
   group: THREE.Group;
-  cameraPosition: THREE.Vector3;
 }

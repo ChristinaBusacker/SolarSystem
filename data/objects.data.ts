@@ -29,7 +29,12 @@ export const mercuryData = {
   maxDistanceToOrbiting: (69.82 * 10 ** 5) / FINN_TO_KM, // 69,82 Millionen km
   minDistanceToOrbiting: (46.0 * 10 ** 5) / FINN_TO_KM, // 46,00 Millionen km
   orbitCenter:
+  new THREE.Vector3(
     ((69.82 * 10 ** 5) / FINN_TO_KM - (46.0 * 10 ** 5) / FINN_TO_KM) / 2,
+    0,
+    0
+  ),
+   
   semiMajorAxis:
     ((69.82 * 10 ** 5) / FINN_TO_KM + (46.0 * 10 ** 5) / FINN_TO_KM) / 2,
   semiMinorAxis: Math.sqrt(69.82 * 10 ** 5 * 46.0 * 10 ** 5) / FINN_TO_KM,

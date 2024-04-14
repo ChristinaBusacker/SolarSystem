@@ -5,6 +5,7 @@ import {
   CSS3DObject,
 } from "three/examples/jsm/renderers/CSS3DRenderer";
 import { simulationSpeed } from "../../data/settings.data";
+import { SimpleControl } from "../controls/simple.control";
 
 export class Astronomical implements AstronomicalObject {
   public boundTo?: AstronomicalObject;
@@ -22,12 +23,12 @@ export class Astronomical implements AstronomicalObject {
     THREE.LineBasicMaterial
   >;
   public boundingBox?: THREE.BoxHelper;
-  public cameraPosition = new THREE.Vector3(5, 5, 5);
   public cssObject: CSS3DObject;
   private angle = 0;
   public planetaryGroup = new THREE.Group();
   public orbitalGroup = new THREE.Group();
   public atmosphereMesh?: THREE.Mesh;
+  public control: SimpleControl
 
   public semiMajorAxis = 0;
   public semiMinorAxis = 0;
@@ -36,7 +37,8 @@ export class Astronomical implements AstronomicalObject {
     texturePath: string,
     size: number,
     emissive = false,
-    debug = false
+    debug = false,
+    domElement: HTMLCanvasElement
   ) {
     const textureLoader = new THREE.TextureLoader();
     this.texture = textureLoader.load(texturePath);
@@ -68,8 +70,19 @@ export class Astronomical implements AstronomicalObject {
       this.group.add(this.boundingBox);
     }
 
-    this.group.add(this.planetaryGroup);
+    this.camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      10000
+    );
+
+    this.control = new SimpleControl(size * 2, size * 5, this.camera)
+    this.orbitalGroup.add(this.control.group)
+
     this.orbitalGroup.add(this.group);
+
+    this.group.add(this.planetaryGroup);
   }
 
   public addMarker(
@@ -131,31 +144,6 @@ export class Astronomical implements AstronomicalObject {
     return this.cssObject;
   }
 
-  public addCamera(cameraPosition: THREE.Vector3) {
-    const camera = new THREE.PerspectiveCamera(
-      75,
-      window.innerWidth / window.innerHeight,
-      0.1,
-      10000
-    );
-
-    camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
-    this.group.add(camera);
-
-    this.cameraPosition = cameraPosition;
-
-    camera.lookAt(this.mesh.position);
-
-    return camera;
-  }
-
-  public updateCamera() {
-    this.camera.remove();
-    this.camera = this.addCamera(this.cameraPosition);
-    this.group.add(this.camera);
-    return this.camera;
-  }
-
   public render(delta: number, activeCamera?: THREE.PerspectiveCamera) {
     if (this.distance > 0) {
       this.angle -= this.orbitalSpeed * delta * 60 * simulationSpeed;
@@ -168,5 +156,8 @@ export class Astronomical implements AstronomicalObject {
     if (activeCamera && this.cssObject) {
       this.cssObject.lookAt(activeCamera.position);
     }
+
+    this.control.group.position.copy(this.group.position)
+    this.control.update()
   }
 }

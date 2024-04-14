@@ -47,21 +47,15 @@ scene.add(light);
 
 loadBackground(scene);
 
-const sun = new Sun();
-const mercury = new Mercury();
-const venus = new Venus();
-const earth = new Earth();
+const sun = new Sun(renderer.domElement);
+const mercury = new Mercury(renderer.domElement);
+const venus = new Venus(renderer.domElement);
+const earth = new Earth(renderer.domElement);
 
 const objects = [sun, mercury, venus, earth];
 objects.forEach((obj) => {
   scene.add(obj.orbitalGroup);
 });
-
-const controls = new CustomControl(
-  defaultCamera,
-  sun.mesh,
-  renderer.domElement
-);
 
 cssRenderer.domElement.classList.add("css-renderer");
 document.body.appendChild(cssRenderer.domElement);
@@ -94,37 +88,31 @@ function updateCamera(selectedCamera: string) {
   switch (selectedCamera) {
     case "sun":
       activeCamera = sun.camera;
-      controls.setCamera(sun.camera);
-      controls.setMesh(sun.mesh);
+
       break;
     case "mercury":
       activeCamera = mercury.camera;
-      controls.setCamera(mercury.camera);
-      controls.setMesh(mercury.mesh);
+
       break;
     case "venus":
       activeCamera = venus.camera;
-      controls.setCamera(venus.camera);
-      controls.setMesh(venus.mesh);
+
       break;
     case "earth":
       activeCamera = earth.camera;
-      controls.setCamera(earth.camera);
-      controls.setMesh(earth.mesh);
+
       break;
     case "moon":
       activeCamera = earth.moon.camera;
-      controls.setCamera(earth.moon.camera);
-      controls.setMesh(earth.moon.mesh);
+
       break;
     default:
       activeCamera = defaultCamera;
-      controls.setCamera(defaultCamera);
-      controls.setMesh(sun.mesh);
+
       cssRenderer.domElement.classList.remove("hide");
       break;
   }
-  controls.update();
+
   // Aktualisieren der Aspect-Ratio und der Projektionsmatrix
   activeCamera.aspect = window.innerWidth / window.innerHeight;
   activeCamera.updateProjectionMatrix();

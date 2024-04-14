@@ -6,12 +6,11 @@ import * as THREE from "three";
 
 export class Moon extends Astronomical {
   public orbitalSpeed = moonData.orbitalSpeed;
-  public cameraPosition = new THREE.Vector3(3, 1, 3);
   public distance = moonData.distanceToOrbiting;
   public rotationSpeed = moonData.rotationSpeed;
 
-  constructor() {
-    super("assets/textures/2k_moon.jpg", moonData.size, false, true);
+  constructor(domElement: HTMLCanvasElement) {
+    super("assets/textures/2k_moon.jpg", moonData.size, false, true, domElement);
     this.group.position.set(
       moonData.initialPosition.x,
       moonData.initialPosition.y,

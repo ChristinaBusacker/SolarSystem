@@ -17,15 +17,18 @@ export class Earth extends Astronomical {
   public orbitalSpeed = earthData.orbitalSpeed;
   public distance = earthData.distanceToOrbiting;
   public rotationSpeed = earthData.rotationSpeed;
-
+  public moon?: Moon
   public cameraPosition = new THREE.Vector3(-4, 4, 4);
-  public moon = new Moon();
+
 
   public semiMajorAxis = earthData.semiMajorAxis;
   public semiMinorAxis = earthData.semiMinorAxis;
 
-  constructor() {
-    super("assets/textures/2k_earth_daymap.jpg", earthData.size, false, true);
+  constructor(domElement: HTMLCanvasElement) {
+    super("assets/textures/2k_earth_daymap.jpg", earthData.size, false, true, domElement);
+    this.moon = new Moon(domElement);
+
+
     this.group.position.set(
       earthData.initialPosition.x,
       earthData.initialPosition.y,
@@ -68,9 +71,8 @@ export class Earth extends Astronomical {
       earthData.semiMajorAxis,
       earthData.semiMinorAxis
     );
-    this.camera = this.addCamera(this.cameraPosition);
+
     this.group.add(this.addInteractions());
-    this.moon.camera = this.moon.addCamera(new THREE.Vector3(-5, 3, -5));
 
     this.orbitalGroup.add(this.marker);
     this.orbitalGroup.rotateX(MathUtils.DEG2RAD * earthData.orbitalTilt);
@@ -99,7 +101,7 @@ export class Earth extends Astronomical {
 
     this.moon.camera.lookAt(this.moon.mesh.position);
     this.moon.group.lookAt(this.group.position);
-    this.moon.render(delta, camera);
+    this.moon.render(delta);
     this.adjustAxisTilt();
     super.render(delta, camera);
   }

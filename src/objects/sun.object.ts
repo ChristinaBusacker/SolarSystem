@@ -8,8 +8,8 @@ export class Sun extends Astronomical {
   public cameraPosition = new THREE.Vector3(20, 20, 20);
   private coronaShaderMaterial: THREE.ShaderMaterial;
 
-  constructor() {
-    super("assets/textures/2k_sun.jpg", sunData.size, true, false);
+  constructor(domElement: HTMLCanvasElement) {
+    super("assets/textures/2k_sun.jpg", sunData.size, true, false, domElement);
 
     this.rotationSpeed = sunData.rotationSpeed;
 
@@ -25,8 +25,6 @@ export class Sun extends Astronomical {
     this.group.add(coronaMesh);
 
     console.log(this.group);
-
-    this.camera = this.addCamera(new THREE.Vector3(200, 200, 200));
   }
 
   public render(delta: number, camera?: THREE.PerspectiveCamera): void {
