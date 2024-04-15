@@ -2,12 +2,12 @@ import * as THREE from "three";
 import { Sun } from "./objects/sun.object";
 import { Mercury } from "./objects/mercury.object";
 import Stats from "stats.js";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { PMREMGenerator } from "three";
 import { Venus } from "./objects/venus.object";
 import { Earth } from "./objects/earth.object";
-import CustomControl from "./controls/custom.control";
+
 import { CSS3DRenderer } from "three/examples/jsm/renderers/CSS3DRenderer";
+import { SimpleControl } from "./controls/simple.control";
 
 
 const scene = new THREE.Scene();
@@ -23,7 +23,6 @@ cssRenderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.shadowMap.enabled = true
 
-renderer.outputEncoding = THREE.sRGBEncoding;
 renderer.toneMappingExposure = 0.2;
 
 document.body.appendChild(renderer.domElement);
@@ -34,7 +33,10 @@ let defaultCamera = new THREE.PerspectiveCamera(
   0.1,
   10000
 );
-defaultCamera.position.set(1000, 1000, 500);
+defaultCamera.position.set(0, 0,0);
+
+const defaultControl = new SimpleControl(500, 3000, defaultCamera)
+scene.add(defaultControl.group)
 
 let activeCamera: THREE.PerspectiveCamera = defaultCamera;
 
@@ -51,15 +53,10 @@ const light = new THREE.PointLight(0xffffff, 1.5, 50000000, 0.1);
 light.position.set(0, 0, 0);
 light.castShadow = true
 
-
-light.shadow.camera.near = 50; // Stelle sicher, dass dies nahe genug ist, um relevante Details zu erfassen.
-light.shadow.camera.far = 10000; // Nicht zu weit, um Präzision zu bewahren.
-light.shadow.mapSize.width = 4096; // Erhöhe für bessere Qualität
+light.shadow.camera.near = 50;
+light.shadow.camera.far = 10000; 
+light.shadow.mapSize.width = 4096;
 light.shadow.mapSize.height = 4096;
-
-
-const shadowCameraHelper = new THREE.CameraHelper(light.shadow.camera);
-scene.add(shadowCameraHelper);
 
 scene.add(light);
 
@@ -74,8 +71,6 @@ const earth = new Earth();
 const objects = [sun, mercury, venus, earth];
 objects.forEach((obj) => {
   scene.add(obj.orbitalGroup);
-  const helper = new THREE.BoxHelper(obj.orbitalGroup, 0xff0000);
-  scene.add(helper)
 });
 
 defaultCamera.lookAt(sun.group.position)
@@ -112,6 +107,7 @@ function animate() {
 
   renderer.render(scene, activeCamera);
   cssRenderer.render(scene, activeCamera);
+  defaultControl.update(deltaTime);
   stats.end();
 
   requestAnimationFrame(animate);
@@ -127,7 +123,6 @@ cameraSelector.addEventListener("change", function (event) {
 });
 
 function updateCamera(selectedCamera: string) {
-  let targetObject;
   cssRenderer.domElement.classList.add("hide");
   switch (selectedCamera) {
     case "sun":
@@ -179,5 +174,3 @@ async function loadBackground(scene: THREE.Scene) {
 }
 
 updateCamera("default");
-
-console.log(scene);

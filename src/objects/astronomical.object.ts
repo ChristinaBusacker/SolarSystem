@@ -8,6 +8,7 @@ import { simulationSpeed } from "../../data/settings.data";
 import { SimpleControl } from "../controls/simple.control";
 
 export class Astronomical implements AstronomicalObject {
+  public name: string = ''
   public boundTo?: AstronomicalObject;
   public distance: number;
   public orbitalSpeed = 0;
@@ -141,7 +142,10 @@ export class Astronomical implements AstronomicalObject {
     div.style.width = "25px";
     div.style.height = "25px";
     div.style.borderRadius = "50%";
-    div.style.border = "5px solid red";
+    div.style.border = "5px solid green";
+    div.style.cursor = "pointer"
+    
+    div.onclick = ( )=> { alert(this.name)}
 
     document.body.appendChild(div);
 
@@ -157,7 +161,6 @@ export class Astronomical implements AstronomicalObject {
     }
 
     this.planetaryGroup.rotation.y += this.rotationSpeed * 60 * delta * simulationSpeed;
-
     if (activeCamera && this.cssObject) {
       this.cssObject.lookAt(activeCamera.position);
     }

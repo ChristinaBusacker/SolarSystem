@@ -5,6 +5,7 @@ import { Astronomical } from "./astronomical.object";
 import * as THREE from "three";
 
 export class Sun extends Astronomical {
+  public name = sunData.title
   public cameraPosition = new THREE.Vector3(20, 20, 20);
   private coronaShaderMaterial: THREE.ShaderMaterial;
 

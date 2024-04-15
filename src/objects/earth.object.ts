@@ -14,6 +14,7 @@ import { CSS3DRenderer } from "three/examples/jsm/renderers/CSS3DRenderer";
 import { MathUtils } from "three";
 
 export class Earth extends Astronomical {
+  public name = earthData.title
   public orbitalSpeed = earthData.orbitalSpeed;
   public distance = earthData.distanceToOrbiting;
   public rotationSpeed = earthData.rotationSpeed;

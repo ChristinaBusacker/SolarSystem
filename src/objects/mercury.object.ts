@@ -6,6 +6,7 @@ import { Astronomical } from "./astronomical.object";
 import * as THREE from "three";
 
 export class Mercury extends Astronomical {
+  public name = mercuryData.title
   public orbitalSpeed = mercuryData.orbitalSpeed;
   public cameraPosition = new THREE.Vector3(1, 1, 1);
   public distance = mercuryData.distanceToOrbiting;

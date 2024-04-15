@@ -5,6 +5,7 @@ import { Astronomical } from "./astronomical.object";
 import * as THREE from "three";
 
 export class Moon extends Astronomical {
+  public name = moonData.title
   public orbitalSpeed = moonData.orbitalSpeed;
   public distance = moonData.distanceToOrbiting;
   public rotationSpeed = moonData.rotationSpeed;
