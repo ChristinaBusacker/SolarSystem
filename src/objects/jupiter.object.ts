@@ -16,30 +16,8 @@ export class Jupiter extends Astronomical {
   public semiMinorAxis = jupiterData.semiMinorAxis;
 
   constructor() {
-    super("assets/textures/2k_jupiter.jpg", jupiterData.size, false, true);
-    
-    this.group.position.set(
-      jupiterData.initialPosition.x,
-      jupiterData.initialPosition.y,
-      jupiterData.initialPosition.z
-    );
-
-    this.marker = this.addMarker(
-      jupiterData.semiMajorAxis,
-      jupiterData.semiMinorAxis
-    );
-
-    this.orbitalGroup.add(this.marker);
-
-    this.orbitalGroup.rotateX(MathUtils.DEG2RAD * jupiterData.orbitalTilt);
-
+    super("assets/textures/2k_jupiter.jpg", jupiterData, false);
     this.mesh.receiveShadow = true
-
-    this.orbitalGroup.position.set(
-      jupiterData.orbitCenter.x,
-      jupiterData.orbitCenter.y,
-      jupiterData.orbitCenter.z
-    );
   }
 
   public render(delta: number, camera?: THREE.PerspectiveCamera) {

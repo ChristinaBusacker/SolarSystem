@@ -1,9 +1,11 @@
 import * as THREE from "three";
+import { AstronomicalDataset } from "../src/interfaces/dataset.interface";
 
 const FINN_TO_KM = 14960;
 
-export const sunData = {
+export const sunData: AstronomicalDataset = {
   title: "Sonne",
+  name: 'Sun',
   description:
     "Ein massiver, heißer Stern, der fast die gesamte Masse unseres Sonnensystems enthält und dessen Zentrum bildet.",
   size: 93,
@@ -13,10 +15,17 @@ export const sunData = {
   initialPosition: new THREE.Vector3(0, 0, 0),
   planetaryTilt: 0,
   orbitalTilt: 0,
+
+  maxDistanceToOrbiting: 0,
+  minDistanceToOrbiting: 0,
+  orbitCenter: new THREE.Vector3(0, 0, 0),
+  semiMajorAxis: 0,
+  semiMinorAxis: 0,
 };
 
-export const mercuryData = {
+export const mercuryData: AstronomicalDataset = {
   title: "Merkur",
+  name: 'Mercury',
   description:
     "Der kleinste Planet des Sonnensystems und der Sonne am nächsten. Er ist bekannt für seine extreme Temperaturschwankungen.",
   size: 0.326,
@@ -40,8 +49,9 @@ export const mercuryData = {
   semiMinorAxis: Math.sqrt(69.82 * 10 ** 5 * 46.0 * 10 ** 5) / FINN_TO_KM,
 };
 
-export const venusData = {
+export const venusData: AstronomicalDataset = {
   title: "Venus",
+  name: 'Venus',
   description:
     "Zweiter Planet von der Sonne aus und ähnlich groß wie die Erde. Bekannt für seine dichte Atmosphäre und heiße Oberfläche.",
   size: 0.809,
@@ -62,8 +72,9 @@ export const venusData = {
   semiMinorAxis: (Math.sqrt(108.94 * 107.48) * 10 ** 5) / FINN_TO_KM,
 };
 
-export const earthData = {
+export const earthData: AstronomicalDataset = {
   title: "Erde",
+  name: 'Earth',
   description:
     "Unser Heimatplanet, der dritte von der Sonne aus. Einziger bekannter Ort im Universum, der Leben beherbergt.",
   size: 0.851,
@@ -84,8 +95,9 @@ export const earthData = {
   semiMinorAxis: (Math.sqrt(152.1 * 147.1) * 10 ** 5) / FINN_TO_KM,
 };
 
-export const moonData = {
+export const moonData: AstronomicalDataset = {
   title: "Mond",
+  name: 'Moon',
   description:
     "Der einzige natürliche Satellit der Erde. Beeinflusst die Gezeiten und hat eine dunkle, kraterreiche Oberfläche.",
   size: 0.232, // in Finn, Größe übertrieben für bessere Sichtbarkeit
@@ -95,6 +107,8 @@ export const moonData = {
   initialPosition: new THREE.Vector3(2.57, 0, 0), // Relative Position zur Erde in der Gruppe
   planetaryTilt: 6.68,
   orbitalTilt: 5.145,
+  maxDistanceToOrbiting: 405.5 * 10 ** 3 / FINN_TO_KM, // 405,5 Tausend km
+  minDistanceToOrbiting: 363.3 * 10 ** 3 / FINN_TO_KM, // 363,3 Tausend km
   orbitCenter: new THREE.Vector3(
     (((405.5 - 363.3) / 2) * 10 ** 3) / FINN_TO_KM,
     0,
@@ -104,8 +118,9 @@ export const moonData = {
   semiMinorAxis: (Math.sqrt(405.5 * 363.3) * 10 ** 2) / FINN_TO_KM,
 };
 
-export const marsData = {
+export const marsData: AstronomicalDataset = {
   title: "Mars",
+  name: 'Mars',
   description:
     "Bekannt als der rote Planet wegen seiner eisenoxidhaltigen Oberfläche. Ziel zahlreicher Raumfahrtmissionen.",
   size: 0.453,
@@ -115,6 +130,8 @@ export const marsData = {
   initialPosition: new THREE.Vector3(1520, 0, 0),
   planetaryTilt: 25.19,
   orbitalTilt: 5.65,
+  maxDistanceToOrbiting: 249.23 * 10 ** 6 / FINN_TO_KM, // 249,23 Millionen km
+  minDistanceToOrbiting: 206.62 * 10 ** 6 / FINN_TO_KM, // 206,62 Millionen km
   orbitCenter: new THREE.Vector3(
     (((249.23 - 206.62) / 2) * 10 ** 5) / FINN_TO_KM,
     0,
@@ -124,8 +141,9 @@ export const marsData = {
   semiMinorAxis: (Math.sqrt(249.23 * 206.62) * 10 ** 5) / FINN_TO_KM,
 };
 
-export const jupiterData = {
+export const jupiterData: AstronomicalDataset = {
   title: "Jupiter",
+  name: 'Jupiter',
   description:
     "Der größte Planet des Sonnensystems, ein Gasriese mit einem großen roten Fleck, einem gigantischen Sturm.",
   size: 9.34,
@@ -135,6 +153,8 @@ export const jupiterData = {
   initialPosition: new THREE.Vector3(5200, 0, 0),
   planetaryTilt: 6.09,
   orbitalTilt: 1.31,
+  maxDistanceToOrbiting: 816.62 * 10 ** 6 / FINN_TO_KM, // 816,62 Millionen km
+  minDistanceToOrbiting: 740.52 * 10 ** 6 / FINN_TO_KM, // 740,52 Millionen km
   orbitCenter: new THREE.Vector3(
     (((816.62 - 740.52) / 2) * 10 ** 5) / FINN_TO_KM,
     0,
@@ -144,8 +164,9 @@ export const jupiterData = {
   semiMinorAxis: (Math.sqrt(816.62 * 740.52) * 10 ** 5) / FINN_TO_KM,
 };
 
-export const saturnData = {
+export const saturnData: AstronomicalDataset = {
   title: "Saturn",
+  name: 'Saturn',
   description:
     "Auffällig wegen seiner beeindruckenden Ringstruktur. Ein Gasriese, der zweitgrößte Planet unseres Sonnensystems.",
   size: 7.78,
@@ -155,6 +176,8 @@ export const saturnData = {
   initialPosition: new THREE.Vector3(9580, 0, 0),
   planetaryTilt: 5.51,
   orbitalTilt: 2.49,
+  maxDistanceToOrbiting: 1504.5 * 10 ** 6 / FINN_TO_KM, // 1,504 Milliarden km
+  minDistanceToOrbiting: 1352.6 * 10 ** 6 / FINN_TO_KM, // 1,352 Milliarden km
   orbitCenter: new THREE.Vector3(
     (((1504.5 - 1352.6) / 2) * 10 ** 5) / FINN_TO_KM,
     0,
@@ -162,12 +185,11 @@ export const saturnData = {
   ),
   semiMajorAxis: (((1504.5 + 1352.6) / 2) * 10 ** 5) / FINN_TO_KM,
   semiMinorAxis: (Math.sqrt(1504.5 * 1352.6) * 10 ** 5) / FINN_TO_KM,
-  ringOuterRadius: 140000 / FINN_TO_KM, // Äußerer Radius der Ringe in Finn
-  ringInnerRadius: 7000 / FINN_TO_KM // Innerer Radius der Ringe in Finn
 };
 
-export const uranusData = {
+export const uranusData: AstronomicalDataset = {
   title: "Uranus",
+  name: 'Uranus',
   description:
     "Ein eisiger Gasriese, bekannt für seine einzigartige Neigung. Hat ein dünnes Ringsystem und zahlreiche Monde.",
   size: 0.339,
@@ -176,6 +198,9 @@ export const uranusData = {
   rotationSpeed: -0.0000968654,
   initialPosition: new THREE.Vector3(19220, 0, 0),
   planetaryTilt: 6.48,
+  orbitalTilt: 0.77,
+  maxDistanceToOrbiting: 3003.6 * 10 ** 6 / FINN_TO_KM, // 3,003 Milliarden km
+  minDistanceToOrbiting: 2741.3 * 10 ** 6 / FINN_TO_KM, // 2,741 Milliarden km
   orbitCenter: new THREE.Vector3(
     (((3003.6 - 2741.3) / 2) * 10 ** 5) / FINN_TO_KM,
     0,
@@ -185,8 +210,9 @@ export const uranusData = {
   semiMinorAxis: (Math.sqrt(3003.6 * 2741.3) * 10 ** 5) / FINN_TO_KM,
 };
 
-export const neptuneData = {
+export const neptuneData: AstronomicalDataset = {
   title: "Neptun",
+  name: 'Neptun',
   description:
     "Der entfernteste bekannte Planet unseres Sonnensystems. Ein blauer Gasriese mit starken Winden und Stürmen.",
   size: 0.329,
@@ -195,6 +221,9 @@ export const neptuneData = {
   rotationSpeed: 0.0001031089,
   initialPosition: new THREE.Vector3(30050, 0, 0),
   planetaryTilt: 6.43,
+  orbitalTilt: 1.77,
+  maxDistanceToOrbiting: 4553.9 * 10 ** 6 / FINN_TO_KM, // 4,554 Milliarden km
+  minDistanceToOrbiting: 4459.7 * 10 ** 6 / FINN_TO_KM, // 4,460 Milliarden km
   orbitCenter: new THREE.Vector3(
     (((4553.9 - 4459.7) / 2) * 10 ** 5) / FINN_TO_KM,
     0,
@@ -203,8 +232,8 @@ export const neptuneData = {
   semiMajorAxis: (((4553.9 + 4459.7) / 2) * 10 ** 5) / FINN_TO_KM,
   semiMinorAxis: (Math.sqrt(4553.9 * 4459.7) * 10 ** 5) / FINN_TO_KM,
 };
-
-export const issData = {
+/*
+export const issData: AstronomicalDataset = {
   title: "Internationale Raumstation",
   description:
     "Ein bewohnbares künstliches Satellit und Mikrogravitationslabor, das in einer niedrigen Erdumlaufbahn kreist.",
@@ -214,4 +243,7 @@ export const issData = {
   rotationSpeed: 0,
   initialPosition: new THREE.Vector3(1000.00281, 0, 0),
   planetaryTilt: 51.6,
+  maxDistanceToOrbiting: 420 * 10**3 / FINN_TO_KM, // 420 Tausend km
+  minDistanceToOrbiting: 420 * 10**3 / FINN_TO_KM, // 420 T
 };
+*/

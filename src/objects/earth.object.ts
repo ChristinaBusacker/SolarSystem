@@ -15,38 +15,12 @@ import { MathUtils } from "three";
 import { penumbraShader } from "../shader/penumbra";
 
 export class Earth extends Astronomical {
-  public name = earthData.title
-  public orbitalSpeed = earthData.orbitalSpeed;
-  public distance = earthData.distanceToOrbiting;
-  public rotationSpeed = earthData.rotationSpeed;
   public moon = new Moon();
   public cameraPosition = new THREE.Vector3(-4, 4, 4);
 
-
-  public semiMajorAxis = earthData.semiMajorAxis;
-  public semiMinorAxis = earthData.semiMinorAxis;
-
   constructor() {
-    super("assets/textures/2k_earth_daymap.jpg", earthData.size, false, true);
-
-    this.group.position.set(
-      earthData.initialPosition.x,
-      earthData.initialPosition.y,
-      earthData.initialPosition.z
-    );
-
-    /*
-    const { fragmentShader, vertexShader } = penumbraShader
-    const penumbraMaterial = new THREE.ShaderMaterial({
-      uniforms: {
-        sunPosition: { value: new THREE.Vector3(0, 0, 0) },
-        planetRadius: { value: this.size }
-      },
-      fragmentShader,
-      vertexShader
-    }); */
+    super("assets/textures/2k_earth_daymap.jpg", earthData, false);
     this.mesh.material = earthMaterial;
-
     this.mesh.castShadow = true;
 
 
@@ -80,19 +54,7 @@ export class Earth extends Astronomical {
     this.group.add(moonGrp);
 
     this.mesh.rotation.z = THREE.MathUtils.degToRad(-23.5);
-    this.marker = this.addMarker(
-      earthData.semiMajorAxis,
-      earthData.semiMinorAxis
-    );
 
-
-    this.orbitalGroup.add(this.marker);
-    this.orbitalGroup.rotateX(MathUtils.DEG2RAD * earthData.orbitalTilt);
-    this.orbitalGroup.position.set(
-      earthData.orbitCenter.x,
-      earthData.orbitCenter.y,
-      earthData.orbitCenter.z
-    );
   }
 
   private adjustAxisTilt() {
@@ -109,7 +71,7 @@ export class Earth extends Astronomical {
     scene?: THREE.Scene
   ) {
     this.atmosphereMesh.rotation.y +=
-      this.rotationSpeed * 6 * delta * 0.8 * simulationSpeed * -1;
+      this.data.rotationSpeed * 6 * delta * 0.8 * simulationSpeed * -1;
 
     this.adjustAxisTilt();
 

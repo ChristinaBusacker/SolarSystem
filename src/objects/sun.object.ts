@@ -5,14 +5,11 @@ import { Astronomical } from "./astronomical.object";
 import * as THREE from "three";
 
 export class Sun extends Astronomical {
-  public name = sunData.title
   public cameraPosition = new THREE.Vector3(20, 20, 20);
   private coronaShaderMaterial: THREE.ShaderMaterial;
 
   constructor() {
-    super("assets/textures/2k_sun.jpg", sunData.size, true, false);
-
-    this.rotationSpeed = sunData.rotationSpeed;
+    super("assets/textures/2k_sun.jpg", sunData, true);
 
     // Adding Corona to sun
     this.coronaShaderMaterial = new THREE.ShaderMaterial(coronaShader);
@@ -30,7 +27,7 @@ export class Sun extends Astronomical {
   }
 
   public render(delta: number, camera?: THREE.PerspectiveCamera): void {
-    this.mesh.rotation.y += this.rotationSpeed * delta * simulationSpeed;
+    this.mesh.rotation.y += this.data.rotationSpeed * delta * simulationSpeed;
     this.coronaShaderMaterial.uniforms.time.value += delta;
     super.render(delta);
   }

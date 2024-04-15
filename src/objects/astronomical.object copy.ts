@@ -6,12 +6,14 @@ import {
 } from "three/examples/jsm/renderers/CSS3DRenderer";
 import { simulationSpeed } from "../../data/settings.data";
 import { SimpleControl } from "../controls/simple.control";
-import { AstronomicalDataset } from "../interfaces/dataset.interface";
-import { APP } from "../constant/constants";
 
 export class Astronomical implements AstronomicalObject {
-  protected data?: AstronomicalDataset;
-
+  public name: string = ''
+  public boundTo?: AstronomicalObject;
+  public distance: number;
+  public orbitalSpeed = 0;
+  public size: number = 1;
+  public rotationSpeed: number = 0;
   public texture: THREE.Texture;
   public material: THREE.MeshStandardMaterial;
   public mesh: THREE.Mesh<THREE.SphereGeometry>;
@@ -21,7 +23,7 @@ export class Astronomical implements AstronomicalObject {
     THREE.BufferGeometry<THREE.NormalBufferAttributes>,
     THREE.LineBasicMaterial
   >;
-
+  public boundingBox?: THREE.BoxHelper;
   public cssObject: CSS3DObject;
   public angle = 0;
   public planetaryGroup = new THREE.Group();
@@ -29,14 +31,18 @@ export class Astronomical implements AstronomicalObject {
   public atmosphereMesh?: THREE.Mesh;
   public control: SimpleControl
 
+  public semiMajorAxis = 0;
+  public semiMinorAxis = 0;
+
   public constructor(
     texturePath: string,
-    data: AstronomicalDataset,
+    size: number,
     emissive = false,
+    debug = false,
   ) {
-    this.data = data
     const textureLoader = new THREE.TextureLoader();
     this.texture = textureLoader.load(texturePath);
+
 
     if (emissive) {
       this.material = new THREE.MeshStandardMaterial({
@@ -55,7 +61,19 @@ export class Astronomical implements AstronomicalObject {
       });
     }
 
-    const geometry = new THREE.SphereGeometry(this.data.size, 64, 32);
+    const geometry = new THREE.SphereGeometry(size, 64, 32);
+
+    /*
+    const { fragmentShader, vertexShader } = penumbraShader
+    const penumbraMaterial = new THREE.ShaderMaterial({
+      uniforms: {
+        sunPosition: { value: new THREE.Vector3(0, 0, 0) },
+        planetRadius: { value: this.size }
+      },
+      fragmentShader,
+      vertexShader
+    });
+    */
 
     this.mesh = new THREE.Mesh(geometry, this.material);
     this.mesh.castShadow = true;
@@ -64,12 +82,22 @@ export class Astronomical implements AstronomicalObject {
 
     this.planetaryGroup.add(this.mesh);
 
+    if (debug) {
+      this.boundingBox = new THREE.BoxHelper(this.mesh, 0xff0000);
+      this.planetaryGroup.add(this.boundingBox);
+    }
+
+    this.camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      10000
+    );
+
     this.group.add(this.addInteractions());
 
-    this.setInitialPosition();
-    this.initOrbit();
-    setTimeout(() => { this.initCameraAndControl(); }, 1000)
-
+    this.control = new SimpleControl(size * 10, size * 10, this.camera)
+    this.group.add(this.control.group)
 
     this.group.add(this.planetaryGroup);
 
@@ -103,45 +131,6 @@ export class Astronomical implements AstronomicalObject {
     return ellipse;
   }
 
-  private setInitialPosition() {
-    this.group.position.set(
-      this.data.initialPosition.x,
-      this.data.initialPosition.y,
-      this.data.initialPosition.z
-    );
-  }
-
-  private initOrbit() {
-    this.marker = this.addMarker(
-      this.data.semiMajorAxis,
-      this.data.semiMinorAxis
-    );
-
-
-    this.orbitalGroup.add(this.marker);
-    this.orbitalGroup.rotateX(THREE.MathUtils.DEG2RAD * this.data.orbitalTilt);
-    this.orbitalGroup.position.set(
-      this.data.orbitCenter.x,
-      this.data.orbitCenter.y,
-      this.data.orbitCenter.z
-    );
-  }
-
-  public initCameraAndControl() {
-    this.camera = new THREE.PerspectiveCamera(
-      75,
-      window.innerWidth / window.innerHeight,
-      0.1,
-      10000
-    );
-
-    this.control = new SimpleControl(this.data.size * 10, this.data.size * 10, this.camera)
-    this.group.add(this.control.group)
-
-    console.log(APP);
-    APP.cameraManager.addCamera(this.data.name, this.camera, this.control)
-  }
-
   public addAtmosphere(texturePath: string, size: number) {
     const atmosphereTexture = new THREE.TextureLoader().load(texturePath);
     const atmosphereMaterial = new THREE.MeshStandardMaterial({
@@ -170,7 +159,7 @@ export class Astronomical implements AstronomicalObject {
     div.style.border = "5px solid green";
     div.style.cursor = "pointer"
 
-    div.onclick = () => { alert(this.data.title) }
+    div.onclick = () => { alert(this.name) }
 
     document.body.appendChild(div);
 
@@ -179,15 +168,17 @@ export class Astronomical implements AstronomicalObject {
   }
 
   public render(delta: number, activeCamera?: THREE.PerspectiveCamera) {
-    if (this.data.distanceToOrbiting > 0) {
-      this.angle -= this.data.orbitalSpeed * delta * 60 * simulationSpeed;
-      this.group.position.x = this.data.semiMajorAxis * Math.cos(this.angle);
-      this.group.position.z = this.data.semiMinorAxis * Math.sin(this.angle);
+    if (this.distance > 0) {
+      this.angle -= this.orbitalSpeed * delta * 60 * simulationSpeed;
+      this.group.position.x = this.semiMajorAxis * Math.cos(this.angle);
+      this.group.position.z = this.semiMinorAxis * Math.sin(this.angle);
     }
 
-    this.planetaryGroup.rotation.y += this.data.rotationSpeed * 60 * delta * simulationSpeed;
+    this.planetaryGroup.rotation.y += this.rotationSpeed * 60 * delta * simulationSpeed;
     if (activeCamera && this.cssObject) {
       this.cssObject.lookAt(activeCamera.position);
     }
+
+    this.control.update(delta)
   }
 }

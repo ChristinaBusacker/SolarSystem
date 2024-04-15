@@ -5,23 +5,9 @@ import { Astronomical } from "./astronomical.object";
 import * as THREE from "three";
 
 export class Moon extends Astronomical {
-  public name = moonData.title
-  public orbitalSpeed = moonData.orbitalSpeed;
-  public distance = moonData.distanceToOrbiting;
-  public rotationSpeed = moonData.rotationSpeed;
-
-  
-  public semiMajorAxis = moonData.semiMajorAxis;
-  public semiMinorAxis = moonData.semiMinorAxis;
 
   constructor() {
-    super("assets/textures/2k_moon.jpg", moonData.size, false, true);
-
-    this.group.position.set(
-      moonData.initialPosition.x,
-      moonData.initialPosition.y,
-      moonData.initialPosition.z
-    );
+    super("assets/textures/2k_moon.jpg", moonData, false);
 
     this.mesh.receiveShadow = true;
     this.mesh.rotation.y = (-1 * Math.PI) / 2;

@@ -17,22 +17,7 @@ export class Saturn extends Astronomical {
     public semiMinorAxis = saturnData.semiMinorAxis;
 
     constructor() {
-        super("assets/textures/2k_saturn.jpg", saturnData.size, false, true);
-
-        this.group.position.set(
-            saturnData.initialPosition.x,
-            saturnData.initialPosition.y,
-            saturnData.initialPosition.z
-        );
-
-        this.marker = this.addMarker(
-            saturnData.semiMajorAxis,
-            saturnData.semiMinorAxis
-        );
-
-        this.orbitalGroup.add(this.marker);
-
-        this.orbitalGroup.rotateX(MathUtils.DEG2RAD * saturnData.orbitalTilt);
+        super("assets/textures/2k_saturn.jpg", saturnData, false);
 
         this.mesh.receiveShadow = false
 
@@ -79,12 +64,6 @@ export class Saturn extends Astronomical {
 
         this.planetaryGroup.rotateX(MathUtils.DEG2RAD * saturnData.planetaryTilt)
         this.group.rotateZ(MathUtils.DEG2RAD * 3)
-
-        this.orbitalGroup.position.set(
-            saturnData.orbitCenter.x,
-            saturnData.orbitCenter.y,
-            saturnData.orbitCenter.z
-        );
     }
 
     public render(delta: number, camera?: THREE.PerspectiveCamera) {

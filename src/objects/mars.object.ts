@@ -16,30 +16,9 @@ export class Mars extends Astronomical {
   public semiMinorAxis = marsData.semiMinorAxis;
 
   constructor() {
-    super("assets/textures/2k_mars.jpg", marsData.size, false, true);
-    
-    this.group.position.set(
-      marsData.initialPosition.x,
-      marsData.initialPosition.y,
-      marsData.initialPosition.z
-    );
-
-    this.marker = this.addMarker(
-      marsData.semiMajorAxis,
-      marsData.semiMinorAxis
-    );
-
-    this.orbitalGroup.add(this.marker);
-
-    this.orbitalGroup.rotateX(MathUtils.DEG2RAD * marsData.orbitalTilt);
-
+    super("assets/textures/2k_mars.jpg", marsData, false);
     this.mesh.receiveShadow = true
 
-    this.orbitalGroup.position.set(
-      marsData.orbitCenter.x,
-      marsData.orbitCenter.y,
-      marsData.orbitCenter.z
-    );
   }
 
   public render(delta: number, camera?: THREE.PerspectiveCamera) {

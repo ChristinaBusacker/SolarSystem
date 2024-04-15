@@ -16,30 +16,8 @@ export class Mercury extends Astronomical {
   public semiMinorAxis = mercuryData.semiMinorAxis;
 
   constructor() {
-    super("assets/textures/2k_mercury.jpg", mercuryData.size, false, true);
-    
-    this.group.position.set(
-      mercuryData.initialPosition.x,
-      mercuryData.initialPosition.y,
-      mercuryData.initialPosition.z
-    );
-
-    this.marker = this.addMarker(
-      mercuryData.semiMajorAxis,
-      mercuryData.semiMinorAxis
-    );
-
-    this.orbitalGroup.add(this.marker);
-
-    this.orbitalGroup.rotateX(MathUtils.DEG2RAD * mercuryData.orbitalTilt);
-
+    super("assets/textures/2k_mercury.jpg", mercuryData, false);
     this.mesh.receiveShadow = true
-
-    this.orbitalGroup.position.set(
-      mercuryData.orbitCenter.x,
-      mercuryData.orbitCenter.y,
-      mercuryData.orbitCenter.z
-    );
   }
 
   public render(delta: number, camera?: THREE.PerspectiveCamera) {

@@ -17,30 +17,11 @@ export class Venus extends Astronomical {
   public semiMinorAxis = venusData.semiMinorAxis;
 
   constructor() {
-    super("assets/textures/2k_venus_surface.jpg", venusData.size, false, true);
-
-    this.group.position.set(
-      venusData.initialPosition.x,
-      venusData.initialPosition.y,
-      venusData.initialPosition.z
-    );
+    super("assets/textures/2k_venus_surface.jpg", venusData, false);
 
     this.addAtmosphere(
       "assets/textures/2k_venus_atmosphere.jpg",
       venusData.size
-    );
-
-    this.marker = this.addMarker(
-      venusData.semiMajorAxis,
-      venusData.semiMinorAxis
-    );
-
-    this.orbitalGroup.add(this.marker);
-    this.orbitalGroup.rotateX(MathUtils.DEG2RAD * venusData.orbitalTilt);
-    this.orbitalGroup.position.set(
-      venusData.orbitCenter.x,
-      venusData.orbitCenter.y,
-      venusData.orbitCenter.z
     );
   }
 
