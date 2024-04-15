@@ -8,6 +8,9 @@ import { Earth } from "./objects/earth.object";
 
 import { CSS3DRenderer } from "three/examples/jsm/renderers/CSS3DRenderer";
 import { SimpleControl } from "./controls/simple.control";
+import { Mars } from "./objects/mars.object";
+import { Jupiter } from "./objects/jupiter.object";
+import { Saturn } from "./objects/saturn.object";
 
 
 const scene = new THREE.Scene();
@@ -31,9 +34,9 @@ let defaultCamera = new THREE.PerspectiveCamera(
   75,
   window.innerWidth / window.innerHeight,
   0.1,
-  10000
+  100000
 );
-defaultCamera.position.set(0, 0,0);
+defaultCamera.position.set(0, 0, 0);
 
 const defaultControl = new SimpleControl(500, 3000, defaultCamera)
 scene.add(defaultControl.group)
@@ -54,7 +57,7 @@ light.position.set(0, 0, 0);
 light.castShadow = true
 
 light.shadow.camera.near = 50;
-light.shadow.camera.far = 10000; 
+light.shadow.camera.far = 10000;
 light.shadow.mapSize.width = 4096;
 light.shadow.mapSize.height = 4096;
 
@@ -67,8 +70,11 @@ const sun = new Sun();
 const mercury = new Mercury();
 const venus = new Venus();
 const earth = new Earth();
+const mars = new Mars();
+const jupiter = new Jupiter();
+const saturn = new Saturn();
 
-const objects = [sun, mercury, venus, earth];
+const objects = [sun, mercury, venus, earth, mars, jupiter, saturn];
 objects.forEach((obj) => {
   scene.add(obj.orbitalGroup);
 });
@@ -144,6 +150,15 @@ function updateCamera(selectedCamera: string) {
     case "moon":
       activeCamera = earth.moon.camera;
       break;
+    case "mars":
+      activeCamera = mars.camera;
+      break;
+    case "jupiter":
+      activeCamera = jupiter.camera;
+      break;
+    case "saturn":
+      activeCamera = saturn.camera;
+      break;
     default:
       activeCamera = defaultCamera;
 
@@ -160,7 +175,7 @@ async function loadBackground(scene: THREE.Scene) {
   const pmremGenerator = new PMREMGenerator(renderer);
   pmremGenerator.compileEquirectangularShader();
   const loader = new THREE.TextureLoader();
-  
+
   const backgroundImage = await loader.loadAsync(
     "assets/backgrounds/background6.jpg"
   );

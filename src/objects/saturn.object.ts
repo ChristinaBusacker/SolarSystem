@@ -1,0 +1,72 @@
+import { MathUtils } from "three";
+import { saturnData } from "../../data/objects.data";
+import { simulationSpeed } from "../../data/settings.data";
+import { coronaShader } from "../shader/corona";
+import { Astronomical } from "./astronomical.object";
+import * as THREE from 'three';
+import { TextureLoader } from 'three';
+
+export class Saturn extends Astronomical {
+    public name = saturnData.title
+    public orbitalSpeed = saturnData.orbitalSpeed;
+    public cameraPosition = new THREE.Vector3(1, 1, 1);
+    public distance = saturnData.distanceToOrbiting;
+    public rotationSpeed = saturnData.rotationSpeed;
+
+    public semiMajorAxis = saturnData.semiMajorAxis;
+    public semiMinorAxis = saturnData.semiMinorAxis;
+
+    constructor() {
+        super("assets/textures/2k_saturn.jpg", saturnData.size, false, true);
+
+        this.group.position.set(
+            saturnData.initialPosition.x,
+            saturnData.initialPosition.y,
+            saturnData.initialPosition.z
+        );
+
+        this.marker = this.addMarker(
+            saturnData.semiMajorAxis,
+            saturnData.semiMinorAxis
+        );
+
+        this.orbitalGroup.add(this.marker);
+
+        this.orbitalGroup.rotateX(MathUtils.DEG2RAD * saturnData.orbitalTilt);
+
+        this.mesh.receiveShadow = false
+
+        const ringInnerRadius = 1.2 * saturnData.size; // Innere Radius der Ringe, angepasst an die Größe des Saturns
+        const ringOuterRadius = 2.5 * saturnData.size; // Äußere Radius der Ringe
+
+        const loader = new TextureLoader();
+
+        loader.load('assets/textures/2k_saturn_ring_alpha.png', (texture) => {
+            const ringMaterial = new THREE.MeshBasicMaterial({
+                map: texture,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 1
+            });
+
+            const ringGeometry = new THREE.RingGeometry(ringInnerRadius, ringOuterRadius, 64);
+
+            const ringMesh = new THREE.Mesh(ringGeometry, ringMaterial);
+            ringMesh.rotation.x = -Math.PI / 2; // Ringe waagerecht ausrichten
+
+            this.planetaryGroup.add(ringMesh); // Ringe zur Saturngruppe hinzufügen
+        });
+
+        this.planetaryGroup.rotateX(MathUtils.DEG2RAD * saturnData.planetaryTilt)
+
+        this.orbitalGroup.position.set(
+            saturnData.orbitCenter.x,
+            saturnData.orbitCenter.y,
+            saturnData.orbitCenter.z
+        );
+    }
+
+    public render(delta: number, camera?: THREE.PerspectiveCamera) {
+        super.render(delta);
+    }
+}

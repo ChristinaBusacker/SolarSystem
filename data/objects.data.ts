@@ -29,12 +29,12 @@ export const mercuryData = {
   maxDistanceToOrbiting: (69.82 * 10 ** 5) / FINN_TO_KM, // 69,82 Millionen km
   minDistanceToOrbiting: (46.0 * 10 ** 5) / FINN_TO_KM, // 46,00 Millionen km
   orbitCenter:
-  new THREE.Vector3(
-    ((69.82 * 10 ** 5) / FINN_TO_KM - (46.0 * 10 ** 5) / FINN_TO_KM) / 2,
-    0,
-    0
-  ),
-   
+    new THREE.Vector3(
+      ((69.82 * 10 ** 5) / FINN_TO_KM - (46.0 * 10 ** 5) / FINN_TO_KM) / 2,
+      0,
+      0
+    ),
+
   semiMajorAxis:
     ((69.82 * 10 ** 5) / FINN_TO_KM + (46.0 * 10 ** 5) / FINN_TO_KM) / 2,
   semiMinorAxis: Math.sqrt(69.82 * 10 ** 5 * 46.0 * 10 ** 5) / FINN_TO_KM,
@@ -134,6 +134,7 @@ export const jupiterData = {
   rotationSpeed: 0.0001454441,
   initialPosition: new THREE.Vector3(5200, 0, 0),
   planetaryTilt: 6.09,
+  orbitalTilt: 1.31,
   orbitCenter: new THREE.Vector3(
     (((816.62 - 740.52) / 2) * 10 ** 5) / FINN_TO_KM,
     0,
@@ -153,6 +154,7 @@ export const saturnData = {
   rotationSpeed: 0.0001569936,
   initialPosition: new THREE.Vector3(9580, 0, 0),
   planetaryTilt: 5.51,
+  orbitalTilt: 2.49,
   orbitCenter: new THREE.Vector3(
     (((1504.5 - 1352.6) / 2) * 10 ** 5) / FINN_TO_KM,
     0,
@@ -160,6 +162,8 @@ export const saturnData = {
   ),
   semiMajorAxis: (((1504.5 + 1352.6) / 2) * 10 ** 5) / FINN_TO_KM,
   semiMinorAxis: (Math.sqrt(1504.5 * 1352.6) * 10 ** 5) / FINN_TO_KM,
+  ringOuterRadius: 140000 / FINN_TO_KM, // Äußerer Radius der Ringe in Finn
+  ringInnerRadius: 7000 / FINN_TO_KM // Innerer Radius der Ringe in Finn
 };
 
 export const uranusData = {
