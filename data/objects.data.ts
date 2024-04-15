@@ -110,13 +110,14 @@ export const moonData: AstronomicalDataset = {
   maxDistanceToOrbiting: 405.5 * 10 ** 3 / FINN_TO_KM, // 405,5 Tausend km
   minDistanceToOrbiting: 363.3 * 10 ** 3 / FINN_TO_KM, // 363,3 Tausend km
   orbitCenter: new THREE.Vector3(
-    (((405.5 - 363.3) / 2) * 10 ** 3) / FINN_TO_KM,
+    ((405.5 - 363.3) / 2) * 10 ** 3 / FINN_TO_KM,
     0,
     0
-  ), // Orbitzentrum relativ zur Erde
-  semiMajorAxis: (((405.5 + 363.3) / 2) * 10 ** 2) / FINN_TO_KM,
-  semiMinorAxis: (Math.sqrt(405.5 * 363.3) * 10 ** 2) / FINN_TO_KM,
+  ), // Korrektes Orbitzentrum relativ zur Erde
+  semiMajorAxis: ((405.5 + 363.3) / 2) * 10 ** 3 / FINN_TO_KM,
+  semiMinorAxis: Math.sqrt(405.5 * 363.3) * 10 ** 3 / FINN_TO_KM,
 };
+
 
 export const marsData: AstronomicalDataset = {
   title: "Mars",

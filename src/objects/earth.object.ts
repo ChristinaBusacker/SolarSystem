@@ -37,18 +37,10 @@ export class Earth extends Astronomical {
       0 // aRotation
     );
 
-    const points = orbitCurve.getPoints(2000);
-    const geometry = new THREE.BufferGeometry().setFromPoints(points);
-    const material = new THREE.LineBasicMaterial({ color: 0xaeaeae });
-    const ellipse = new THREE.Line(geometry, material);
 
-    ellipse.rotateX(Math.PI / 2);
 
     const moonGrp = new THREE.Group();
-
     moonGrp.add(this.moon.orbitalGroup);
-    moonGrp.add(ellipse);
-
     moonGrp.rotateX(MathUtils.DEG2RAD * -5.145);
 
     this.group.add(moonGrp);

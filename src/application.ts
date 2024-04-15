@@ -18,9 +18,6 @@ export class Application {
 
     private constructor() {
         document.body.appendChild(this.stats.dom);
-
-
-
         window.addEventListener("resize", () => { this.onResize() });
 
         const cameraSelector = document.getElementById("cameraSelector");
@@ -32,6 +29,8 @@ export class Application {
     }
 
     public init() {
+        this.cameraManager.switchCamera('Default')
+
         this.initWebGLRenderer();
         this.initCSS3DRenderer();
         this.initBackground();

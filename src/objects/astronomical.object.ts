@@ -7,7 +7,7 @@ import {
 import { simulationSpeed } from "../../data/settings.data";
 import { SimpleControl } from "../controls/simple.control";
 import { AstronomicalDataset } from "../interfaces/dataset.interface";
-import { APP } from "../constant/constants";
+import { APP } from "..";
 
 export class Astronomical implements AstronomicalObject {
   protected data?: AstronomicalDataset;
@@ -138,7 +138,6 @@ export class Astronomical implements AstronomicalObject {
     this.control = new SimpleControl(this.data.size * 10, this.data.size * 10, this.camera)
     this.group.add(this.control.group)
 
-    console.log(APP);
     APP.cameraManager.addCamera(this.data.name, this.camera, this.control)
   }
 

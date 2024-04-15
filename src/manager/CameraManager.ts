@@ -1,3 +1,4 @@
+import { APP } from "..";
 import { SimpleControl } from "../controls/simple.control";
 import { CameraEntry } from "../interfaces/entry.interfaces";
 import * as THREE from "three";
@@ -19,7 +20,7 @@ export class CameraManager {
 
         scene.add(defaultControl.group)
 
-        this.addCamera('default', defaultCamera, defaultControl).switchCamera('default')
+        this.addCamera('Default', defaultCamera, defaultControl)
     }
 
     public addCamera(selector: string, camera: THREE.PerspectiveCamera, control: SimpleControl): CameraManager {
@@ -35,7 +36,14 @@ export class CameraManager {
     }
 
     public switchCamera(selector: string): CameraManager {
+        if (selector !== 'Default') {
+            APP.cssRenderer.domElement.classList.add("hide");
+        } else {
+            APP.cssRenderer.domElement.classList.remove("hide");
+        }
+
         const entry = this.collection.find(entry => entry.selector === selector)
+
 
         if (!entry) {
             console.error(`Cant find camera with selector ${selector}`)
