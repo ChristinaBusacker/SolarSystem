@@ -14,15 +14,13 @@ export class Mercury extends Astronomical {
   public semiMajorAxis = mercuryData.semiMajorAxis;
   public semiMinorAxis = mercuryData.semiMinorAxis;
 
-  constructor(domElement: HTMLCanvasElement) {
-    super("assets/textures/2k_mercury.jpg", mercuryData.size, false, true, domElement);
+  constructor() {
+    super("assets/textures/2k_mercury.jpg", mercuryData.size, false, true);
     this.group.position.set(
       mercuryData.initialPosition.x,
       mercuryData.initialPosition.y,
       mercuryData.initialPosition.z
     );
-
-    this.group.position.set(this.distance, 0, 0); // Setzen Sie die anfängliche Position der Gruppe
 
     this.marker = this.addMarker(
       mercuryData.semiMajorAxis,

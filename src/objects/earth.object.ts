@@ -17,17 +17,15 @@ export class Earth extends Astronomical {
   public orbitalSpeed = earthData.orbitalSpeed;
   public distance = earthData.distanceToOrbiting;
   public rotationSpeed = earthData.rotationSpeed;
-  public moon?: Moon
+  public moon = new Moon();
   public cameraPosition = new THREE.Vector3(-4, 4, 4);
 
 
   public semiMajorAxis = earthData.semiMajorAxis;
   public semiMinorAxis = earthData.semiMinorAxis;
 
-  constructor(domElement: HTMLCanvasElement) {
-    super("assets/textures/2k_earth_daymap.jpg", earthData.size, false, true, domElement);
-    this.moon = new Moon(domElement);
-
+  constructor() {
+    super("assets/textures/2k_earth_daymap.jpg", earthData.size, false, true);
 
     this.group.position.set(
       earthData.initialPosition.x,
@@ -59,7 +57,7 @@ export class Earth extends Astronomical {
 
     const moonGrp = new THREE.Group();
 
-    moonGrp.add(this.moon.group);
+    moonGrp.add(this.moon.orbitalGroup);
     moonGrp.add(ellipse);
 
     moonGrp.rotateX(MathUtils.DEG2RAD * -5.145);
@@ -72,7 +70,6 @@ export class Earth extends Astronomical {
       earthData.semiMinorAxis
     );
 
-    this.group.add(this.addInteractions());
 
     this.orbitalGroup.add(this.marker);
     this.orbitalGroup.rotateX(MathUtils.DEG2RAD * earthData.orbitalTilt);
@@ -97,12 +94,16 @@ export class Earth extends Astronomical {
     scene?: THREE.Scene
   ) {
     this.atmosphereMesh.rotation.y +=
-      this.rotationSpeed * 60 * delta * 0.8 * simulationSpeed;
+      this.rotationSpeed * 6 * delta * 0.8 * simulationSpeed * -1;
 
-    this.moon.camera.lookAt(this.moon.mesh.position);
-    this.moon.group.lookAt(this.group.position);
-    this.moon.render(delta);
     this.adjustAxisTilt();
+
     super.render(delta, camera);
+    this.moon.render(delta, camera);
+
+    let wp = new THREE.Vector3();
+    this.group.getWorldPosition(wp)
+    this.moon.group.lookAt(wp);
+
   }
 }

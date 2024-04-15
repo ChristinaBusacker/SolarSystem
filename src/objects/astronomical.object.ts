@@ -24,7 +24,7 @@ export class Astronomical implements AstronomicalObject {
   >;
   public boundingBox?: THREE.BoxHelper;
   public cssObject: CSS3DObject;
-  private angle = 0;
+  public angle = 0;
   public planetaryGroup = new THREE.Group();
   public orbitalGroup = new THREE.Group();
   public atmosphereMesh?: THREE.Mesh;
@@ -38,7 +38,6 @@ export class Astronomical implements AstronomicalObject {
     size: number,
     emissive = false,
     debug = false,
-    domElement: HTMLCanvasElement
   ) {
     const textureLoader = new THREE.TextureLoader();
     this.texture = textureLoader.load(texturePath);
@@ -54,8 +53,9 @@ export class Astronomical implements AstronomicalObject {
       this.material = new THREE.MeshStandardMaterial({
         map: this.texture,
         emissiveMap: this.texture,
-        emissiveIntensity: 0,
-        emissive: 0x000000,
+        emissiveIntensity: 0.1,
+        emissive: 0x222222,
+        color: 0xffffff
       });
     }
 
@@ -67,7 +67,7 @@ export class Astronomical implements AstronomicalObject {
 
     if (debug) {
       this.boundingBox = new THREE.BoxHelper(this.mesh, 0xff0000);
-      this.group.add(this.boundingBox);
+      this.planetaryGroup.add(this.boundingBox);
     }
 
     this.camera = new THREE.PerspectiveCamera(
@@ -77,12 +77,14 @@ export class Astronomical implements AstronomicalObject {
       10000
     );
 
-    this.control = new SimpleControl(size * 2, size * 5, this.camera)
-    this.orbitalGroup.add(this.control.group)
+    this.group.add(this.addInteractions());
 
-    this.orbitalGroup.add(this.group);
+    this.control = new SimpleControl(size * 10, size * 10, this.camera)
+    this.group.add(this.control.group)
 
     this.group.add(this.planetaryGroup);
+
+    this.orbitalGroup.add(this.group);
   }
 
   public addMarker(
@@ -118,11 +120,10 @@ export class Astronomical implements AstronomicalObject {
       map: atmosphereTexture,
       transparent: true,
       opacity: 1, // Stellen Sie die Opazität entsprechend ein
-
       blending: THREE.AdditiveBlending,
     });
 
-    const atmosphereGeometry = new THREE.SphereGeometry(size + 0.03, 32, 32); // Atmosphäre leicht größer als die Oberfläche
+    const atmosphereGeometry = new THREE.SphereGeometry(size + 0.01, 32, 32); // Atmosphäre leicht größer als die Oberfläche
     this.atmosphereMesh = new THREE.Mesh(
       atmosphereGeometry,
       atmosphereMaterial
@@ -151,13 +152,12 @@ export class Astronomical implements AstronomicalObject {
       this.group.position.z = this.semiMinorAxis * Math.sin(this.angle);
     }
 
-    this.mesh.rotation.y += this.rotationSpeed * 60 * delta * simulationSpeed;
+    this.planetaryGroup.rotation.y += this.rotationSpeed * 60 * delta * simulationSpeed;
 
     if (activeCamera && this.cssObject) {
       this.cssObject.lookAt(activeCamera.position);
     }
 
-    this.control.group.position.copy(this.group.position)
-    this.control.update()
+    this.control.update(delta)
   }
 }

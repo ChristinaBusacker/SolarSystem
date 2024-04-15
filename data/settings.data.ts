@@ -1,1 +1,1 @@
-export const simulationSpeed = 50;
+export const simulationSpeed = 5000;

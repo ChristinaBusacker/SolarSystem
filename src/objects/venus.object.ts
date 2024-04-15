@@ -14,8 +14,8 @@ export class Venus extends Astronomical {
   public semiMajorAxis = venusData.semiMajorAxis;
   public semiMinorAxis = venusData.semiMinorAxis;
 
-  constructor(domElement: HTMLCanvasElement) {
-    super("assets/textures/2k_venus_surface.jpg", venusData.size, false, true, domElement);
+  constructor() {
+    super("assets/textures/2k_venus_surface.jpg", venusData.size, false, true);
 
     this.group.position.set(
       venusData.initialPosition.x,
@@ -27,8 +27,6 @@ export class Venus extends Astronomical {
       "assets/textures/2k_venus_atmosphere.jpg",
       venusData.size
     );
-
-    this.group.position.set(this.distance, 0, 0); // Setzen Sie die anfängliche Position der Gruppe
 
     this.marker = this.addMarker(
       venusData.semiMajorAxis,

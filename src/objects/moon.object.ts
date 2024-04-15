@@ -9,8 +9,13 @@ export class Moon extends Astronomical {
   public distance = moonData.distanceToOrbiting;
   public rotationSpeed = moonData.rotationSpeed;
 
-  constructor(domElement: HTMLCanvasElement) {
-    super("assets/textures/2k_moon.jpg", moonData.size, false, true, domElement);
+  
+  public semiMajorAxis = moonData.semiMajorAxis;
+  public semiMinorAxis = moonData.semiMinorAxis;
+
+  constructor() {
+    super("assets/textures/2k_moon.jpg", moonData.size, false, true);
+
     this.group.position.set(
       moonData.initialPosition.x,
       moonData.initialPosition.y,
@@ -24,7 +29,7 @@ export class Moon extends Astronomical {
     return this.group.position.clone();
   }
 
-  public render(delta: number, camera?: THREE.PerspectiveCamera) {
-    super.render(delta);
+  public render(delta: number, activeCamera: THREE.PerspectiveCamera) {
+    super.render(delta, activeCamera);
   }
 }

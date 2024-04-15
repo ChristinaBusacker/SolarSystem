@@ -8,8 +8,8 @@ export class Sun extends Astronomical {
   public cameraPosition = new THREE.Vector3(20, 20, 20);
   private coronaShaderMaterial: THREE.ShaderMaterial;
 
-  constructor(domElement: HTMLCanvasElement) {
-    super("assets/textures/2k_sun.jpg", sunData.size, true, false, domElement);
+  constructor() {
+    super("assets/textures/2k_sun.jpg", sunData.size, true, false);
 
     this.rotationSpeed = sunData.rotationSpeed;
 

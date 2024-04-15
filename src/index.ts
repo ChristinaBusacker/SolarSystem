@@ -9,6 +9,7 @@ import { Earth } from "./objects/earth.object";
 import CustomControl from "./controls/custom.control";
 import { CSS3DRenderer } from "three/examples/jsm/renderers/CSS3DRenderer";
 
+
 const scene = new THREE.Scene();
 const clock = new THREE.Clock();
 const cssRenderer = new CSS3DRenderer();
@@ -47,15 +48,32 @@ scene.add(light);
 
 loadBackground(scene);
 
-const sun = new Sun(renderer.domElement);
-const mercury = new Mercury(renderer.domElement);
-const venus = new Venus(renderer.domElement);
-const earth = new Earth(renderer.domElement);
+const sun = new Sun();
+const mercury = new Mercury();
+const venus = new Venus();
+const earth = new Earth();
 
 const objects = [sun, mercury, venus, earth];
 objects.forEach((obj) => {
-  scene.add(obj.orbitalGroup);
+  scene.add(obj.group);
 });
+
+
+// Geometry
+var cbgeometry = new THREE.PlaneGeometry( 50000, 50000, 8, 8 );
+const cbmaterial = new THREE.MeshBasicMaterial( { color: 0xffffff, side: THREE.DoubleSide })
+cbgeometry.rotateX(Math.PI / 2 )
+
+
+const textureLoader = new THREE.TextureLoader();
+const texture = textureLoader.load('assets/test.png');
+
+cbmaterial.map = texture;
+
+// Mesh
+const cb = new THREE.Mesh( cbgeometry, cbmaterial  );
+cb.position.set(0,-50, 0)
+scene.add( cb );
 
 cssRenderer.domElement.classList.add("css-renderer");
 document.body.appendChild(cssRenderer.domElement);
