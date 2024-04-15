@@ -12,6 +12,7 @@ import * as THREE from "three";
 import { Moon } from "./moon.object";
 import { CSS3DRenderer } from "three/examples/jsm/renderers/CSS3DRenderer";
 import { MathUtils } from "three";
+import { penumbraShader } from "../shader/penumbra";
 
 export class Earth extends Astronomical {
   public name = earthData.title
@@ -34,8 +35,20 @@ export class Earth extends Astronomical {
       earthData.initialPosition.z
     );
 
+    /*
+    const { fragmentShader, vertexShader } = penumbraShader
+    const penumbraMaterial = new THREE.ShaderMaterial({
+      uniforms: {
+        sunPosition: { value: new THREE.Vector3(0, 0, 0) },
+        planetRadius: { value: this.size }
+      },
+      fragmentShader,
+      vertexShader
+    }); */
     this.mesh.material = earthMaterial;
+
     this.mesh.castShadow = true;
+
 
     this.addAtmosphere("assets/textures/2k_earth_clouds.jpg", earthData.size);
 

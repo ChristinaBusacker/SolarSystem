@@ -43,6 +43,7 @@ export class Astronomical implements AstronomicalObject {
     const textureLoader = new THREE.TextureLoader();
     this.texture = textureLoader.load(texturePath);
 
+
     if (emissive) {
       this.material = new THREE.MeshStandardMaterial({
         map: this.texture,
@@ -61,6 +62,19 @@ export class Astronomical implements AstronomicalObject {
     }
 
     const geometry = new THREE.SphereGeometry(size, 64, 32);
+
+    /*
+    const { fragmentShader, vertexShader } = penumbraShader
+    const penumbraMaterial = new THREE.ShaderMaterial({
+      uniforms: {
+        sunPosition: { value: new THREE.Vector3(0, 0, 0) },
+        planetRadius: { value: this.size }
+      },
+      fragmentShader,
+      vertexShader
+    });
+    */
+
     this.mesh = new THREE.Mesh(geometry, this.material);
     this.mesh.castShadow = true;
     this.mesh.receiveShadow = true;
@@ -144,8 +158,8 @@ export class Astronomical implements AstronomicalObject {
     div.style.borderRadius = "50%";
     div.style.border = "5px solid green";
     div.style.cursor = "pointer"
-    
-    div.onclick = ( )=> { alert(this.name)}
+
+    div.onclick = () => { alert(this.name) }
 
     document.body.appendChild(div);
 

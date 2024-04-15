@@ -42,22 +42,43 @@ export class Saturn extends Astronomical {
         const loader = new TextureLoader();
 
         loader.load('assets/textures/2k_saturn_ring_alpha.png', (texture) => {
-            const ringMaterial = new THREE.MeshBasicMaterial({
+            const ringMaterial = new THREE.MeshStandardMaterial({
                 map: texture,
                 side: THREE.DoubleSide,
                 transparent: true,
-                opacity: 1
+                color: 0xffffff,
+                opacity: 1, // Du kannst die Opazität an deine Bedürfnisse anpassen
             });
 
             const ringGeometry = new THREE.RingGeometry(ringInnerRadius, ringOuterRadius, 64);
 
-            const ringMesh = new THREE.Mesh(ringGeometry, ringMaterial);
-            ringMesh.rotation.x = -Math.PI / 2; // Ringe waagerecht ausrichten
+            // Aktualisierung der UV-Koordinaten
+            const phiSegments = 64; // Anzahl der Segmente um den Ring herum
+            const thetaSegments = 1; // Anzahl der Segmente zwischen den Ringen, normalerweise 1 für einen einfachen Ring
 
-            this.planetaryGroup.add(ringMesh); // Ringe zur Saturngruppe hinzufügen
+            const uv = ringGeometry.attributes.uv;
+            for (let i = 0; i < phiSegments + 1; i++) {
+                // Die innere Seite des Rings
+                uv.setXY(i, i / phiSegments, 0);
+                // Die äußere Seite des Rings
+                uv.setXY(i + phiSegments + 1, i / phiSegments, 1);
+            }
+
+            ringGeometry.attributes.uv.needsUpdate = true; // Sehr wichtig, um zu sagen, dass die UVs aktualisiert wurden
+
+            const ringMesh = new THREE.Mesh(ringGeometry, ringMaterial);
+            ringMesh.castShadow = true
+            ringMesh.receiveShadow = true
+            ringMesh.rotation.x = -Math.PI / 2;
+
+            this.mesh.castShadow = true
+
+            this.planetaryGroup.add(ringMesh);
         });
 
+
         this.planetaryGroup.rotateX(MathUtils.DEG2RAD * saturnData.planetaryTilt)
+        this.group.rotateZ(MathUtils.DEG2RAD * 3)
 
         this.orbitalGroup.position.set(
             saturnData.orbitCenter.x,
