@@ -61,6 +61,8 @@ export class Astronomical implements AstronomicalObject {
 
     const geometry = new THREE.SphereGeometry(size, 64, 32);
     this.mesh = new THREE.Mesh(geometry, this.material);
+    this.mesh.castShadow = true;
+    this.mesh.receiveShadow = true;
     this.group = new THREE.Group();
 
     this.planetaryGroup.add(this.mesh);
@@ -123,12 +125,14 @@ export class Astronomical implements AstronomicalObject {
       blending: THREE.AdditiveBlending,
     });
 
+
     const atmosphereGeometry = new THREE.SphereGeometry(size + 0.01, 32, 32); // Atmosphäre leicht größer als die Oberfläche
     this.atmosphereMesh = new THREE.Mesh(
       atmosphereGeometry,
       atmosphereMaterial
     );
 
+    this.atmosphereMesh.castShadow = true
     this.planetaryGroup.add(this.atmosphereMesh);
   }
 

@@ -11,6 +11,7 @@ export const earthMaterial = new THREE.ShaderMaterial({
   uniforms: {
     dayTexture: { value: dayTexture },
     nightTexture: { value: nightTexture },
+    sunPosition: { value: new THREE.Vector3(0, 0, 0) }, // Position der Sonne
   },
   vertexShader: `
   varying vec2 vUv;
@@ -25,7 +26,6 @@ export const earthMaterial = new THREE.ShaderMaterial({
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
   `,
-
   fragmentShader: `
   varying vec2 vUv;
   varying vec3 vWorldNormal;
@@ -44,4 +44,8 @@ export const earthMaterial = new THREE.ShaderMaterial({
     gl_FragColor = mix(nightColor, dayColor, intensity);
   }
   `,
+  shadowSide: THREE.DoubleSide,
 });
+
+// Aktivieren von Schatten für das Material
+earthMaterial.shadowSide = THREE.DoubleSide; // Erlaubt Schatten auf beiden Seiten des Materials

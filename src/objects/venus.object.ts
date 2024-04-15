@@ -4,6 +4,7 @@ import { simulationSpeed } from "../../data/settings.data";
 import { coronaShader } from "../shader/corona";
 import { Astronomical } from "./astronomical.object";
 import * as THREE from "three";
+import { Moon } from "./moon.object";
 
 export class Venus extends Astronomical {
   public orbitalSpeed = venusData.orbitalSpeed;
@@ -13,6 +14,7 @@ export class Venus extends Astronomical {
   public atmosphereMesh: THREE.Mesh;
   public semiMajorAxis = venusData.semiMajorAxis;
   public semiMinorAxis = venusData.semiMinorAxis;
+  public moon = new Moon();
 
   constructor() {
     super("assets/textures/2k_venus_surface.jpg", venusData.size, false, true);
@@ -33,6 +35,14 @@ export class Venus extends Astronomical {
       venusData.semiMinorAxis
     );
 
+    const moonGrp = new THREE.Group();
+
+    moonGrp.add(this.moon.orbitalGroup);
+
+    moonGrp.rotateX(MathUtils.DEG2RAD * -5.145);
+
+    this.group.add(moonGrp);
+
     this.orbitalGroup.add(this.marker);
     this.orbitalGroup.rotateX(MathUtils.DEG2RAD * venusData.orbitalTilt);
     this.orbitalGroup.position.set(
@@ -46,5 +56,6 @@ export class Venus extends Astronomical {
     this.atmosphereMesh.rotation.y =
       this.rotationSpeed * delta * 60 * simulationSpeed * 1.25;
     super.render(delta, activeCamera);
+    this.moon.render(delta, activeCamera);
   }
 }

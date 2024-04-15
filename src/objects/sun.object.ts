@@ -21,10 +21,11 @@ export class Sun extends Astronomical {
       this.coronaShaderMaterial
     );
 
+    this.mesh.receiveShadow = false
+    this.mesh.castShadow = false
+
     coronaMesh.position.set(0, 0, 0);
     this.group.add(coronaMesh);
-
-    console.log(this.group);
   }
 
   public render(delta: number, camera?: THREE.PerspectiveCamera): void {

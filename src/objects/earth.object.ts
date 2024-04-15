@@ -34,6 +34,7 @@ export class Earth extends Astronomical {
     );
 
     this.mesh.material = earthMaterial;
+    this.mesh.castShadow = true;
 
     this.addAtmosphere("assets/textures/2k_earth_clouds.jpg", earthData.size);
 

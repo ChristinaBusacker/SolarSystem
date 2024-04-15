@@ -16,6 +16,7 @@ export class Mercury extends Astronomical {
 
   constructor() {
     super("assets/textures/2k_mercury.jpg", mercuryData.size, false, true);
+    
     this.group.position.set(
       mercuryData.initialPosition.x,
       mercuryData.initialPosition.y,
@@ -30,6 +31,9 @@ export class Mercury extends Astronomical {
     this.orbitalGroup.add(this.marker);
 
     this.orbitalGroup.rotateX(MathUtils.DEG2RAD * mercuryData.orbitalTilt);
+
+    this.mesh.receiveShadow = true
+
     this.orbitalGroup.position.set(
       mercuryData.orbitCenter.x,
       mercuryData.orbitCenter.y,

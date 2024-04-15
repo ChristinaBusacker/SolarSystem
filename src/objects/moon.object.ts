@@ -22,6 +22,7 @@ export class Moon extends Astronomical {
       moonData.initialPosition.z
     );
 
+    this.mesh.receiveShadow = true;
     this.mesh.rotation.y = (-1 * Math.PI) / 2;
   }
 

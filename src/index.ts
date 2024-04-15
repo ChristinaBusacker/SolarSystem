@@ -20,6 +20,12 @@ const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 cssRenderer.setSize(window.innerWidth, window.innerHeight);
 
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.enabled = true
+
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMappingExposure = 0.2;
+
 document.body.appendChild(renderer.domElement);
 
 let defaultCamera = new THREE.PerspectiveCamera(
@@ -41,10 +47,22 @@ window.addEventListener("resize", function () {
   activeCamera.updateProjectionMatrix();
 });
 
-const light = new THREE.PointLight(0xffffcc, 100000, 5000000);
+const light = new THREE.PointLight(0xffffff, 1.5, 50000000, 0.1);
 light.position.set(0, 0, 0);
+light.castShadow = true
+
+
+light.shadow.camera.near = 50; // Stelle sicher, dass dies nahe genug ist, um relevante Details zu erfassen.
+light.shadow.camera.far = 10000; // Nicht zu weit, um Präzision zu bewahren.
+light.shadow.mapSize.width = 4096; // Erhöhe für bessere Qualität
+light.shadow.mapSize.height = 4096;
+
+
+const shadowCameraHelper = new THREE.CameraHelper(light.shadow.camera);
+scene.add(shadowCameraHelper);
 
 scene.add(light);
+
 
 loadBackground(scene);
 
@@ -55,11 +73,17 @@ const earth = new Earth();
 
 const objects = [sun, mercury, venus, earth];
 objects.forEach((obj) => {
-  scene.add(obj.group);
+  scene.add(obj.orbitalGroup);
+  const helper = new THREE.BoxHelper(obj.orbitalGroup, 0xff0000);
+  scene.add(helper)
 });
+
+defaultCamera.lookAt(sun.group.position)
+
 
 
 // Geometry
+/*
 var cbgeometry = new THREE.PlaneGeometry( 50000, 50000, 8, 8 );
 const cbmaterial = new THREE.MeshBasicMaterial( { color: 0xffffff, side: THREE.DoubleSide })
 cbgeometry.rotateX(Math.PI / 2 )
@@ -74,6 +98,8 @@ cbmaterial.map = texture;
 const cb = new THREE.Mesh( cbgeometry, cbmaterial  );
 cb.position.set(0,-50, 0)
 scene.add( cb );
+
+*/
 
 cssRenderer.domElement.classList.add("css-renderer");
 document.body.appendChild(cssRenderer.domElement);
@@ -122,7 +148,6 @@ function updateCamera(selectedCamera: string) {
       break;
     case "moon":
       activeCamera = earth.moon.camera;
-
       break;
     default:
       activeCamera = defaultCamera;
@@ -140,9 +165,12 @@ async function loadBackground(scene: THREE.Scene) {
   const pmremGenerator = new PMREMGenerator(renderer);
   pmremGenerator.compileEquirectangularShader();
   const loader = new THREE.TextureLoader();
+  
   const backgroundImage = await loader.loadAsync(
-    "assets/backgrounds/background4.jpg"
+    "assets/backgrounds/background6.jpg"
   );
+
+  backgroundImage.colorSpace = THREE.SRGBColorSpace
 
   scene.background =
     pmremGenerator.fromEquirectangular(backgroundImage).texture;
