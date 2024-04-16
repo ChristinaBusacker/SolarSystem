@@ -17,9 +17,13 @@ export class Saturn extends Astronomical {
     public semiMinorAxis = saturnData.semiMinorAxis;
 
     constructor() {
-        super("assets/textures/2k_saturn.jpg", saturnData, false);
+        super(["assets/textures/2k_saturn.jpg"], saturnData, false);
 
-        this.mesh.receiveShadow = false
+
+    }
+
+    init() {
+        super.init();
 
         const ringInnerRadius = 1.2 * saturnData.size; // Innere Radius der Ringe, angepasst an die Größe des Saturns
         const ringOuterRadius = 2.5 * saturnData.size; // Äußere Radius der Ringe
@@ -56,14 +60,14 @@ export class Saturn extends Astronomical {
             ringMesh.receiveShadow = true
             ringMesh.rotation.x = -Math.PI / 2;
 
-            this.mesh.castShadow = true
-
             this.planetaryGroup.add(ringMesh);
         });
 
 
         this.planetaryGroup.rotateX(MathUtils.DEG2RAD * saturnData.planetaryTilt)
-        this.group.rotateZ(MathUtils.DEG2RAD * 3)
+        this.group.rotateZ(MathUtils.DEG2RAD * 5)
+
+        this.isInit = true
     }
 
     public render(delta: number, camera?: THREE.PerspectiveCamera) {

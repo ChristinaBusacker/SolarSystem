@@ -7,14 +7,17 @@ import * as THREE from "three";
 export class Moon extends Astronomical {
 
   constructor() {
-    super("assets/textures/2k_moon.jpg", moonData, false);
+    super(["assets/textures/2k_moon.jpg"], moonData, false);
+  }
 
-    this.mesh.receiveShadow = true;
+  public init() {
+    super.init();
     this.mesh.rotation.y = (-1 * Math.PI) / 2;
+    this.isInit = true
   }
 
   public getCurrentPosition() {
-    return this.group.position.clone();
+    return this.group?.position?.clone() ?? null;
   }
 
   public render(delta: number, activeCamera: THREE.PerspectiveCamera) {

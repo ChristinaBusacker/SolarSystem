@@ -19,18 +19,31 @@ export class AstronomicalManager {
         { selector: 'Saturn', object: new Saturn() }
     ]
 
-    constructor(scene: THREE.Scene) {
-        this.initObjects(scene)
+    constructor() {
+
     }
 
-    private initObjects(scene: THREE.Scene) {
+    public initObjects(scene: THREE.Scene) {
         this.entrys.forEach((entry) => {
+            entry.object.init();
             scene.add(entry.object.orbitalGroup);
         });
     }
 
     public getEntry(selector: string): AstronomicalEntry | undefined {
         return this.entrys.find(entry => entry.selector === selector)
+    }
+
+    public preBloom() {
+        this.entrys.forEach(entry => {
+            entry.object.preBloom()
+        });
+    }
+
+    public postBloom() {
+        this.entrys.forEach(entry => {
+            entry.object.postBloom()
+        });
     }
 
     public render(delta: number, camera?: THREE.PerspectiveCamera, scene?: THREE.Scene) {

@@ -103,7 +103,7 @@ export const moonData: AstronomicalDataset = {
   size: 0.232, // in Finn, Größe übertrieben für bessere Sichtbarkeit
   distanceToOrbiting: 2.57, // Realistischer Abstand zur Erde in Finn
   orbitalSpeed: 0.0000253315,
-  rotationSpeed: 0.0000026617,
+  rotationSpeed: 0,
   initialPosition: new THREE.Vector3(2.57, 0, 0), // Relative Position zur Erde in der Gruppe
   planetaryTilt: 6.68,
   orbitalTilt: 5.145,

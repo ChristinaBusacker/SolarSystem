@@ -1,18 +1,7 @@
 import * as THREE from "three";
 
-const textureLoader = new THREE.TextureLoader();
-const dayTexture = textureLoader.load("assets/textures/2k_earth_daymap.jpg");
-const nightTexture = textureLoader.load(
-  "assets/textures/2k_earth_nightmap.jpg"
-);
-
 // Erstellen des Shader-Materials
-export const earthMaterial = new THREE.ShaderMaterial({
-  uniforms: {
-    dayTexture: { value: dayTexture },
-    nightTexture: { value: nightTexture },
-    sunPosition: { value: new THREE.Vector3(0, 0, 0) }, // Position der Sonne
-  },
+export const earthShader = new THREE.ShaderMaterial({
   vertexShader: `
   varying vec2 vUv;
   varying vec3 vWorldNormal;
@@ -44,8 +33,5 @@ export const earthMaterial = new THREE.ShaderMaterial({
     gl_FragColor = mix(nightColor, dayColor, intensity);
   }
   `,
-  shadowSide: THREE.DoubleSide,
 });
 
-// Aktivieren von Schatten für das Material
-earthMaterial.shadowSide = THREE.DoubleSide; // Erlaubt Schatten auf beiden Seiten des Materials

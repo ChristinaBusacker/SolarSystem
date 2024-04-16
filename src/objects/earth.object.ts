@@ -5,39 +5,29 @@ import {
   venusData,
 } from "../../data/objects.data";
 import { simulationSpeed } from "../../data/settings.data";
-import { coronaShader } from "../shader/corona";
-import { earthMaterial } from "../shader/earth";
 import { Astronomical } from "./astronomical.object";
 import * as THREE from "three";
 import { Moon } from "./moon.object";
-import { CSS3DRenderer } from "three/examples/jsm/renderers/CSS3DRenderer";
+
 import { MathUtils } from "three";
-import { penumbraShader } from "../shader/penumbra";
+import { moonShader } from "../shader/moon.shader";
+import { PURE_BLACK_MATERIAL } from "../constant/pureBlackMaterial.constant";
+
 
 export class Earth extends Astronomical {
   public moon = new Moon();
   public cameraPosition = new THREE.Vector3(-4, 4, 4);
 
   constructor() {
-    super("assets/textures/2k_earth_daymap.jpg", earthData, false);
-    this.mesh.material = earthMaterial;
-    this.mesh.castShadow = true;
+    super(["assets/textures/2k_earth_daymap.jpg", "assets/textures/2k_earth_nightmap.jpg"], earthData, false);
+  }
+
+  public init() {
+    super.init();
 
 
-    this.addAtmosphere("assets/textures/2k_earth_clouds.jpg", earthData.size);
-
-    const orbitCurve = new THREE.EllipseCurve(
-      0,
-      0, // ax, aY
-      moonData.distanceToOrbiting,
-      moonData.distanceToOrbiting, // xRadius, yRadius
-      0,
-      2 * Math.PI, // aStartAngle, aEndAngle
-      false, // aClockwise
-      0 // aRotation
-    );
-
-
+    this.addAtmosphere("assets/textures/2k_earth_clouds_alpha.png", earthData.size);
+    this.moon.init()
 
     const moonGrp = new THREE.Group();
     moonGrp.add(this.moon.orbitalGroup);
@@ -45,16 +35,37 @@ export class Earth extends Astronomical {
 
     this.group.add(moonGrp);
 
-    this.mesh.rotation.z = THREE.MathUtils.degToRad(-23.5);
-
+    //this.planetaryGroup.rotation.z = THREE.MathUtils.degToRad(this.data.planetaryTilt);
+    this.isInit = true
   }
 
   private adjustAxisTilt() {
     const moonPosition = this.moon.getCurrentPosition();
-    const tiltAdjustment = moonPosition.x;
 
-    this.mesh.rotation.z = THREE.MathUtils.degToRad(tiltAdjustment);
-    this.atmosphereMesh.rotation.z = THREE.MathUtils.degToRad(tiltAdjustment);
+    if (moonPosition) {
+      const tiltAdjustment = moonPosition.x;
+      console.log(tiltAdjustment)
+
+      this.mesh.rotation.z = THREE.MathUtils.degToRad(tiltAdjustment);
+      this.atmosphereMesh.rotation.z = THREE.MathUtils.degToRad(tiltAdjustment);
+    }
+
+  }
+
+  public preBloom(): void {
+    super.preBloom()
+    if (!this.moon.emissive) {
+      this.moon.mesh.material = PURE_BLACK_MATERIAL
+      this.moon.marker.material.color = new THREE.Color(0x000000);
+    }
+  }
+
+  public postBloom(): void {
+    super.postBloom()
+    if (!this.moon.emissive) {
+      this.moon.mesh.material = this.moon.material
+      this.moon.marker.material.color = new THREE.Color(0xffffff);
+    }
   }
 
   public render(
@@ -62,17 +73,20 @@ export class Earth extends Astronomical {
     camera?: THREE.PerspectiveCamera,
     scene?: THREE.Scene
   ) {
-    this.atmosphereMesh.rotation.y +=
-      this.data.rotationSpeed * 6 * delta * 0.8 * simulationSpeed * -1;
+    if (!this.isInit) return
 
-    this.adjustAxisTilt();
+    if (this.atmosphereMesh) {
+      this.atmosphereMesh.rotation.y +=
+        this.data.rotationSpeed * 6 * delta * 0.8 * simulationSpeed * -1;
+    }
+
 
     super.render(delta, camera);
     this.moon.render(delta, camera);
 
     let wp = new THREE.Vector3();
     this.group.getWorldPosition(wp)
-    this.moon.group.lookAt(wp);
+    this.moon?.group?.lookAt(wp);
 
   }
 }

@@ -26,7 +26,6 @@ export class CameraManager {
     public addCamera(selector: string, camera: THREE.PerspectiveCamera, control: SimpleControl): CameraManager {
         const entry: CameraEntry = { selector, camera, control }
         this.collection.push(entry);
-        console.log('added', entry)
         return this
     }
 
@@ -49,6 +48,7 @@ export class CameraManager {
             console.error(`Cant find camera with selector ${selector}`)
         } else {
             this.activeCamera = entry
+            APP.updateComposer(entry.camera)
         }
 
         this.activeCamera.camera.aspect = window.innerWidth / window.innerHeight;

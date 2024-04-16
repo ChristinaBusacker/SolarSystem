@@ -16,8 +16,12 @@ export class Mercury extends Astronomical {
   public semiMinorAxis = mercuryData.semiMinorAxis;
 
   constructor() {
-    super("assets/textures/2k_mercury.jpg", mercuryData, false);
-    this.mesh.receiveShadow = true
+    super(["assets/textures/2k_mercury.jpg"], mercuryData, false);
+  }
+
+  public init() {
+    super.init();
+    this.isInit = true;
   }
 
   public render(delta: number, camera?: THREE.PerspectiveCamera) {

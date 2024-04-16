@@ -2,7 +2,14 @@ import * as THREE from "three";
 import { CSS3DRenderer } from "three/examples/jsm/renderers/CSS3DRenderer";
 import { CameraManager } from "./manager/CameraManager";
 import { AstronomicalManager } from "./manager/AstronomicalManager";
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass'
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer'
 import Stats from "stats.js";
+import { bloomThreshold, bloomStrength, bloomRadius, simulationSpeed } from "../data/settings.data";
+import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass";
+import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass";
+import { mixPassShader } from "./shader/mixpass.shader";
 
 export class Application {
     private static instance: Application | null = null;
@@ -12,9 +19,11 @@ export class Application {
     public scene = new THREE.Scene();
     public clock = new THREE.Clock();
     public stats = new Stats();
+    public bloomComposer = new EffectComposer(this.webglRenderer)
+    public finalComposer = new EffectComposer(this.webglRenderer)
 
     public cameraManager = new CameraManager(this.scene);
-    public astronomicalManager = new AstronomicalManager(this.scene);
+    public astronomicalManager = new AstronomicalManager();
 
     private constructor() {
         document.body.appendChild(this.stats.dom);
@@ -30,13 +39,50 @@ export class Application {
 
     public init() {
         this.cameraManager.switchCamera('Default')
-
+        this.onResize();
+        this.astronomicalManager.initObjects(this.scene);
         this.initWebGLRenderer();
         this.initCSS3DRenderer();
         this.initBackground();
         this.initSunLight();
+        this.initPostProcessing();
     }
 
+    public initPostProcessing() {
+        const renderScene = new RenderPass(this.scene, this.cameraManager.getActiveEntry().camera);
+
+        const bloomPass = new UnrealBloomPass(
+            new THREE.Vector2(window.innerWidth, window.innerHeight),
+            bloomStrength,
+            bloomRadius,
+            bloomThreshold
+        );
+
+        this.bloomComposer.addPass(renderScene);
+        this.bloomComposer.addPass(bloomPass);
+        this.bloomComposer.renderToScreen = false;
+
+        const { vertexShader, fragmentShader } = mixPassShader
+
+        const mixPass = new ShaderPass(
+            new THREE.ShaderMaterial({
+                uniforms: {
+                    baseTexture: { value: null },
+                    bloomTexture: { value: this.bloomComposer.renderTarget2.texture }
+                },
+                vertexShader: vertexShader,
+                fragmentShader: fragmentShader,
+                defines: {}
+            }), 'baseTexture'
+        );
+        mixPass.needsSwap = true;
+
+        const outputPass = new OutputPass();
+
+        this.finalComposer.addPass(renderScene);
+        this.finalComposer.addPass(mixPass);
+        this.finalComposer.addPass(outputPass);
+    }
     public static getInstance(): Application {
         if (!Application.instance) {
             Application.instance = new Application();
@@ -46,10 +92,9 @@ export class Application {
 
     private initWebGLRenderer() {
         this.webglRenderer.setSize(window.innerWidth, window.innerHeight);
-        this.webglRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        this.webglRenderer.shadowMap.enabled = true
-        this.webglRenderer.toneMappingExposure = 0.2;
 
+        this.webglRenderer.toneMapping = THREE.CineonToneMapping;
+        this.webglRenderer.toneMappingExposure = 1
         document.body.appendChild(this.webglRenderer.domElement);
     }
 
@@ -78,15 +123,8 @@ export class Application {
     }
 
     private initSunLight() {
-        const light = new THREE.PointLight(0xffffff, 1.5, 50000000, 0.1);
+        const light = new THREE.PointLight(0xffffff, 1.5, 50000000, 0);
         light.position.set(0, 0, 0);
-        light.castShadow = true
-
-        light.shadow.camera.near = 50;
-        light.shadow.camera.far = 10000;
-        light.shadow.mapSize.width = 4096;
-        light.shadow.mapSize.height = 4096;
-
         this.scene.add(light);
     }
 
@@ -95,13 +133,30 @@ export class Application {
         const height = window.innerHeight;
         const activeCamera = this.cameraManager.getActiveEntry().camera
         this.webglRenderer.setSize(width, height);
-        this.cssRenderer.setSize(window.innerWidth, window.innerHeight);
+        this.cssRenderer.setSize(width, height);
+        this.bloomComposer.setSize(width, height);
+        this.finalComposer.setSize(width, height);
+
         activeCamera.aspect = width / height;
         activeCamera.updateProjectionMatrix();
     }
 
-    public onCameraSwitch() {
+    public updateComposer(newCamera: THREE.Camera) {
 
+        [this.bloomComposer, this.finalComposer].forEach((composer) => {
+            composer.passes.forEach(pass => {
+                if (pass instanceof RenderPass) {
+                    pass.camera = newCamera;
+                }
+            });
+
+            /*
+            const bloomPass = composer.passes.find(pass => pass instanceof UnrealBloomPass) as UnrealBloomPass;
+            if (bloomPass) {
+                bloomPass.setSize(window.innerWidth, window.innerHeight);
+            }
+            */
+        })
     }
 
     public animate() {
@@ -111,9 +166,13 @@ export class Application {
 
         this.astronomicalManager.render(deltaTime, camera, this.scene)
 
-        this.webglRenderer.render(this.scene, camera);
-        this.cssRenderer.render(this.scene, camera);
 
+        this.astronomicalManager.preBloom()
+        this.bloomComposer.render(deltaTime * simulationSpeed);
+        this.astronomicalManager.postBloom()
+        this.finalComposer.render(deltaTime)
+
+        this.cssRenderer.render(this.scene, camera);
 
         this.cameraManager.updateControls(deltaTime);
         this.stats.end();

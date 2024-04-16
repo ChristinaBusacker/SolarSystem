@@ -16,8 +16,11 @@ export class Jupiter extends Astronomical {
   public semiMinorAxis = jupiterData.semiMinorAxis;
 
   constructor() {
-    super("assets/textures/2k_jupiter.jpg", jupiterData, false);
-    this.mesh.receiveShadow = true
+    super(["assets/textures/2k_jupiter.jpg"], jupiterData, false);
+  }
+
+  public init() {
+    super.init();
   }
 
   public render(delta: number, camera?: THREE.PerspectiveCamera) {

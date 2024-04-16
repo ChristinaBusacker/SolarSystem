@@ -16,10 +16,14 @@ export class Mars extends Astronomical {
   public semiMinorAxis = marsData.semiMinorAxis;
 
   constructor() {
-    super("assets/textures/2k_mars.jpg", marsData, false);
-    this.mesh.receiveShadow = true
-
+    super(["assets/textures/2k_mars.jpg"], marsData, false);
   }
+
+  public init() {
+    super.init();
+    this.isInit = true;
+  }
+
 
   public render(delta: number, camera?: THREE.PerspectiveCamera) {
     super.render(delta);

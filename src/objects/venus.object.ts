@@ -17,12 +17,18 @@ export class Venus extends Astronomical {
   public semiMinorAxis = venusData.semiMinorAxis;
 
   constructor() {
-    super("assets/textures/2k_venus_surface.jpg", venusData, false);
+    super(["assets/textures/2k_venus_surface.jpg"], venusData, false);
 
+
+  }
+
+  public init() {
+    super.init();
     this.addAtmosphere(
       "assets/textures/2k_venus_atmosphere.jpg",
       venusData.size
     );
+    this.isInit = true
   }
 
   public render(delta: number, activeCamera?: THREE.PerspectiveCamera) {
