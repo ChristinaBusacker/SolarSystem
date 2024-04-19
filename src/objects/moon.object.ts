@@ -7,7 +7,7 @@ import * as THREE from "three";
 export class Moon extends Astronomical {
 
   constructor() {
-    super(["assets/textures/2k_moon.jpg"], moonData, false);
+    super(["assets/textures/2k_moon.jpg"], "assets/normals/2k_moon.png", moonData, false);
   }
 
   public init() {

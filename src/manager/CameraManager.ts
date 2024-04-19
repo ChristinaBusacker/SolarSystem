@@ -16,7 +16,7 @@ export class CameraManager {
         );
 
         defaultCamera.position.set(0, 0, 0);
-        const defaultControl = new SimpleControl(500, 3000, defaultCamera)
+        const defaultControl = new SimpleControl(500, 30000, defaultCamera)
 
         scene.add(defaultControl.group)
 
@@ -59,6 +59,11 @@ export class CameraManager {
 
     public getActiveEntry(): CameraEntry {
         return this.activeCamera
+    }
+
+    public initEventControls(): CameraManager {
+        this.activeCamera.control.initEventListener()
+        return this
     }
 
     public updateControls(delta: number) {

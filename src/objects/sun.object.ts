@@ -11,7 +11,7 @@ export class Sun extends Astronomical {
   private coronaShaderMaterial: THREE.ShaderMaterial;
 
   constructor() {
-    super(["assets/textures/2k_sun.jpg"], sunData, true);
+    super(["assets/textures/2k_sun.jpg"], "assets/normals/2k_jupiter.png", sunData, true);
   }
 
   public init() {
@@ -47,8 +47,8 @@ export class Sun extends Astronomical {
   }
 
   public render(delta: number, camera?: THREE.PerspectiveCamera): void {
-    this.mesh.rotation.y += this.data.rotationSpeed * delta * simulationSpeed;
-    this.coronaShaderMaterial.uniforms.time.value += delta * simulationSpeed;
+    this.mesh.rotation.y += this.data.rotationSpeed * delta * APP.simulationSpeed;
+    this.coronaShaderMaterial.uniforms.time.value += delta * APP.simulationSpeed;
     super.render(delta);
   }
 }

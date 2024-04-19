@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { APP } from "..";
 
 export class SimpleControl {
   public distanceMin: number;
@@ -23,15 +24,17 @@ export class SimpleControl {
     this.horizontal.add(this.vertical)
     this.group.add(this.horizontal)
 
-    document.addEventListener("mousedown", this.onMouseDown);
-    document.addEventListener("mousemove", this.onMouseMove);
-    document.addEventListener("mouseup", this.onMouseUp);
-
-    document.addEventListener("touchstart", this.onTouchStart);
-    document.addEventListener("touchmove", this.onTouchMove);
-    document.addEventListener("touchend", this.onTouchEnd);
-
     window.addEventListener("wheel", this.onWheel)
+  }
+
+  public initEventListener() {
+    APP.webglRenderer.domElement.addEventListener("mousedown", this.onMouseDown);
+    APP.webglRenderer.domElement.addEventListener("mousemove", this.onMouseMove);
+    APP.webglRenderer.domElement.addEventListener("mouseup", this.onMouseUp);
+
+    APP.webglRenderer.domElement.addEventListener("touchstart", this.onTouchStart);
+    APP.webglRenderer.domElement.addEventListener("touchmove", this.onTouchMove);
+    APP.webglRenderer.domElement.addEventListener("touchend", this.onTouchEnd);
   }
 
   private onTouchStart = (event: TouchEvent) => {

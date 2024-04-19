@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { CSS3DRenderer } from "three/examples/jsm/renderers/CSS3DRenderer";
+import { CSS2DRenderer } from "three/examples/jsm/renderers/CSS2DRenderer";
 import { CameraManager } from "./manager/CameraManager";
 import { AstronomicalManager } from "./manager/AstronomicalManager";
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
@@ -15,15 +15,19 @@ export class Application {
     private static instance: Application | null = null;
 
     public webglRenderer = new THREE.WebGLRenderer({ antialias: true })
-    public cssRenderer = new CSS3DRenderer();
+    public cssRenderer = new CSS2DRenderer();
     public scene = new THREE.Scene();
     public clock = new THREE.Clock();
     public stats = new Stats();
     public bloomComposer = new EffectComposer(this.webglRenderer)
     public finalComposer = new EffectComposer(this.webglRenderer)
 
+    public simulationSpeed = simulationSpeed
+
     public cameraManager = new CameraManager(this.scene);
     public astronomicalManager = new AstronomicalManager();
+
+    private backgroundImage?: THREE.Texture
 
     private constructor() {
         document.body.appendChild(this.stats.dom);
@@ -35,14 +39,20 @@ export class Application {
             this.cameraManager.switchCamera(selectedCamera)
         });
 
+
+        const simulationSpeedSlider = document.getElementById('simulationSpeedSlider') as HTMLInputElement
+        simulationSpeedSlider.addEventListener('change', () => {
+            this.simulationSpeed = parseInt(simulationSpeedSlider.value)
+        })
+
     }
 
     public init() {
-        this.cameraManager.switchCamera('Default')
+        this.cameraManager.switchCamera('Default').initEventControls()
         this.onResize();
         this.astronomicalManager.initObjects(this.scene);
         this.initWebGLRenderer();
-        this.initCSS3DRenderer();
+        this.initCSS2DRenderer();
         this.initBackground();
         this.initSunLight();
         this.initPostProcessing();
@@ -98,7 +108,7 @@ export class Application {
         document.body.appendChild(this.webglRenderer.domElement);
     }
 
-    private initCSS3DRenderer() {
+    private initCSS2DRenderer() {
         this.cssRenderer.setSize(window.innerWidth, window.innerHeight);
 
         this.cssRenderer.domElement.classList.add("css-renderer");
@@ -116,10 +126,12 @@ export class Application {
 
         backgroundImage.colorSpace = THREE.SRGBColorSpace
 
-        this.scene.background =
-            pmremGenerator.fromEquirectangular(backgroundImage).texture;
+        this.backgroundImage = pmremGenerator.fromEquirectangular(backgroundImage).texture;
+        this.scene.background = this.backgroundImage
 
         pmremGenerator.dispose();
+
+        return this.scene.background
     }
 
     private initSunLight() {
@@ -149,13 +161,6 @@ export class Application {
                     pass.camera = newCamera;
                 }
             });
-
-            /*
-            const bloomPass = composer.passes.find(pass => pass instanceof UnrealBloomPass) as UnrealBloomPass;
-            if (bloomPass) {
-                bloomPass.setSize(window.innerWidth, window.innerHeight);
-            }
-            */
         })
     }
 
@@ -167,9 +172,14 @@ export class Application {
         this.astronomicalManager.render(deltaTime, camera, this.scene)
 
 
+
+        //this.scene.background = null
         this.astronomicalManager.preBloom()
-        this.bloomComposer.render(deltaTime * simulationSpeed);
+        this.bloomComposer.render(deltaTime * this.simulationSpeed);
         this.astronomicalManager.postBloom()
+        //this.scene.background = this.backgroundImage
+
+
         this.finalComposer.render(deltaTime)
 
         this.cssRenderer.render(this.scene, camera);

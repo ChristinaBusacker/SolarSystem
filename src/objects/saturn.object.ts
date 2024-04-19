@@ -17,7 +17,7 @@ export class Saturn extends Astronomical {
     public semiMinorAxis = saturnData.semiMinorAxis;
 
     constructor() {
-        super(["assets/textures/2k_saturn.jpg"], saturnData, false);
+        super(["assets/textures/2k_saturn.jpg"], "assets/normals/2k_saturn.png", saturnData, false);
 
 
     }

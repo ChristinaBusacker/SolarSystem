@@ -5,6 +5,7 @@ import { coronaShader } from "../shader/corona";
 import { Astronomical } from "./astronomical.object";
 import * as THREE from "three";
 import { Moon } from "./moon.object";
+import { APP } from "..";
 
 export class Venus extends Astronomical {
   public name = venusData.title
@@ -17,7 +18,7 @@ export class Venus extends Astronomical {
   public semiMinorAxis = venusData.semiMinorAxis;
 
   constructor() {
-    super(["assets/textures/2k_venus_surface.jpg"], venusData, false);
+    super(["assets/textures/2k_venus_surface.jpg"], "assets/normals/2k_venus.png", venusData, false);
 
 
   }
@@ -33,7 +34,7 @@ export class Venus extends Astronomical {
 
   public render(delta: number, activeCamera?: THREE.PerspectiveCamera) {
     this.atmosphereMesh.rotation.y =
-      this.rotationSpeed * delta * 60 * simulationSpeed * 1.25;
+      this.rotationSpeed * delta * 60 * APP.simulationSpeed * 1.25;
     super.render(delta, activeCamera);
   }
 }

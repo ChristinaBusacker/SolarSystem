@@ -16,7 +16,7 @@ export class Mars extends Astronomical {
   public semiMinorAxis = marsData.semiMinorAxis;
 
   constructor() {
-    super(["assets/textures/2k_mars.jpg"], marsData, false);
+    super(["assets/textures/2k_mars.jpg"], "assets/normals/2k_mars.png", marsData, false);
   }
 
   public init() {

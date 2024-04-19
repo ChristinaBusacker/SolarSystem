@@ -16,7 +16,7 @@ export class Mercury extends Astronomical {
   public semiMinorAxis = mercuryData.semiMinorAxis;
 
   constructor() {
-    super(["assets/textures/2k_mercury.jpg"], mercuryData, false);
+    super(["assets/textures/2k_mercury.jpg"], "assets/normals/2k_mercury.png", mercuryData, false);
   }
 
   public init() {

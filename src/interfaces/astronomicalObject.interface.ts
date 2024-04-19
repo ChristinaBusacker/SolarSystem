@@ -2,7 +2,7 @@ import * as THREE from "three";
 
 export interface AstronomicalObject {
   texture: THREE.Texture;
-
+  specMap: THREE.Texture;
   material: THREE.ShaderMaterial;
   mesh: THREE.Mesh<THREE.SphereGeometry>;
   camera: THREE.PerspectiveCamera;

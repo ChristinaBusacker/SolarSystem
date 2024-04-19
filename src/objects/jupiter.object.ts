@@ -16,11 +16,12 @@ export class Jupiter extends Astronomical {
   public semiMinorAxis = jupiterData.semiMinorAxis;
 
   constructor() {
-    super(["assets/textures/2k_jupiter.jpg"], jupiterData, false);
+    super(["assets/textures/2k_jupiter.jpg"], "assets/normals/2k_jupiter.png", jupiterData, false);
   }
 
   public init() {
     super.init();
+    this.isInit = true;
   }
 
   public render(delta: number, camera?: THREE.PerspectiveCamera) {

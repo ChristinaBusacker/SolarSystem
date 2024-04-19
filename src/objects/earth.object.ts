@@ -12,6 +12,7 @@ import { Moon } from "./moon.object";
 import { MathUtils } from "three";
 import { moonShader } from "../shader/moon.shader";
 import { PURE_BLACK_MATERIAL } from "../constant/pureBlackMaterial.constant";
+import { APP } from "..";
 
 
 export class Earth extends Astronomical {
@@ -19,12 +20,11 @@ export class Earth extends Astronomical {
   public cameraPosition = new THREE.Vector3(-4, 4, 4);
 
   constructor() {
-    super(["assets/textures/2k_earth_daymap.jpg", "assets/textures/2k_earth_nightmap.jpg"], earthData, false);
+    super(["assets/textures/2k_earth_daymap.jpg", "assets/textures/2k_earth_nightmap.jpg"], "assets/normals/2k_earth.png", earthData, false);
   }
 
   public init() {
     super.init();
-
 
     this.addAtmosphere("assets/textures/2k_earth_clouds_alpha.png", earthData.size);
     this.moon.init()
@@ -77,7 +77,7 @@ export class Earth extends Astronomical {
 
     if (this.atmosphereMesh) {
       this.atmosphereMesh.rotation.y +=
-        this.data.rotationSpeed * 6 * delta * 0.8 * simulationSpeed * -1;
+        this.data.rotationSpeed * 6 * delta * 0.8 * APP.simulationSpeed * -1;
     }
 
 

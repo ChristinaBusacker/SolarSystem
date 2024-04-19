@@ -11,6 +11,7 @@ import { APP } from "..";
 import { planetShader } from "../shader/planet.shader";
 import { earthShader } from "../shader/earth.shader";
 import { PURE_BLACK_MATERIAL } from "../constant/pureBlackMaterial.constant";
+import { CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer";
 
 export class Astronomical implements AstronomicalObject {
   protected data?: AstronomicalDataset;
@@ -26,13 +27,14 @@ export class Astronomical implements AstronomicalObject {
     THREE.LineBasicMaterial
   >;
 
-  public cssObject: CSS3DObject;
+  public cssObject: CSS2DObject;
   public angle = 0;
   public planetaryGroup = new THREE.Group();
   public orbitalGroup = new THREE.Group();
   public atmosphereMesh?: THREE.Mesh;
   public atmosphereMaterial?: THREE.MeshStandardMaterial | THREE.MeshBasicMaterial
   public control: SimpleControl
+  public specMap: THREE.Texture
 
   public emissive = false
 
@@ -40,6 +42,7 @@ export class Astronomical implements AstronomicalObject {
 
   public constructor(
     texturePath: Array<string>,
+    normalPath: string,
     data: AstronomicalDataset,
     emissive = false,
   ) {
@@ -47,6 +50,7 @@ export class Astronomical implements AstronomicalObject {
     const textureLoader = new THREE.TextureLoader();
     this.texturePath = texturePath
     this.texture = textureLoader.load(texturePath[0]);
+    this.specMap = textureLoader.load('/assets/spec/2k_earth_specular_map.png');
     this.emissive = emissive
   }
 
@@ -70,7 +74,7 @@ export class Astronomical implements AstronomicalObject {
 
     const points = orbitCurve.getPoints(2000);
     const geometry = new THREE.BufferGeometry().setFromPoints(points);
-    const material = new THREE.LineBasicMaterial({ color: 0xaeaeae });
+    const material = new THREE.LineBasicMaterial({ color: 0xaeaeae, linewidth: 25 });
     const ellipse = new THREE.Line(geometry, material);
     ellipse.rotateX(Math.PI / 2);
 
@@ -109,6 +113,7 @@ export class Astronomical implements AstronomicalObject {
     );
 
     this.control = new SimpleControl(this.data.size * 2, this.data.size * 10, this.camera)
+    this.control.initEventListener();
     this.group.add(this.control.group)
 
     APP.cameraManager.addCamera(this.data.name, this.camera, this.control)
@@ -135,17 +140,23 @@ export class Astronomical implements AstronomicalObject {
 
   public addInteractions() {
     let div = document.createElement("div");
-    div.style.width = "25px";
-    div.style.height = "25px";
+    div.style.width = "5px";
+    div.style.height = "5px";
+    div.style.backgroundColor = 'green'
     div.style.borderRadius = "50%";
     div.style.border = "5px solid green";
     div.style.cursor = "pointer"
+
+    let p = document.createElement('p')
+    p.style.color = 'white'
+    p.innerText = this.data.name
+    div.appendChild(p)
 
     div.onclick = () => { alert(this.data.title) }
 
     document.body.appendChild(div);
 
-    this.cssObject = new CSS3DObject(div);
+    this.cssObject = new CSS2DObject(div);
     return this.cssObject;
   }
 
@@ -159,7 +170,10 @@ export class Astronomical implements AstronomicalObject {
         sunPosition: { value: new THREE.Vector3(0, 0, 0) },
         lightColor: { value: new THREE.Color(0xffffff) },
         lightIntensity: { value: 100.0 },
-        lightFalloff: { value: 80.0 }
+        lightFalloff: { value: 80.0 },
+        specMap: { value: this.specMap },
+        shininess: { value: 16 }
+        //cameraPosition: { value: APP.cameraManager.getActiveEntry().camera.position }
       },
       vertexShader: vertexShader,
       fragmentShader: fragmentShader,
@@ -214,13 +228,14 @@ export class Astronomical implements AstronomicalObject {
     if (!this.isInit) return
 
     if (this.data.distanceToOrbiting > 0) {
-      this.angle -= this.data.orbitalSpeed * delta * 60 * simulationSpeed;
+      this.angle -= this.data.orbitalSpeed * delta * 60 * APP.simulationSpeed;
       this.group.position.x = this.data.semiMajorAxis * Math.cos(this.angle);
       this.group.position.z = this.data.semiMinorAxis * Math.sin(this.angle);
     }
 
-    this.planetaryGroup.rotation.y += this.data.rotationSpeed * 60 * delta * simulationSpeed;
+    this.planetaryGroup.rotation.y += this.data.rotationSpeed * 60 * delta * APP.simulationSpeed;
 
+    //this.material.uniforms.cameraPosition.value = APP.cameraManager.getActiveEntry().camera.position;
 
     if (activeCamera && this.cssObject) {
       this.cssObject.lookAt(activeCamera.position);

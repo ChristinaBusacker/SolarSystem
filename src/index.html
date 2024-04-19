@@ -17,6 +17,12 @@
         right: 0;
       }
 
+      #simulationSpeedSlider {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+      }
+
       .css-renderer {
         position: absolute;
         top: 0;
@@ -43,5 +49,7 @@
       <option value="Jupiter">Jupiter Camera</option>
       <option value="Saturn">Saturn Camera</option>
     </select>
+
+    <input type="range" min="1" max="10000" class="slider" value="50" id="simulationSpeedSlider">
   </body>
 </html>
