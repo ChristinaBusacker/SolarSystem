@@ -4,8 +4,11 @@ import { Earth } from "../objects/earth.object";
 import { Jupiter } from "../objects/jupiter.object";
 import { Mars } from "../objects/mars.object";
 import { Mercury } from "../objects/mercury.object";
+import { Neptun } from "../objects/neptun.object";
+import { Pluto } from "../objects/pluto.object";
 import { Saturn } from "../objects/saturn.object";
 import { Sun } from "../objects/sun.object";
+import { Uranus } from "../objects/uransu.object";
 import { Venus } from "../objects/venus.object";
 
 export class AstronomicalManager {
@@ -16,7 +19,10 @@ export class AstronomicalManager {
         { selector: 'Earth', object: new Earth() },
         { selector: 'Mars', object: new Mars() },
         { selector: 'Jupiter', object: new Jupiter() },
-        { selector: 'Saturn', object: new Saturn() }
+        { selector: 'Saturn', object: new Saturn() },
+        { selector: 'Uranus', object: new Uranus() },
+        { selector: 'Neptun', object: new Neptun() },
+        { selector: 'Pluto', object: new Pluto() }
     ]
 
     constructor() {
@@ -37,12 +43,14 @@ export class AstronomicalManager {
     public preBloom() {
         this.entrys.forEach(entry => {
             entry.object.preBloom()
+            entry.object.moons.forEach(moon => moon.preBloom())
         });
     }
 
     public postBloom() {
         this.entrys.forEach(entry => {
             entry.object.postBloom()
+            entry.object.moons.forEach(moon => moon.postBloom())
         });
     }
 

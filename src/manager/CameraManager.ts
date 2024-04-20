@@ -12,11 +12,11 @@ export class CameraManager {
             75,
             window.innerWidth / window.innerHeight,
             0.1,
-            100000
+            1000000
         );
 
         defaultCamera.position.set(0, 0, 0);
-        const defaultControl = new SimpleControl(500, 30000, defaultCamera)
+        const defaultControl = new SimpleControl(500, 100000, defaultCamera)
 
         scene.add(defaultControl.group)
 
@@ -26,6 +26,13 @@ export class CameraManager {
     public addCamera(selector: string, camera: THREE.PerspectiveCamera, control: SimpleControl): CameraManager {
         const entry: CameraEntry = { selector, camera, control }
         this.collection.push(entry);
+
+        const option = document.createElement('option')
+        option.innerText = selector + ' Camera'
+        option.value = selector
+
+        document.getElementById('cameraSelector').appendChild(option)
+
         return this
     }
 

@@ -4,16 +4,21 @@ import { simulationSpeed } from "../../data/settings.data";
 import { coronaShader } from "../shader/corona";
 import { Astronomical } from "./astronomical.object";
 import * as THREE from "three";
+import { Io } from "./io.object";
+import { Europa } from "./europa.object";
+import { Ganymede } from "./ganymede.object";
+import { Callisto } from "./callisto.object";
 
 export class Jupiter extends Astronomical {
-  public name = jupiterData.title
-  public orbitalSpeed = jupiterData.orbitalSpeed;
-  public cameraPosition = new THREE.Vector3(1, 1, 1);
-  public distance = jupiterData.distanceToOrbiting;
-  public rotationSpeed = jupiterData.rotationSpeed;
 
-  public semiMajorAxis = jupiterData.semiMajorAxis;
-  public semiMinorAxis = jupiterData.semiMinorAxis;
+  public moons = [
+    new Io(), new Europa(), new Ganymede(), new Callisto()
+  ]
+
+  public io = new Io();
+  public europa = new Europa();
+  public ganymede = new Ganymede();
+  public callisto = new Callisto();
 
   constructor() {
     super(["assets/textures/2k_jupiter.jpg"], "assets/normals/2k_jupiter.png", jupiterData, false);
@@ -21,10 +26,24 @@ export class Jupiter extends Astronomical {
 
   public init() {
     super.init();
+
+    this.moons.forEach(moon => {
+      moon.init();
+
+      const moonGrp = new THREE.Group();
+      moonGrp.add(moon.orbitalGroup);
+      moonGrp.rotateX(MathUtils.DEG2RAD * moon.data.orbitalTilt);
+
+      this.group.add(moonGrp);
+    })
+
     this.isInit = true;
   }
 
   public render(delta: number, camera?: THREE.PerspectiveCamera) {
     super.render(delta);
+    this.moons.forEach(moon => {
+      moon.render(delta, camera);
+    })
   }
 }

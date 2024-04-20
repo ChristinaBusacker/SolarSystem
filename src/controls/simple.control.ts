@@ -96,7 +96,7 @@ export class SimpleControl {
   }
 
   private onWheel = (event: WheelEvent) => {
-    this.zoom = Math.min(1, Math.max(0, this.zoom + event.deltaY * 0.001))
+    this.zoom = Math.min(1, Math.max(0, this.zoom + event.deltaY * 0.00005))
   }
 
   private lerp = (start: number, end: number, t: number) => {

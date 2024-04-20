@@ -8,6 +8,7 @@ export interface AstronomicalObject {
   camera: THREE.PerspectiveCamera;
   group: THREE.Group;
   orbitalGroup: THREE.Group;
+  moons: Array<AstronomicalObject>
   preBloom: () => void;
   postBloom: () => void;
   init: () => void;

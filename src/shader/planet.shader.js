@@ -18,6 +18,9 @@ export const planetShader = {
   fragmentShader: `
     uniform sampler2D dayTexture;
     uniform vec3 sunPosition;
+    uniform vec3 lightColor;
+    uniform float lightIntensity;
+    uniform float lightFalloff;
     varying vec2 vUv;
     varying vec3 vWorldNormal;
     varying vec3 vWorldPosition;
@@ -25,11 +28,16 @@ export const planetShader = {
   
     void main() {
       vec3 toSun = normalize(sunPosition - vWorldPosition);
+
       float cosTheta = dot(vWorldNormal, toSun);
-      float lightIntensity = smoothstep(-0.2, 1.0, cosTheta);
+      
+      float daynight = smoothstep(-0.2, 1.0, cosTheta);
+
+      vec3 lightEffect = lightColor * lightIntensity;
   
       vec4 dayColor = texture2D(dayTexture, vUv);
-      vec4 finalColor = vec4(dayColor.rgb * lightIntensity, dayColor.a); // Anwendung der Lichtintensität
+
+      vec4 finalColor = vec4(dayColor.rgb * daynight * lightEffect, dayColor.a); // Anwendung der Lichtintensität
   
       gl_FragColor = finalColor;
     }

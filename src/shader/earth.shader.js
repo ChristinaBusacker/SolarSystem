@@ -37,8 +37,6 @@ export const earthShader = {
   uniform sampler2D specMap;
   
   void main() {
-    float distanceToLight = length(sunPosition - vWorldPosition);
-    float attenuation = 1.0 / (1.0 + (distanceToLight / lightFalloff) * (distanceToLight / lightFalloff));
     float cosTheta = dot(vWorldNormal, vToSun);
     vec3 reflectDir = reflect(-vToSun, vWorldNormal); // Reflect direction of light
     float spec = pow(max(dot(reflectDir, vViewDirection), 0.0), shininess);
@@ -55,7 +53,7 @@ export const earthShader = {
     
     vec4 colorMix = mix(nightColor, dayColor, daynight);
   
-    vec3 lightEffect = lightColor * lightIntensity * attenuation;
+    vec3 lightEffect = lightColor * lightIntensity;
     vec3 finalColor = colorMix.rgb * lightEffect + lightColor * spec * specColor.r; // Adding specular component
     gl_FragColor = vec4(finalColor, colorMix.a);
   }

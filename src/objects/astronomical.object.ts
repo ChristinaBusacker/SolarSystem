@@ -14,11 +14,12 @@ import { PURE_BLACK_MATERIAL } from "../constant/pureBlackMaterial.constant";
 import { CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer";
 
 export class Astronomical implements AstronomicalObject {
-  protected data?: AstronomicalDataset;
+  public data?: AstronomicalDataset;
 
   public texture: THREE.Texture;
   public texturePath: Array<string>
   public material: THREE.ShaderMaterial;
+  public bloomMaterial: THREE.ShaderMaterial;
   public mesh: THREE.Mesh<THREE.SphereGeometry>;
   public camera: THREE.PerspectiveCamera;
   public group = new THREE.Group();
@@ -35,6 +36,7 @@ export class Astronomical implements AstronomicalObject {
   public atmosphereMaterial?: THREE.MeshStandardMaterial | THREE.MeshBasicMaterial
   public control: SimpleControl
   public specMap: THREE.Texture
+  public moons: Array<AstronomicalObject> = []
 
   public emissive = false
 
@@ -74,6 +76,8 @@ export class Astronomical implements AstronomicalObject {
 
     const points = orbitCurve.getPoints(2000);
     const geometry = new THREE.BufferGeometry().setFromPoints(points);
+
+
     const material = new THREE.LineBasicMaterial({ color: 0xaeaeae, linewidth: 25 });
     const ellipse = new THREE.Line(geometry, material);
     ellipse.rotateX(Math.PI / 2);
@@ -109,7 +113,7 @@ export class Astronomical implements AstronomicalObject {
       75,
       window.innerWidth / window.innerHeight,
       0.1,
-      10000
+      9000000
     );
 
     this.control = new SimpleControl(this.data.size * 2, this.data.size * 10, this.camera)
@@ -169,8 +173,23 @@ export class Astronomical implements AstronomicalObject {
         nightTexture: { value: this.texturePath[1] ? new THREE.TextureLoader().load(this.texturePath[1]) : this.texturePath[0] ? this.texture : null },
         sunPosition: { value: new THREE.Vector3(0, 0, 0) },
         lightColor: { value: new THREE.Color(0xffffff) },
-        lightIntensity: { value: 100.0 },
-        lightFalloff: { value: 80.0 },
+        lightIntensity: { value: 1.0 },
+        specMap: { value: this.specMap },
+        shininess: { value: 16 }
+        //cameraPosition: { value: APP.cameraManager.getActiveEntry().camera.position }
+      },
+      vertexShader: vertexShader,
+      fragmentShader: fragmentShader,
+      side: THREE.DoubleSide
+    });
+
+    this.bloomMaterial = new THREE.ShaderMaterial({
+      uniforms: {
+        dayTexture: { value: this.texturePath[0] ? this.texture : null },
+        nightTexture: { value: this.texturePath[1] ? new THREE.TextureLoader().load(this.texturePath[1]) : this.texturePath[0] ? this.texture : null },
+        sunPosition: { value: new THREE.Vector3(0, 0, 0) },
+        lightColor: { value: new THREE.Color(0xbcbcbc) },
+        lightIntensity: { value: 1.0 },
         specMap: { value: this.specMap },
         shininess: { value: 16 }
         //cameraPosition: { value: APP.cameraManager.getActiveEntry().camera.position }
@@ -204,7 +223,7 @@ export class Astronomical implements AstronomicalObject {
 
   public preBloom(): void {
     if (!this.emissive) {
-      this.mesh.material = PURE_BLACK_MATERIAL
+      this.mesh.material = this.bloomMaterial
       this.marker.material.color = new THREE.Color(0x000000);
       if (this.atmosphereMesh) {
         this.atmosphereMesh.material = PURE_BLACK_MATERIAL

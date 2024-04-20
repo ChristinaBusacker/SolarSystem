@@ -213,7 +213,7 @@ export const uranusData: AstronomicalDataset = {
 
 export const neptuneData: AstronomicalDataset = {
   title: "Neptun",
-  name: 'Neptun',
+  name: 'Neptune',
   description:
     "Der entfernteste bekannte Planet unseres Sonnensystems. Ein blauer Gasriese mit starken Winden und Stürmen.",
   size: 0.329,
@@ -248,3 +248,102 @@ export const issData: AstronomicalDataset = {
   minDistanceToOrbiting: 420 * 10**3 / FINN_TO_KM, // 420 T
 };
 */
+
+export const plutoData: AstronomicalDataset = {
+  title: "Pluto",
+  name: "Pluto",
+  description:
+    "Ein kleiner, eisiger Zwergplanet am Rand unseres Sonnensystems, bekannt für seine elliptische Umlaufbahn.",
+  size: 0.186, // Größe in Finn
+  distanceToOrbiting: 5900, // Durchschnittliche Entfernung zur Sonne in Finn
+  orbitalSpeed: 0.0000004745,
+  rotationSpeed: 0.0000027134,
+  initialPosition: new THREE.Vector3(5900, 0, 0),
+  planetaryTilt: 122.5,
+  orbitalTilt: 17.16,
+  maxDistanceToOrbiting: 7375.93 * 10 ** 6 / FINN_TO_KM,
+  minDistanceToOrbiting: 4444.45 * 10 ** 6 / FINN_TO_KM,
+  orbitCenter: new THREE.Vector3(
+    ((7375.93 - 4444.45) / 2) * 10 ** 6 / FINN_TO_KM,
+    0,
+    0
+  ),
+  semiMajorAxis: ((7375.93 + 4444.45) / 2) * 10 ** 6 / FINN_TO_KM,
+  semiMinorAxis: Math.sqrt(7375.93 * 4444.45) * 10 ** 6 / FINN_TO_KM,
+};
+
+export const ioData: AstronomicalDataset = {
+  title: "Io",
+  name: "Io",
+  description:
+    "Der innerste und geologisch aktivste Mond des Jupiter, bekannt für seine zahlreichen Vulkane.",
+  size: 0.286, // in Finn
+  distanceToOrbiting: 0.422,
+  orbitalSpeed: 0.00004205,
+  rotationSpeed: 0.00004205, // Synchron mit der Umlaufzeit
+  initialPosition: new THREE.Vector3(0.422, 0, 0),
+  planetaryTilt: 0,
+  orbitalTilt: 0.05,
+  semiMajorAxis: 421.8 * 10 ** 3 / FINN_TO_KM,  // Durchschnittliche Orbitalentfernung in Finn
+  semiMinorAxis: 421.8 * 10 ** 3 * 0.99 / FINN_TO_KM,  // Leicht reduziert für Exzentrizität
+  maxDistanceToOrbiting: 421.8 * 10 ** 3 / FINN_TO_KM * 1.002,  // leicht erhöhte maximale Entfernung
+  minDistanceToOrbiting: 421.8 * 10 ** 3 / FINN_TO_KM * 0.998,  // leicht reduzierte minimale Entfernung
+  orbitCenter: new THREE.Vector3(0, 0, 0), // Jupiter als Zentrum
+};
+
+export const europaData: AstronomicalDataset = {
+  title: "Europa",
+  name: "Europa",
+  description:
+    "Ein eisbedeckter Mond mit einem möglichen unterirdischen Ozean, was ihn zu einem Kandidaten für außerirdisches Leben macht.",
+  size: 0.245, // in Finn
+  distanceToOrbiting: 0.671,
+  orbitalSpeed: 0.00002957,
+  rotationSpeed: 0.00002957, // Synchron
+  initialPosition: new THREE.Vector3(0.671, 0, 0),
+  planetaryTilt: 0,
+  orbitalTilt: 0.47,
+  semiMajorAxis: 671 * 10 ** 3 / FINN_TO_KM,
+  semiMinorAxis: 671 * 10 ** 3 * 0.99 / FINN_TO_KM,
+  maxDistanceToOrbiting: 671 * 10 ** 3 / FINN_TO_KM * 1.002,
+  minDistanceToOrbiting: 671 * 10 ** 3 / FINN_TO_KM * 0.998,
+  orbitCenter: new THREE.Vector3(0, 0, 0),
+};
+
+export const ganymedData: AstronomicalDataset = {
+  title: "Ganymed",
+  name: "Ganymede",
+  description:
+    "Der größte Mond im Sonnensystem und größer als der Planet Merkur.",
+  size: 0.413, // in Finn
+  distanceToOrbiting: 1.070,
+  orbitalSpeed: 0.00001980,
+  rotationSpeed: 0.00001980, // Synchron
+  initialPosition: new THREE.Vector3(1.070, 0, 0),
+  planetaryTilt: 0,
+  orbitalTilt: 0.20,
+  semiMajorAxis: 1070 * 10 ** 3 / FINN_TO_KM,
+  semiMinorAxis: 1070 * 10 ** 3 * 0.99 / FINN_TO_KM,
+  maxDistanceToOrbiting: 1070 * 10 ** 3 / FINN_TO_KM * 1.002,
+  minDistanceToOrbiting: 1070 * 10 ** 3 / FINN_TO_KM * 0.998,
+  orbitCenter: new THREE.Vector3(0, 0, 0),
+};
+
+export const callistoData: AstronomicalDataset = {
+  title: "Kallisto",
+  name: "Callisto",
+  description:
+    "Ein stark verkraterter und alter Mond, der äußere der vier Galileischen Monde, mit einer dichten Eiskruste.",
+  size: 0.378, // in Finn
+  distanceToOrbiting: 1.883,
+  orbitalSpeed: 0.00001372,
+  rotationSpeed: 0.00001372, // Synchron
+  initialPosition: new THREE.Vector3(1.883, 0, 0),
+  planetaryTilt: 0,
+  orbitalTilt: 0.28,
+  semiMajorAxis: 1883 * 10 ** 3 / FINN_TO_KM,
+  semiMinorAxis: 1883 * 10 ** 3 * 0.99 / FINN_TO_KM,
+  maxDistanceToOrbiting: 1883 * 10 ** 3 / FINN_TO_KM * 1.002,
+  minDistanceToOrbiting: 1883 * 10 ** 3 / FINN_TO_KM * 0.998,
+  orbitCenter: new THREE.Vector3(0, 0, 0),
+};

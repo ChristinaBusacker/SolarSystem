@@ -17,6 +17,7 @@ import { APP } from "..";
 
 export class Earth extends Astronomical {
   public moon = new Moon();
+  public moons = [this.moon]
   public cameraPosition = new THREE.Vector3(-4, 4, 4);
 
   constructor() {
@@ -55,16 +56,16 @@ export class Earth extends Astronomical {
   public preBloom(): void {
     super.preBloom()
     if (!this.moon.emissive) {
-      this.moon.mesh.material = PURE_BLACK_MATERIAL
-      this.moon.marker.material.color = new THREE.Color(0x000000);
+      this.moon.preBloom()
+      //this.moon.marker.material.color = new THREE.Color(0x000000);
     }
   }
 
   public postBloom(): void {
     super.postBloom()
     if (!this.moon.emissive) {
-      this.moon.mesh.material = this.moon.material
-      this.moon.marker.material.color = new THREE.Color(0xffffff);
+      this.moon.postBloom()
+      //this.moon.marker.material.color = new THREE.Color(0xffffff);
     }
   }
 
