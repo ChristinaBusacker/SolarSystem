@@ -43,13 +43,17 @@ export const earthShader = {
     vec3 reflectDir = reflect(-vToSun, vWorldNormal); // Reflect direction of light
     float spec = pow(max(dot(reflectDir, vViewDirection), 0.0), shininess);
   
-    float daySide = smoothstep(0.0, 0.2, cosTheta);
-    float nightSide = smoothstep(0.2, 1.0, cosTheta);
+
+    float daynight = smoothstep(0.2, 1.0, cosTheta);
+
+    float daySide = smoothstep(0.0, 0.8, cosTheta);
+    float nightSide = smoothstep(0.8, 1.0, cosTheta);
   
     vec4 dayColor = texture2D(dayTexture, vUv);
     vec4 nightColor = texture2D(nightTexture, vUv);
     vec4 specColor = texture2D(specMap, vUv);
-    vec4 colorMix = mix(nightColor, dayColor, daySide + nightSide * 0.5);
+    
+    vec4 colorMix = mix(nightColor, dayColor, daynight);
   
     vec3 lightEffect = lightColor * lightIntensity * attenuation;
     vec3 finalColor = colorMix.rgb * lightEffect + lightColor * spec * specColor.r; // Adding specular component

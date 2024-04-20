@@ -127,7 +127,7 @@ export class Astronomical implements AstronomicalObject {
       transparent: true
     });
 
-    const atmosphereGeometry = new THREE.SphereGeometry(size + 0.01, 32, 32); // Atmosphäre leicht größer als die Oberfläche
+    const atmosphereGeometry = new THREE.SphereGeometry(size + 0.0001, 128, 128); // Atmosphäre leicht größer als die Oberfläche
     this.atmosphereMesh = new THREE.Mesh(
       atmosphereGeometry,
       this.atmosphereMaterial

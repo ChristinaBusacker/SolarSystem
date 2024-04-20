@@ -106,6 +106,13 @@ export class Application {
         this.webglRenderer.toneMapping = THREE.CineonToneMapping;
         this.webglRenderer.toneMappingExposure = 1
         document.body.appendChild(this.webglRenderer.domElement);
+
+
+        var gl = this.webglRenderer.getContext();
+
+        // Blending aktivieren
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     }
 
     private initCSS2DRenderer() {

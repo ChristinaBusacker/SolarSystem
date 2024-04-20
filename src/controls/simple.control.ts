@@ -12,7 +12,7 @@ export class SimpleControl {
   public velocity = new THREE.Vector2(0.2, 0)
   private isRotating = false
   public previousMousePosition = new THREE.Vector2(0, 0)
-  public dragspeed = 0.95;
+  public dragspeed = 0.90;
   public verticleRotationLimit = 60;
 
   // TODO get Webgl renderer dom element for events
@@ -110,6 +110,17 @@ export class SimpleControl {
 
     if (!this.isRotating) {
       this.velocity.set(this.velocity.x * this.dragspeed, this.velocity.y * this.dragspeed)
+      this.vertical.rotateX(this.velocity.y * Math.PI * -3 / window.innerHeight)
+
+      if (this.vertical.rotation.x > this.verticleRotationLimit * Math.PI / 180) {
+        this.vertical.rotation.set(this.verticleRotationLimit * Math.PI / 180, 0, 0)
+      }
+
+      if ((this.vertical.rotation.x < -1 * this.verticleRotationLimit * Math.PI / 180)) {
+        this.vertical.rotation.set(-1 * this.verticleRotationLimit * Math.PI / 180, 0, 0)
+      }
+
+      this.horizontal.rotateY(this.velocity.x * Math.PI * -4 / window.innerWidth)
 
     } else {
 

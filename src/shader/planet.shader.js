@@ -26,7 +26,7 @@ export const planetShader = {
     void main() {
       vec3 toSun = normalize(sunPosition - vWorldPosition);
       float cosTheta = dot(vWorldNormal, toSun);
-      float lightIntensity = smoothstep(-0.2, 0.2, cosTheta); // Glättung des Übergangs zwischen beleuchtet und unbeleuchtet
+      float lightIntensity = smoothstep(-0.2, 1.0, cosTheta);
   
       vec4 dayColor = texture2D(dayTexture, vUv);
       vec4 finalColor = vec4(dayColor.rgb * lightIntensity, dayColor.a); // Anwendung der Lichtintensität

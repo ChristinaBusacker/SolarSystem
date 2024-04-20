@@ -77,7 +77,7 @@ export class Earth extends Astronomical {
 
     if (this.atmosphereMesh) {
       this.atmosphereMesh.rotation.y +=
-        this.data.rotationSpeed * 6 * delta * 0.8 * APP.simulationSpeed * -1;
+        this.data.rotationSpeed * 8 * delta * 0.8 * APP.simulationSpeed * -1;
     }
 
 
