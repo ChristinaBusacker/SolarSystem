@@ -34,12 +34,15 @@ export class Astronomical implements AstronomicalObject {
   public planetaryGroup = new THREE.Group();
   public orbitalGroup = new THREE.Group();
   public atmosphereMesh?: THREE.Mesh;
-  public atmosphereMaterial?: THREE.MeshStandardMaterial | THREE.MeshBasicMaterial
+  public atmosphereMaterial?: THREE.ShaderMaterial
   public control: SimpleControl
   public specMap: THREE.Texture
   public moons: Array<AstronomicalObject> = []
   public orbitingParent?: AstronomicalObject
   public isMoon = false;
+
+  public materials: Array<THREE.ShaderMaterial> = []
+
 
   public emissive = false
 
@@ -128,11 +131,39 @@ export class Astronomical implements AstronomicalObject {
 
   public addAtmosphere(texturePath: string, size: number) {
     const atmosphereTexture = new THREE.TextureLoader().load(texturePath);
-    this.atmosphereMaterial = new THREE.MeshStandardMaterial({
-      map: atmosphereTexture,
-      opacity: 1, // Stellen Sie die Opazität entsprechend ein
-      transparent: true
+
+    const { vertexShader, fragmentShader } = planetShader
+
+    const casterOptions: any = {
+      casterPosition1: { value: new THREE.Vector3(0, 0, 0) },
+      casterRadius1: { value: 0.0 },
+      casterPosition2: { value: new THREE.Vector3(0, 0, 0) },
+      casterRadius2: { value: 0.0 },
+      casterPosition3: { value: new THREE.Vector3(0, 0, 0) },
+      casterRadius3: { value: 0.0 },
+      casterPosition4: { value: new THREE.Vector3(0, 0, 0) },
+      casterRadius4: { value: 0.0 }
+    }
+
+    const options = {
+      dayTexture: { value: atmosphereTexture },
+      sunPosition: { value: new THREE.Vector3(0, 0, 0) },
+      lightIntensity: { value: 1.0 },
+      shininess: { value: 16 },
+      ...casterOptions
+    }
+
+    this.atmosphereMaterial = new THREE.ShaderMaterial({
+      uniforms: {
+        ...options,
+        lightColor: { value: new THREE.Color(0xffffff) },
+      },
+      vertexShader: vertexShader,
+      fragmentShader: fragmentShader,
+      transparent: true,
+      side: THREE.DoubleSide
     });
+
 
     const atmosphereGeometry = new THREE.SphereGeometry(size + 0.0001, 128, 128); // Atmosphäre leicht größer als die Oberfläche
     this.atmosphereMesh = new THREE.Mesh(
@@ -140,6 +171,7 @@ export class Astronomical implements AstronomicalObject {
       this.atmosphereMaterial
     );
 
+    this.materials.push(this.atmosphereMaterial)
     this.atmosphereMesh.name = this.data.name + " Atmo"
 
     this.planetaryGroup.add(this.atmosphereMesh);
@@ -184,7 +216,7 @@ export class Astronomical implements AstronomicalObject {
   }
 
   public generateMaterials() {
-    const { vertexShader, fragmentShader } = this.orbitingParent ? planetShader : this.texturePath.length < 2 ? planetShader : earthShader
+    const { vertexShader, fragmentShader } = this.texturePath.length < 2 ? planetShader : earthShader
 
     const casterOptions: any = {
       casterPosition1: { value: new THREE.Vector3(0, 0, 0) },
@@ -227,6 +259,8 @@ export class Astronomical implements AstronomicalObject {
       side: THREE.DoubleSide
     });
 
+    this.materials.push(this.material)
+    this.materials.push(this.bloomMaterial)
     this.mesh.material = this.material
   }
 
@@ -240,7 +274,7 @@ export class Astronomical implements AstronomicalObject {
     this.orbitalGroup.name = this.data.name + " orbitalGroup"
 
     this.planetaryGroup.add(this.mesh);
-    this.planetaryGroup.rotateX(this.data.planetaryTilt * THREE.MathUtils.DEG2RAD)
+    this.planetaryGroup.rotateX(this.data.planetaryTilt * THREE.MathUtils.DEG2RAD * 0.5)
 
     this.group.add(this.addInteractions());
 
@@ -282,9 +316,8 @@ export class Astronomical implements AstronomicalObject {
 
       const shadowCasters = this.getShadowCasters();
 
-      const materials = [this.material, this.bloomMaterial];
 
-      materials.forEach((material) => {
+      this.materials.forEach((material) => {
 
         const params: any = {}
 

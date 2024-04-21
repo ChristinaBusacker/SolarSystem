@@ -25,7 +25,7 @@ export const earthShader = {
   uniform float lightIntensity;
   uniform float lightFalloff;
   uniform float shininess; // Shininess coefficient for specular highlight
-  
+
   varying vec2 vUv;
   varying vec3 vWorldNormal;
   varying vec3 vWorldPosition;
@@ -35,12 +35,39 @@ export const earthShader = {
   uniform sampler2D dayTexture;
   uniform sampler2D nightTexture;
   uniform sampler2D specMap;
+
+  uniform vec3 casterPosition1;
+  uniform float casterRadius1;
+
+  void ShadowCast(in vec3 position, in float radius, in vec3 toSun, inout float shadow) {
+    vec3 parentToObjectDirection = normalize(vWorldPosition - position);
+    float parentToObjectDistance = length(position - vWorldPosition);
+
+    float cosThetaShadow = dot(parentToObjectDirection, toSun);
+
+    if(radius > 0.0) {
+      if(cosThetaShadow < 0.0) {
+        float sinTheta = sqrt(1.0 - cosThetaShadow * cosThetaShadow);
+        float relativeDistance = radius / parentToObjectDistance;
+  
+        float shadowEdge = 0.02;
+        float fadeStart = relativeDistance - shadowEdge;
+        float fadeEnd = relativeDistance + shadowEdge;
+  
+        shadow -= 1.0 - smoothstep(fadeStart, fadeEnd, sinTheta);
+      }
+    }
+
+  }
   
   void main() {
     float cosTheta = dot(vWorldNormal, vToSun);
+    vec3 toSun = normalize(sunPosition - vWorldPosition);
     vec3 reflectDir = reflect(-vToSun, vWorldNormal); // Reflect direction of light
     float spec = pow(max(dot(reflectDir, vViewDirection), 0.0), shininess);
   
+    float shadow = 1.0;
+    ShadowCast(casterPosition1, casterRadius1, toSun, shadow);
 
     float daynight = smoothstep(0.2, 1.0, cosTheta);
 
@@ -54,7 +81,7 @@ export const earthShader = {
     vec4 colorMix = mix(nightColor, dayColor, daynight);
   
     vec3 lightEffect = lightColor * lightIntensity;
-    vec3 finalColor = colorMix.rgb * lightEffect + lightColor * spec * specColor.r; // Adding specular component
+    vec3 finalColor = colorMix.rgb * lightEffect * shadow + lightColor * spec * shadow * specColor.r; // Adding specular component
     gl_FragColor = vec4(finalColor, colorMix.a);
   }
   `,
