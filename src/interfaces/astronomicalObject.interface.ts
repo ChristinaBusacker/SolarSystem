@@ -11,6 +11,7 @@ export interface AstronomicalObject {
   orbitalGroup: THREE.Group;
   moons: Array<AstronomicalObject>
   data?: AstronomicalDataset;
+  isMoon: boolean;
   preBloom: () => void;
   postBloom: () => void;
   init: () => void;

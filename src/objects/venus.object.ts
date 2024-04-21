@@ -29,6 +29,7 @@ export class Venus extends Astronomical {
       "assets/textures/2k_venus_atmosphere.jpg",
       venusData.size
     );
+    this.generateMaterials()
     this.isInit = true
   }
 

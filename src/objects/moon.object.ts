@@ -5,7 +5,7 @@ import { Astronomical } from "./astronomical.object";
 import * as THREE from "three";
 
 export class Moon extends Astronomical {
-
+  public isMoon = true;
   constructor() {
     super(["assets/textures/2k_moon.jpg"], "assets/normals/2k_moon.png", moonData, false);
   }
@@ -13,6 +13,7 @@ export class Moon extends Astronomical {
   public init() {
     super.init();
     this.mesh.rotation.y = (-1 * Math.PI) / 2;
+    this.generateMaterials()
     this.isInit = true
   }
 

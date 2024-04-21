@@ -21,6 +21,7 @@ export const sunData: AstronomicalDataset = {
   orbitCenter: new THREE.Vector3(0, 0, 0),
   semiMajorAxis: 0,
   semiMinorAxis: 0,
+  atmosphericTint: new THREE.Color(0xffffff)
 };
 
 export const mercuryData: AstronomicalDataset = {
@@ -47,6 +48,7 @@ export const mercuryData: AstronomicalDataset = {
   semiMajorAxis:
     ((69.82 * 10 ** 5) / FINN_TO_KM + (46.0 * 10 ** 5) / FINN_TO_KM) / 2,
   semiMinorAxis: Math.sqrt(69.82 * 10 ** 5 * 46.0 * 10 ** 5) / FINN_TO_KM,
+  atmosphericTint: new THREE.Color(0x000000)
 };
 
 export const venusData: AstronomicalDataset = {
@@ -70,6 +72,7 @@ export const venusData: AstronomicalDataset = {
   ),
   semiMajorAxis: (((108.94 + 107.48) / 2) * 10 ** 5) / FINN_TO_KM,
   semiMinorAxis: (Math.sqrt(108.94 * 107.48) * 10 ** 5) / FINN_TO_KM,
+  atmosphericTint: new THREE.Color(0x000000)
 };
 
 export const earthData: AstronomicalDataset = {
@@ -93,6 +96,7 @@ export const earthData: AstronomicalDataset = {
   ),
   semiMajorAxis: (((152.1 + 147.1) / 2) * 10 ** 5) / FINN_TO_KM,
   semiMinorAxis: (Math.sqrt(152.1 * 147.1) * 10 ** 5) / FINN_TO_KM,
+  atmosphericTint: new THREE.Color(0xff0000)
 };
 
 export const moonData: AstronomicalDataset = {
@@ -116,6 +120,7 @@ export const moonData: AstronomicalDataset = {
   ), // Korrektes Orbitzentrum relativ zur Erde
   semiMajorAxis: ((405.5 + 363.3) / 2) * 10 ** 3 / FINN_TO_KM,
   semiMinorAxis: Math.sqrt(405.5 * 363.3) * 10 ** 3 / FINN_TO_KM,
+  atmosphericTint: new THREE.Color(0x000000)
 };
 
 
@@ -140,6 +145,7 @@ export const marsData: AstronomicalDataset = {
   ),
   semiMajorAxis: (((249.23 + 206.62) / 2) * 10 ** 5) / FINN_TO_KM,
   semiMinorAxis: (Math.sqrt(249.23 * 206.62) * 10 ** 5) / FINN_TO_KM,
+  atmosphericTint: new THREE.Color(0x000000)
 };
 
 export const jupiterData: AstronomicalDataset = {
@@ -163,6 +169,7 @@ export const jupiterData: AstronomicalDataset = {
   ),
   semiMajorAxis: (((816.62 + 740.52) / 2) * 10 ** 5) / FINN_TO_KM,
   semiMinorAxis: (Math.sqrt(816.62 * 740.52) * 10 ** 5) / FINN_TO_KM,
+  atmosphericTint: new THREE.Color(0x000000)
 };
 
 export const saturnData: AstronomicalDataset = {
@@ -186,6 +193,7 @@ export const saturnData: AstronomicalDataset = {
   ),
   semiMajorAxis: (((1504.5 + 1352.6) / 2) * 10 ** 5) / FINN_TO_KM,
   semiMinorAxis: (Math.sqrt(1504.5 * 1352.6) * 10 ** 5) / FINN_TO_KM,
+  atmosphericTint: new THREE.Color(0x000000)
 };
 
 export const uranusData: AstronomicalDataset = {
@@ -209,6 +217,7 @@ export const uranusData: AstronomicalDataset = {
   ),
   semiMajorAxis: (((3003.6 + 2741.3) / 2) * 10 ** 5) / FINN_TO_KM,
   semiMinorAxis: (Math.sqrt(3003.6 * 2741.3) * 10 ** 5) / FINN_TO_KM,
+  atmosphericTint: new THREE.Color(0x000000)
 };
 
 export const neptuneData: AstronomicalDataset = {
@@ -232,6 +241,7 @@ export const neptuneData: AstronomicalDataset = {
   ),
   semiMajorAxis: (((4553.9 + 4459.7) / 2) * 10 ** 5) / FINN_TO_KM,
   semiMinorAxis: (Math.sqrt(4553.9 * 4459.7) * 10 ** 5) / FINN_TO_KM,
+  atmosphericTint: new THREE.Color(0x000000)
 };
 /*
 export const issData: AstronomicalDataset = {
@@ -270,6 +280,7 @@ export const plutoData: AstronomicalDataset = {
   ),
   semiMajorAxis: ((7375.93 + 4444.45) / 2) * 10 ** 6 / FINN_TO_KM,
   semiMinorAxis: Math.sqrt(7375.93 * 4444.45) * 10 ** 6 / FINN_TO_KM,
+  atmosphericTint: new THREE.Color(0x000000)
 };
 
 export const ioData: AstronomicalDataset = {
@@ -289,6 +300,7 @@ export const ioData: AstronomicalDataset = {
   maxDistanceToOrbiting: 421.8 * 10 ** 3 / FINN_TO_KM * 1.002,  // leicht erhöhte maximale Entfernung
   minDistanceToOrbiting: 421.8 * 10 ** 3 / FINN_TO_KM * 0.998,  // leicht reduzierte minimale Entfernung
   orbitCenter: new THREE.Vector3(0, 0, 0), // Jupiter als Zentrum
+  atmosphericTint: new THREE.Color(0x000000)
 };
 
 export const europaData: AstronomicalDataset = {
@@ -308,6 +320,7 @@ export const europaData: AstronomicalDataset = {
   maxDistanceToOrbiting: 671 * 10 ** 3 / FINN_TO_KM * 1.002,
   minDistanceToOrbiting: 671 * 10 ** 3 / FINN_TO_KM * 0.998,
   orbitCenter: new THREE.Vector3(0, 0, 0),
+  atmosphericTint: new THREE.Color(0x000000)
 };
 
 export const ganymedData: AstronomicalDataset = {
@@ -327,6 +340,7 @@ export const ganymedData: AstronomicalDataset = {
   maxDistanceToOrbiting: 1070 * 10 ** 3 / FINN_TO_KM * 1.002,
   minDistanceToOrbiting: 1070 * 10 ** 3 / FINN_TO_KM * 0.998,
   orbitCenter: new THREE.Vector3(0, 0, 0),
+  atmosphericTint: new THREE.Color(0x000000)
 };
 
 export const callistoData: AstronomicalDataset = {
@@ -346,4 +360,5 @@ export const callistoData: AstronomicalDataset = {
   maxDistanceToOrbiting: 1883 * 10 ** 3 / FINN_TO_KM * 1.002,
   minDistanceToOrbiting: 1883 * 10 ** 3 / FINN_TO_KM * 0.998,
   orbitCenter: new THREE.Vector3(0, 0, 0),
+  atmosphericTint: new THREE.Color(0x000000)
 };

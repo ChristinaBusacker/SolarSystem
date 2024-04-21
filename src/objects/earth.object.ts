@@ -38,6 +38,7 @@ export class Earth extends Astronomical {
 
     this.group.add(moonGrp);
 
+    this.generateMaterials()
     //this.planetaryGroup.rotation.z = THREE.MathUtils.degToRad(this.data.planetaryTilt);
     this.isInit = true
   }

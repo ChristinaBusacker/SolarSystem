@@ -76,7 +76,7 @@ export class Saturn extends Astronomical {
 
 
         this.planetaryGroup.rotateX(MathUtils.DEG2RAD * saturnData.planetaryTilt)
-
+        this.generateMaterials()
         this.isInit = true
     }
 

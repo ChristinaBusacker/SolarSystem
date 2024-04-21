@@ -39,6 +39,7 @@ export class Astronomical implements AstronomicalObject {
   public specMap: THREE.Texture
   public moons: Array<AstronomicalObject> = []
   public orbitingParent?: AstronomicalObject
+  public isMoon = false;
 
   public emissive = false
 
@@ -166,29 +167,50 @@ export class Astronomical implements AstronomicalObject {
     return this.cssObject;
   }
 
-  public init() {
-    const { vertexShader, fragmentShader } = this.orbitingParent ? moonShader : this.texturePath.length < 2 ? planetShader : earthShader
+  public getShadowCasters() {
+    const shadowCasters = this.isMoon ? [this.orbitingParent, ...this.orbitingParent.moons.filter((moon) => moon !== this)] : this.moons
 
-    let parentWorldPosition = null
+    return shadowCasters.map((caster) => {
+      const position = new THREE.Vector3();
+      caster.mesh.getWorldPosition(position);
 
-    if (this.orbitingParent) {
-      parentWorldPosition = new THREE.Vector3();
-      this.orbitingParent.mesh.getWorldPosition(parentWorldPosition);
+      return {
+        radius: caster.data.size,
+        name: caster.data.name,
+        atmosphericTint: [caster.data.atmosphericTint.r, caster.data.atmosphericTint.g, caster.data.atmosphericTint.b],
+        position: [position.x, position.y, position.z]
+      }
+    })
+  }
+
+  public generateMaterials() {
+    const { vertexShader, fragmentShader } = this.orbitingParent ? planetShader : this.texturePath.length < 2 ? planetShader : earthShader
+
+    const casterOptions: any = {
+      casterPosition1: { value: new THREE.Vector3(0, 0, 0) },
+      casterRadius1: { value: 0.0 },
+      casterPosition2: { value: new THREE.Vector3(0, 0, 0) },
+      casterRadius2: { value: 0.0 },
+      casterPosition3: { value: new THREE.Vector3(0, 0, 0) },
+      casterRadius3: { value: 0.0 },
+      casterPosition4: { value: new THREE.Vector3(0, 0, 0) },
+      casterRadius4: { value: 0.0 }
     }
 
+    const options = {
+      dayTexture: { value: this.texturePath[0] ? this.texture : null },
+      nightTexture: { value: this.texturePath[1] ? new THREE.TextureLoader().load(this.texturePath[1]) : this.texturePath[0] ? this.texture : null },
+      sunPosition: { value: new THREE.Vector3(0, 0, 0) },
+      lightIntensity: { value: 1.0 },
+      specMap: { value: this.specMap },
+      shininess: { value: 16 },
+      ...casterOptions
+    }
 
     this.material = new THREE.ShaderMaterial({
       uniforms: {
-        dayTexture: { value: this.texturePath[0] ? this.texture : null },
-        nightTexture: { value: this.texturePath[1] ? new THREE.TextureLoader().load(this.texturePath[1]) : this.texturePath[0] ? this.texture : null },
-        sunPosition: { value: new THREE.Vector3(0, 0, 0) },
+        ...options,
         lightColor: { value: new THREE.Color(0xffffff) },
-        lightIntensity: { value: 1.0 },
-        specMap: { value: this.specMap },
-        shininess: { value: 16 },
-        parentWorldPosition: { value: parentWorldPosition },
-        parentRadius: { value: this.orbitingParent?.data?.size || 0 }
-        //cameraPosition: { value: APP.cameraManager.getActiveEntry().camera.position }
       },
       vertexShader: vertexShader,
       fragmentShader: fragmentShader,
@@ -197,25 +219,21 @@ export class Astronomical implements AstronomicalObject {
 
     this.bloomMaterial = new THREE.ShaderMaterial({
       uniforms: {
-        dayTexture: { value: this.texturePath[0] ? this.texture : null },
-        nightTexture: { value: this.texturePath[1] ? new THREE.TextureLoader().load(this.texturePath[1]) : this.texturePath[0] ? this.texture : null },
-        sunPosition: { value: new THREE.Vector3(0, 0, 0) },
-        lightColor: { value: new THREE.Color(0xbcbcbc) },
-        lightIntensity: { value: 1.0 },
-        specMap: { value: this.specMap },
-        shininess: { value: 16 },
-        parentWorldPosition: { value: parentWorldPosition },
-        parentRadius: { value: this.orbitingParent?.data?.size || 0 }
-        //cameraPosition: { value: APP.cameraManager.getActiveEntry().camera.position }
+        ...options,
+        lightColor: { value: new THREE.Color(0xaaaaaa) },
       },
       vertexShader: vertexShader,
       fragmentShader: fragmentShader,
       side: THREE.DoubleSide
     });
 
+    this.mesh.material = this.material
+  }
+
+  public init() {
     const geometry = new THREE.SphereGeometry(this.data.size, 64, 32);
 
-    this.mesh = new THREE.Mesh(geometry, this.material);
+    this.mesh = new THREE.Mesh(geometry);
     this.mesh.name = this.data.name;
     this.group.name = this.data.name + " Gruppe"
     this.planetaryGroup.name = this.data.name + " planetaryGroup"
@@ -260,6 +278,27 @@ export class Astronomical implements AstronomicalObject {
   public render(delta: number, activeCamera?: THREE.PerspectiveCamera) {
     if (!this.isInit) return
 
+    if ((this.orbitingParent || this.moons.length > 0) && this.material) {
+
+      const shadowCasters = this.getShadowCasters();
+
+      const materials = [this.material, this.bloomMaterial];
+
+      materials.forEach((material) => {
+
+        const params: any = {}
+
+        shadowCasters.forEach((caster, i) => {
+          params[`casterPosition${i + 1}`] = { value: caster.position };
+          params[`casterRadius${i + 1}`] = { value: caster.radius };
+        })
+
+        Object.assign(material.uniforms, params)
+      })
+
+    }
+
+    /*
     if (this.orbitingParent) {
       const parentWorldPosition = new THREE.Vector3();
       this.orbitingParent.mesh.getWorldPosition(parentWorldPosition);
@@ -267,6 +306,7 @@ export class Astronomical implements AstronomicalObject {
       this.material.uniforms.parentWorldPosition.value = parentWorldPosition
       this.bloomMaterial.uniforms.parentWorldPosition.value = parentWorldPosition
     }
+    */
 
 
     if (this.data.distanceToOrbiting > 0) {

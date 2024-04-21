@@ -21,6 +21,7 @@ export class Uranus extends Astronomical {
 
     public init() {
         super.init();
+        this.generateMaterials()
         this.isInit = true;
     }
 

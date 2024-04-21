@@ -38,6 +38,7 @@ export class Jupiter extends Astronomical {
       this.group.add(moonGrp);
     })
 
+    this.generateMaterials()
     this.isInit = true;
   }
 

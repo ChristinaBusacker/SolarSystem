@@ -18,6 +18,7 @@ export class Pluto extends Astronomical {
 
     public init() {
         super.init();
+        this.generateMaterials()
         this.isInit = true;
     }
 

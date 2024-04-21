@@ -15,4 +15,5 @@ export interface AstronomicalDataset {
     orbitCenter: THREE.Vector3,
     semiMajorAxis: number,
     semiMinorAxis: number,
+    atmosphericTint: THREE.Color
 }
