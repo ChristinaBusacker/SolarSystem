@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { AstronomicalDataset } from "./dataset.interface";
 
 export interface AstronomicalObject {
   texture: THREE.Texture;
@@ -9,6 +10,7 @@ export interface AstronomicalObject {
   group: THREE.Group;
   orbitalGroup: THREE.Group;
   moons: Array<AstronomicalObject>
+  data?: AstronomicalDataset;
   preBloom: () => void;
   postBloom: () => void;
   init: () => void;

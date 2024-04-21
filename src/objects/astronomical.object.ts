@@ -12,6 +12,7 @@ import { planetShader } from "../shader/planet.shader";
 import { earthShader } from "../shader/earth.shader";
 import { PURE_BLACK_MATERIAL } from "../constant/pureBlackMaterial.constant";
 import { CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer";
+import { moonShader } from "../shader/moon.shader";
 
 export class Astronomical implements AstronomicalObject {
   public data?: AstronomicalDataset;
@@ -37,6 +38,7 @@ export class Astronomical implements AstronomicalObject {
   public control: SimpleControl
   public specMap: THREE.Texture
   public moons: Array<AstronomicalObject> = []
+  public orbitingParent?: AstronomicalObject
 
   public emissive = false
 
@@ -116,7 +118,7 @@ export class Astronomical implements AstronomicalObject {
       9000000
     );
 
-    this.control = new SimpleControl(this.data.size * 2, this.data.size * 10, this.camera)
+    this.control = new SimpleControl(this.data.size * 6, this.data.size * 12, this.camera)
     this.control.initEventListener();
     this.group.add(this.control.group)
 
@@ -165,7 +167,15 @@ export class Astronomical implements AstronomicalObject {
   }
 
   public init() {
-    const { vertexShader, fragmentShader } = this.texturePath.length < 2 ? planetShader : earthShader
+    const { vertexShader, fragmentShader } = this.orbitingParent ? moonShader : this.texturePath.length < 2 ? planetShader : earthShader
+
+    let parentWorldPosition = null
+
+    if (this.orbitingParent) {
+      parentWorldPosition = new THREE.Vector3();
+      this.orbitingParent.mesh.getWorldPosition(parentWorldPosition);
+    }
+
 
     this.material = new THREE.ShaderMaterial({
       uniforms: {
@@ -175,7 +185,9 @@ export class Astronomical implements AstronomicalObject {
         lightColor: { value: new THREE.Color(0xffffff) },
         lightIntensity: { value: 1.0 },
         specMap: { value: this.specMap },
-        shininess: { value: 16 }
+        shininess: { value: 16 },
+        parentWorldPosition: { value: parentWorldPosition },
+        parentRadius: { value: this.orbitingParent?.data?.size || 0 }
         //cameraPosition: { value: APP.cameraManager.getActiveEntry().camera.position }
       },
       vertexShader: vertexShader,
@@ -191,7 +203,9 @@ export class Astronomical implements AstronomicalObject {
         lightColor: { value: new THREE.Color(0xbcbcbc) },
         lightIntensity: { value: 1.0 },
         specMap: { value: this.specMap },
-        shininess: { value: 16 }
+        shininess: { value: 16 },
+        parentWorldPosition: { value: parentWorldPosition },
+        parentRadius: { value: this.orbitingParent?.data?.size || 0 }
         //cameraPosition: { value: APP.cameraManager.getActiveEntry().camera.position }
       },
       vertexShader: vertexShader,
@@ -245,6 +259,15 @@ export class Astronomical implements AstronomicalObject {
 
   public render(delta: number, activeCamera?: THREE.PerspectiveCamera) {
     if (!this.isInit) return
+
+    if (this.orbitingParent) {
+      const parentWorldPosition = new THREE.Vector3();
+      this.orbitingParent.mesh.getWorldPosition(parentWorldPosition);
+
+      this.material.uniforms.parentWorldPosition.value = parentWorldPosition
+      this.bloomMaterial.uniforms.parentWorldPosition.value = parentWorldPosition
+    }
+
 
     if (this.data.distanceToOrbiting > 0) {
       this.angle -= this.data.orbitalSpeed * delta * 60 * APP.simulationSpeed;

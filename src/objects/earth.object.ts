@@ -28,6 +28,8 @@ export class Earth extends Astronomical {
     super.init();
 
     this.addAtmosphere("assets/textures/2k_earth_clouds_alpha.png", earthData.size);
+
+    this.moon.orbitingParent = this;
     this.moon.init()
 
     const moonGrp = new THREE.Group();

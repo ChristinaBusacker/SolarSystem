@@ -28,6 +28,7 @@ export class Jupiter extends Astronomical {
     super.init();
 
     this.moons.forEach(moon => {
+      moon.orbitingParent = this;
       moon.init();
 
       const moonGrp = new THREE.Group();
