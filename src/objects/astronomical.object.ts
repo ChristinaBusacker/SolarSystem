@@ -43,6 +43,7 @@ export class Astronomical implements AstronomicalObject {
 
   public materials: Array<THREE.ShaderMaterial> = []
 
+  private initialOffset = 7000000 * 9
 
   public emissive = false
 
@@ -60,6 +61,8 @@ export class Astronomical implements AstronomicalObject {
     this.texture = textureLoader.load(texturePath[0]);
     this.specMap = textureLoader.load('/assets/spec/2k_earth_specular_map.png');
     this.emissive = emissive
+
+    this.angle = this.data.orbitalSpeed * this.initialOffset
   }
 
   public addMarker(
@@ -178,6 +181,7 @@ export class Astronomical implements AstronomicalObject {
   }
 
   public addInteractions() {
+
     let div = document.createElement("div");
     div.style.width = "5px";
     div.style.height = "5px";
@@ -276,7 +280,10 @@ export class Astronomical implements AstronomicalObject {
     this.planetaryGroup.add(this.mesh);
     this.planetaryGroup.rotateX(this.data.planetaryTilt * THREE.MathUtils.DEG2RAD * 0.5)
 
-    this.group.add(this.addInteractions());
+    if (!this.isMoon) {
+      this.group.add(this.addInteractions());
+    }
+
 
     this.setInitialPosition();
     this.initOrbit();
@@ -316,9 +323,7 @@ export class Astronomical implements AstronomicalObject {
 
       const shadowCasters = this.getShadowCasters();
 
-
       this.materials.forEach((material) => {
-
         const params: any = {}
 
         shadowCasters.forEach((caster, i) => {
@@ -331,17 +336,6 @@ export class Astronomical implements AstronomicalObject {
 
     }
 
-    /*
-    if (this.orbitingParent) {
-      const parentWorldPosition = new THREE.Vector3();
-      this.orbitingParent.mesh.getWorldPosition(parentWorldPosition);
-
-      this.material.uniforms.parentWorldPosition.value = parentWorldPosition
-      this.bloomMaterial.uniforms.parentWorldPosition.value = parentWorldPosition
-    }
-    */
-
-
     if (this.data.distanceToOrbiting > 0) {
       this.angle -= this.data.orbitalSpeed * delta * 60 * APP.simulationSpeed;
       this.group.position.x = this.data.semiMajorAxis * Math.cos(this.angle);
@@ -349,8 +343,6 @@ export class Astronomical implements AstronomicalObject {
     }
 
     this.planetaryGroup.rotation.y += this.data.rotationSpeed * 60 * delta * APP.simulationSpeed;
-
-    //this.material.uniforms.cameraPosition.value = APP.cameraManager.getActiveEntry().camera.position;
 
     if (activeCamera && this.cssObject) {
       this.cssObject.lookAt(activeCamera.position);

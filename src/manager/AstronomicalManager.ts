@@ -8,7 +8,7 @@ import { Neptun } from "../objects/neptun.object";
 import { Pluto } from "../objects/pluto.object";
 import { Saturn } from "../objects/saturn.object";
 import { Sun } from "../objects/sun.object";
-import { Uranus } from "../objects/uransu.object";
+import { Uranus } from "../objects/uranus.object";
 import { Venus } from "../objects/venus.object";
 
 export class AstronomicalManager {

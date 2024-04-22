@@ -7,6 +7,10 @@ import * as THREE from 'three';
 import { TextureLoader } from 'three';
 import { ringShader } from "../shader/ring.shader";
 import { PURE_BLACK_MATERIAL } from "../constant/pureBlackMaterial.constant";
+import { Titan } from "./titan.object";
+import { Enceladus } from "./enceladus.object";
+import { Iapetus } from "./iapetus.object";
+import { Rhea } from "./rhea.object";
 
 export class Saturn extends Astronomical {
     public name = saturnData.title
@@ -21,10 +25,12 @@ export class Saturn extends Astronomical {
     public ringMaterial?: THREE.ShaderMaterial
     public ringMesh?: THREE.Mesh
 
+    public moons = [
+        new Titan(), new Enceladus(), new Iapetus(), new Rhea()
+    ]
+
     constructor() {
         super(["assets/textures/2k_saturn.jpg"], "assets/normals/2k_saturn.png", saturnData, false);
-
-
     }
 
     init() {
@@ -68,14 +74,26 @@ export class Saturn extends Astronomical {
         ringGeometry.attributes.uv.needsUpdate = true; // Sehr wichtig, um zu sagen, dass die UVs aktualisiert wurden
 
         this.ringMesh = new THREE.Mesh(ringGeometry, this.ringMaterial);
-        this.ringMesh.castShadow = true
-        this.ringMesh.receiveShadow = true
+
         this.ringMesh.rotation.x = -Math.PI / 2;
 
         this.planetaryGroup.add(this.ringMesh);
 
 
         this.planetaryGroup.rotateX(MathUtils.DEG2RAD * saturnData.planetaryTilt)
+
+        this.moons.forEach(moon => {
+            moon.orbitingParent = this;
+            moon.init();
+
+            const moonGrp = new THREE.Group();
+            moonGrp.add(moon.orbitalGroup);
+            moonGrp.rotateX(MathUtils.DEG2RAD * moon.data.orbitalTilt);
+
+            this.group.add(moonGrp);
+        })
+
+
         this.generateMaterials()
         this.isInit = true
     }
@@ -97,9 +115,12 @@ export class Saturn extends Astronomical {
         const planetWorldPosition = new THREE.Vector3();
         this.mesh.getWorldPosition(planetWorldPosition);
 
+        this.moons.forEach(moon => {
+            moon.render(delta, camera);
+        })
+
         if (this.ringMaterial) {
             this.ringMaterial.uniforms.planetWorldPosition.value.copy(planetWorldPosition);
         }
-
     }
 }

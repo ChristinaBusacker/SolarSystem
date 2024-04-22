@@ -362,3 +362,118 @@ export const callistoData: AstronomicalDataset = {
   orbitCenter: new THREE.Vector3(0, 0, 0),
   atmosphericTint: new THREE.Color(0x000000)
 };
+
+export const enceladusData: AstronomicalDataset = {
+  title: "Enceladus",
+  name: "Enceladus",
+  description: "Ein kleiner Mond des Saturn mit aktiven Eisvulkanen und einer möglicherweise bewohnbaren Unterwasserozean.",
+  size: 0.078, // in Finn
+  distanceToOrbiting: 238.02, // Durchschnittliche Entfernung in Finn
+  orbitalSpeed: 0.0002191,
+  rotationSpeed: 0.0002191, // Synchronrotation angenommen
+  initialPosition: new THREE.Vector3(238.02, 0, 0),
+  planetaryTilt: 0,
+  orbitalTilt: 0.019,
+  maxDistanceToOrbiting: 238.02 * 1.002,
+  minDistanceToOrbiting: 238.02 * 0.998,
+  orbitCenter: new THREE.Vector3(0, 0, 0), // Saturn als Zentrum
+  semiMajorAxis: 238.02,
+  semiMinorAxis: 238.02 * 0.99,
+  atmosphericTint: new THREE.Color(0x000000)
+};
+
+
+export const iapetusData: AstronomicalDataset = {
+  title: "Iapetus",
+  name: "Iapetus",
+  description: "Ein ungewöhnlicher Mond von Saturn, bekannt für seine stark unterschiedlichen hellen und dunklen Hemisphären.",
+  size: 0.143, // in Finn
+  distanceToOrbiting: 3561.3,
+  orbitalSpeed: 0.00004358,
+  rotationSpeed: 0.00004358, // Synchronrotation angenommen
+  initialPosition: new THREE.Vector3(3561.3, 0, 0),
+  planetaryTilt: 0,
+  orbitalTilt: 8.298,
+  maxDistanceToOrbiting: 3561.3 * 1.002,
+  minDistanceToOrbiting: 3561.3 * 0.998,
+  orbitCenter: new THREE.Vector3(0, 0, 0), // Saturn als Zentrum
+  semiMajorAxis: 3561.3,
+  semiMinorAxis: 3561.3 * 0.99,
+  atmosphericTint: new THREE.Color(0x000000)
+};
+
+export const rheaData: AstronomicalDataset = {
+  title: "Rhea",
+  name: "Rhea",
+  description: "Der zweitgrößte Mond Sat Saturns, hauptsächlich aus Eis und Gestein zusammengesetzt.",
+  size: 0.153, // in Finn
+  distanceToOrbiting: 527.04,
+  orbitalSpeed: 0.00007364,
+  rotationSpeed: 0.00007364, // Synchronrotation angenommen
+  initialPosition: new THREE.Vector3(527.04, 0, 0),
+  planetaryTilt: 0,
+  orbitalTilt: 0.333,
+  maxDistanceToOrbiting: 527.04 * 1.002,
+  minDistanceToOrbiting: 527.04 * 0.998,
+  orbitCenter: new THREE.Vector3(0, 0, 0), // Saturn als Zentrum
+  semiMajorAxis: 527.04,
+  semiMinorAxis: 527.04 * 0.99,
+  atmosphericTint: new THREE.Color(0x000000)
+};
+
+export const titanData: AstronomicalDataset = {
+  title: "Titan",
+  name: "Titan",
+  description: "Der größte Mond Sat Saturns und der einzige bekannte Mond mit einer dichten Atmosphäre.",
+  size: 0.404, // in Finn
+  distanceToOrbiting: 1221.83,
+  orbitalSpeed: 0.00005812,
+  rotationSpeed: 0.00005812, // Synchronrotation angenommen
+  initialPosition: new THREE.Vector3(1221.83, 0, 0),
+  planetaryTilt: 0,
+  orbitalTilt: 0.348,
+  maxDistanceToOrbiting: 1221.83 * 1.002,
+  minDistanceToOrbiting: 1221.83 * 0.998,
+  orbitCenter: new THREE.Vector3(0, 0, 0), // Saturn als Zentrum
+  semiMajorAxis: 1221.83,
+  semiMinorAxis: 1221.83 * 0.99,
+  atmosphericTint: new THREE.Color(0x000000)
+};
+
+export const tritonData: AstronomicalDataset = {
+  title: "Triton",
+  name: "Triton",
+  description: "Der größte Mond von Neptun, bekannt für seine rückläufige Umlaufbahn und geologische Aktivität.",
+  size: 0.212, // in Finn
+  distanceToOrbiting: 354.76,
+  orbitalSpeed: 0.00007391,
+  rotationSpeed: 0.00007391, // Synchronrotation angenommen
+  initialPosition: new THREE.Vector3(354.76, 0, 0),
+  planetaryTilt: 0,
+  orbitalTilt: 156.885, // Hohe Neigung aufgrund der rückläufigen Umlaufbahn
+  maxDistanceToOrbiting: 354.76 * 1.002,
+  minDistanceToOrbiting: 354.76 * 0.998,
+  orbitCenter: new THREE.Vector3(0, 0, 0), // Neptun als Zentrum
+  semiMajorAxis: 354.76,
+  semiMinorAxis: 354.76 * 0.99,
+  atmosphericTint: new THREE.Color(0x000000)
+};
+
+export const titaniaData: AstronomicalDataset = {
+  title: "Titania",
+  name: "Titania",
+  description: "Der größte Mond von Uranus, gekennzeichnet durch große Canyons und eine vielfältige Oberflächenzusammensetzung.",
+  size: 0.123, // in Finn
+  distanceToOrbiting: 435.91,
+  orbitalSpeed: 0.00003757,
+  rotationSpeed: 0.00003757, // Synchronrotation angenommen
+  initialPosition: new THREE.Vector3(435.91, 0, 0),
+  planetaryTilt: 0,
+  orbitalTilt: 0.079,
+  maxDistanceToOrbiting: 435.91 * 1.002,
+  minDistanceToOrbiting: 435.91 * 0.998,
+  orbitCenter: new THREE.Vector3(0, 0, 0), // Uranus als Zentrum
+  semiMajorAxis: 435.91,
+  semiMinorAxis: 435.91 * 0.99,
+  atmosphericTint: new THREE.Color(0x000000)
+};
