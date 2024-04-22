@@ -7,8 +7,4 @@ APP.animate();
 
 (window as any).app = APP
 
-setTimeout(() => {
-    APP.cameraManager.switchCamera('Jupiter')
-}, 1000)
-
 export { APP };

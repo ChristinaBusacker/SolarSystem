@@ -29,18 +29,22 @@
         left: 0;
         right: 0;
         bottom: 0;
-        pointer-events: none;
       }
 
-      .css-renderer.hide {
+
+
+      .css-renderer.hideMoons .moon {
+        display: none;
+      }
+
+      .css-renderer.hidePlanets .planets {
         display: none;
       }
     </style>
   </head>
   <body>
-    <select id="cameraSelector">
-    </select>
-
+    <div id="app"></div>
+    <select id="cameraSelector"></select>
     <input type="range" min="1" max="10000" class="slider" value="50" id="simulationSpeedSlider">
   </body>
 </html>

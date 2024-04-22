@@ -28,13 +28,13 @@ export class SimpleControl {
   }
 
   public initEventListener() {
-    APP.webglRenderer.domElement.addEventListener("mousedown", this.onMouseDown);
-    APP.webglRenderer.domElement.addEventListener("mousemove", this.onMouseMove);
-    APP.webglRenderer.domElement.addEventListener("mouseup", this.onMouseUp);
+    document.getElementById('app').addEventListener("mousedown", this.onMouseDown);
+    document.getElementById('app').addEventListener("mousemove", this.onMouseMove);
+    document.getElementById('app').addEventListener("mouseup", this.onMouseUp);
 
-    APP.webglRenderer.domElement.addEventListener("touchstart", this.onTouchStart);
-    APP.webglRenderer.domElement.addEventListener("touchmove", this.onTouchMove);
-    APP.webglRenderer.domElement.addEventListener("touchend", this.onTouchEnd);
+    document.getElementById('app').addEventListener("touchstart", this.onTouchStart);
+    document.getElementById('app').addEventListener("touchmove", this.onTouchMove);
+    document.getElementById('app').addEventListener("touchend", this.onTouchEnd);
   }
 
   private onTouchStart = (event: TouchEvent) => {

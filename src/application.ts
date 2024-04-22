@@ -105,7 +105,7 @@ export class Application {
 
         this.webglRenderer.toneMapping = THREE.CineonToneMapping;
         this.webglRenderer.toneMappingExposure = 1
-        document.body.appendChild(this.webglRenderer.domElement);
+        document.getElementById('app').appendChild(this.webglRenderer.domElement);
 
 
         var gl = this.webglRenderer.getContext();
@@ -119,7 +119,7 @@ export class Application {
         this.cssRenderer.setSize(window.innerWidth, window.innerHeight);
 
         this.cssRenderer.domElement.classList.add("css-renderer");
-        document.body.appendChild(this.cssRenderer.domElement);
+        document.getElementById('app').appendChild(this.cssRenderer.domElement);
     }
 
     private async initBackground() {

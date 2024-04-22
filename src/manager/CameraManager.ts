@@ -43,9 +43,9 @@ export class CameraManager {
 
     public switchCamera(selector: string): CameraManager {
         if (selector !== 'Default') {
-            APP.cssRenderer.domElement.classList.add("hide");
+            APP.cssRenderer.domElement.classList.remove("hideMoons");
         } else {
-            APP.cssRenderer.domElement.classList.remove("hide");
+            APP.cssRenderer.domElement.classList.add('hideMoons')
         }
 
         const entry = this.collection.find(entry => entry.selector === selector)

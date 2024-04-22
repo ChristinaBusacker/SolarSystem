@@ -190,12 +190,15 @@ export class Astronomical implements AstronomicalObject {
     div.style.border = "5px solid green";
     div.style.cursor = "pointer"
 
+    div.classList.add('object', this.isMoon ? 'moon' : 'planet', this.isMoon ? this.orbitingParent.data.name : this.data.name)
+
+
     let p = document.createElement('p')
     p.style.color = 'white'
     p.innerText = this.data.name
     div.appendChild(p)
 
-    div.onclick = () => { alert(this.data.title) }
+    div.onclick = () => { APP.cameraManager.switchCamera(this.data.name) }
 
     document.body.appendChild(div);
 
@@ -280,10 +283,7 @@ export class Astronomical implements AstronomicalObject {
     this.planetaryGroup.add(this.mesh);
     this.planetaryGroup.rotateX(this.data.planetaryTilt * THREE.MathUtils.DEG2RAD * 0.5)
 
-    if (!this.isMoon) {
-      this.group.add(this.addInteractions());
-    }
-
+    this.group.add(this.addInteractions());
 
     this.setInitialPosition();
     this.initOrbit();
