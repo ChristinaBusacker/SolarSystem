@@ -86,9 +86,13 @@ export class Astronomical implements AstronomicalObject {
     const points = orbitCurve.getPoints(2000);
     const geometry = new THREE.BufferGeometry().setFromPoints(points);
 
+    const material = new THREE.LineBasicMaterial({
+      color: new THREE.Color(this.data.color)
+    });
 
-    const material = new THREE.LineBasicMaterial({ color: 0xaeaeae, linewidth: 25 });
+
     const ellipse = new THREE.Line(geometry, material);
+
     ellipse.rotateX(Math.PI / 2);
 
     return ellipse;
@@ -183,11 +187,10 @@ export class Astronomical implements AstronomicalObject {
   public addInteractions() {
 
     let div = document.createElement("div");
-    div.style.width = "5px";
-    div.style.height = "5px";
-    div.style.backgroundColor = 'green'
+    div.style.width = "15px";
+    div.style.height = "15px";
+    div.style.backgroundColor = this.data.color
     div.style.borderRadius = "50%";
-    div.style.border = "5px solid green";
     div.style.cursor = "pointer"
 
     div.classList.add('object', this.isMoon ? 'moon' : 'planet', this.isMoon ? this.orbitingParent.data.name : this.data.name)
@@ -216,7 +219,6 @@ export class Astronomical implements AstronomicalObject {
       return {
         radius: caster.data.size,
         name: caster.data.name,
-        atmosphericTint: [caster.data.atmosphericTint.r, caster.data.atmosphericTint.g, caster.data.atmosphericTint.b],
         position: [position.x, position.y, position.z]
       }
     })
@@ -308,7 +310,7 @@ export class Astronomical implements AstronomicalObject {
   public postBloom(): void {
     if (!this.emissive) {
       this.mesh.material = this.material
-      this.marker.material.color = new THREE.Color(0xffffff);
+      this.marker.material.color = new THREE.Color(this.data.color)
 
       if (this.atmosphereMesh) {
         this.atmosphereMesh.material = this.atmosphereMaterial

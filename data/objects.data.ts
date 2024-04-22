@@ -21,7 +21,7 @@ export const sunData: AstronomicalDataset = {
   orbitCenter: new THREE.Vector3(0, 0, 0),
   semiMajorAxis: 0,
   semiMinorAxis: 0,
-  atmosphericTint: new THREE.Color(0xffffff)
+  color: "#ffd700"
 };
 
 export const mercuryData: AstronomicalDataset = {
@@ -48,7 +48,7 @@ export const mercuryData: AstronomicalDataset = {
   semiMajorAxis:
     ((69.82 * 10 ** 5) / FINN_TO_KM + (46.0 * 10 ** 5) / FINN_TO_KM) / 2,
   semiMinorAxis: Math.sqrt(69.82 * 10 ** 5 * 46.0 * 10 ** 5) / FINN_TO_KM,
-  atmosphericTint: new THREE.Color(0x000000)
+  color: "#b87333"
 };
 
 export const venusData: AstronomicalDataset = {
@@ -72,7 +72,7 @@ export const venusData: AstronomicalDataset = {
   ),
   semiMajorAxis: (((108.94 + 107.48) / 2) * 10 ** 5) / FINN_TO_KM,
   semiMinorAxis: (Math.sqrt(108.94 * 107.48) * 10 ** 5) / FINN_TO_KM,
-  atmosphericTint: new THREE.Color(0x000000)
+  color: "#cea262"
 };
 
 export const earthData: AstronomicalDataset = {
@@ -96,7 +96,7 @@ export const earthData: AstronomicalDataset = {
   ),
   semiMajorAxis: (((152.1 + 147.1) / 2) * 10 ** 5) / FINN_TO_KM,
   semiMinorAxis: (Math.sqrt(152.1 * 147.1) * 10 ** 5) / FINN_TO_KM,
-  atmosphericTint: new THREE.Color(0xff0000)
+  color: "#1f75fe"
 };
 
 export const moonData: AstronomicalDataset = {
@@ -120,7 +120,7 @@ export const moonData: AstronomicalDataset = {
   ), // Korrektes Orbitzentrum relativ zur Erde
   semiMajorAxis: ((405.5 + 363.3) / 2) * 10 ** 3 / FINN_TO_KM,
   semiMinorAxis: Math.sqrt(405.5 * 363.3) * 10 ** 3 / FINN_TO_KM,
-  atmosphericTint: new THREE.Color(0x000000)
+  color: '#888c8d'
 };
 
 
@@ -145,7 +145,7 @@ export const marsData: AstronomicalDataset = {
   ),
   semiMajorAxis: (((249.23 + 206.62) / 2) * 10 ** 5) / FINN_TO_KM,
   semiMinorAxis: (Math.sqrt(249.23 * 206.62) * 10 ** 5) / FINN_TO_KM,
-  atmosphericTint: new THREE.Color(0x000000)
+  color: '#b22222'
 };
 
 export const jupiterData: AstronomicalDataset = {
@@ -169,7 +169,7 @@ export const jupiterData: AstronomicalDataset = {
   ),
   semiMajorAxis: (((816.62 + 740.52) / 2) * 10 ** 5) / FINN_TO_KM,
   semiMinorAxis: (Math.sqrt(816.62 * 740.52) * 10 ** 5) / FINN_TO_KM,
-  atmosphericTint: new THREE.Color(0x000000)
+  color: '#ff4500'
 };
 
 export const saturnData: AstronomicalDataset = {
@@ -193,7 +193,7 @@ export const saturnData: AstronomicalDataset = {
   ),
   semiMajorAxis: (((1504.5 + 1352.6) / 2) * 10 ** 5) / FINN_TO_KM,
   semiMinorAxis: (Math.sqrt(1504.5 * 1352.6) * 10 ** 5) / FINN_TO_KM,
-  atmosphericTint: new THREE.Color(0x000000)
+  color: '#ffd700'
 };
 
 export const uranusData: AstronomicalDataset = {
@@ -217,7 +217,7 @@ export const uranusData: AstronomicalDataset = {
   ),
   semiMajorAxis: (((3003.6 + 2741.3) / 2) * 10 ** 5) / FINN_TO_KM,
   semiMinorAxis: (Math.sqrt(3003.6 * 2741.3) * 10 ** 5) / FINN_TO_KM,
-  atmosphericTint: new THREE.Color(0x000000)
+  color: '#2e8b57'
 };
 
 export const neptuneData: AstronomicalDataset = {
@@ -241,7 +241,7 @@ export const neptuneData: AstronomicalDataset = {
   ),
   semiMajorAxis: (((4553.9 + 4459.7) / 2) * 10 ** 5) / FINN_TO_KM,
   semiMinorAxis: (Math.sqrt(4553.9 * 4459.7) * 10 ** 5) / FINN_TO_KM,
-  atmosphericTint: new THREE.Color(0x000000)
+  color: '#4169e1'
 };
 /*
 export const issData: AstronomicalDataset = {
@@ -280,7 +280,7 @@ export const plutoData: AstronomicalDataset = {
   ),
   semiMajorAxis: ((7375.93 + 4444.45) / 2) * 10 ** 6 / FINN_TO_KM,
   semiMinorAxis: Math.sqrt(7375.93 * 4444.45) * 10 ** 6 / FINN_TO_KM,
-  atmosphericTint: new THREE.Color(0x000000)
+  color: '#a6a6a6'
 };
 
 export const ioData: AstronomicalDataset = {
@@ -300,7 +300,7 @@ export const ioData: AstronomicalDataset = {
   maxDistanceToOrbiting: 421.8 * 10 ** 3 / FINN_TO_KM * 1.002,  // leicht erhöhte maximale Entfernung
   minDistanceToOrbiting: 421.8 * 10 ** 3 / FINN_TO_KM * 0.998,  // leicht reduzierte minimale Entfernung
   orbitCenter: new THREE.Vector3(0, 0, 0), // Jupiter als Zentrum
-  atmosphericTint: new THREE.Color(0x000000)
+  color: '#ff4500'
 };
 
 export const europaData: AstronomicalDataset = {
@@ -320,7 +320,7 @@ export const europaData: AstronomicalDataset = {
   maxDistanceToOrbiting: 671 * 10 ** 3 / FINN_TO_KM * 1.002,
   minDistanceToOrbiting: 671 * 10 ** 3 / FINN_TO_KM * 0.998,
   orbitCenter: new THREE.Vector3(0, 0, 0),
-  atmosphericTint: new THREE.Color(0x000000)
+  color: '#add8e6'
 };
 
 export const ganymedData: AstronomicalDataset = {
@@ -340,7 +340,7 @@ export const ganymedData: AstronomicalDataset = {
   maxDistanceToOrbiting: 1070 * 10 ** 3 / FINN_TO_KM * 1.002,
   minDistanceToOrbiting: 1070 * 10 ** 3 / FINN_TO_KM * 0.998,
   orbitCenter: new THREE.Vector3(0, 0, 0),
-  atmosphericTint: new THREE.Color(0x000000)
+  color: '#808080'
 };
 
 export const callistoData: AstronomicalDataset = {
@@ -360,7 +360,7 @@ export const callistoData: AstronomicalDataset = {
   maxDistanceToOrbiting: 1883 * 10 ** 3 / FINN_TO_KM * 1.002,
   minDistanceToOrbiting: 1883 * 10 ** 3 / FINN_TO_KM * 0.998,
   orbitCenter: new THREE.Vector3(0, 0, 0),
-  atmosphericTint: new THREE.Color(0x000000)
+  color: '#a9a9a9'
 };
 
 export const enceladusData: AstronomicalDataset = {
@@ -379,7 +379,7 @@ export const enceladusData: AstronomicalDataset = {
   orbitCenter: new THREE.Vector3(0, 0, 0), // Saturn als Zentrum
   semiMajorAxis: 238.02,
   semiMinorAxis: 238.02 * 0.99,
-  atmosphericTint: new THREE.Color(0x000000)
+  color: '#f0f8ff'
 };
 
 
@@ -399,7 +399,7 @@ export const iapetusData: AstronomicalDataset = {
   orbitCenter: new THREE.Vector3(0, 0, 0), // Saturn als Zentrum
   semiMajorAxis: 3561.3,
   semiMinorAxis: 3561.3 * 0.99,
-  atmosphericTint: new THREE.Color(0x000000)
+  color: '#f5f5f5'
 };
 
 export const rheaData: AstronomicalDataset = {
@@ -418,7 +418,7 @@ export const rheaData: AstronomicalDataset = {
   orbitCenter: new THREE.Vector3(0, 0, 0), // Saturn als Zentrum
   semiMajorAxis: 527.04,
   semiMinorAxis: 527.04 * 0.99,
-  atmosphericTint: new THREE.Color(0x000000)
+  color: '#d3d3d3'
 };
 
 export const titanData: AstronomicalDataset = {
@@ -437,7 +437,7 @@ export const titanData: AstronomicalDataset = {
   orbitCenter: new THREE.Vector3(0, 0, 0), // Saturn als Zentrum
   semiMajorAxis: 1221.83,
   semiMinorAxis: 1221.83 * 0.99,
-  atmosphericTint: new THREE.Color(0x000000)
+  color: '#f4a460'
 };
 
 export const tritonData: AstronomicalDataset = {
@@ -456,7 +456,7 @@ export const tritonData: AstronomicalDataset = {
   orbitCenter: new THREE.Vector3(0, 0, 0), // Neptun als Zentrum
   semiMajorAxis: 354.76,
   semiMinorAxis: 354.76 * 0.99,
-  atmosphericTint: new THREE.Color(0x000000)
+  color: '#4682b4'
 };
 
 export const titaniaData: AstronomicalDataset = {
@@ -475,5 +475,5 @@ export const titaniaData: AstronomicalDataset = {
   orbitCenter: new THREE.Vector3(0, 0, 0), // Uranus als Zentrum
   semiMajorAxis: 435.91,
   semiMinorAxis: 435.91 * 0.99,
-  atmosphericTint: new THREE.Color(0x000000)
+  color: '#778899'
 };

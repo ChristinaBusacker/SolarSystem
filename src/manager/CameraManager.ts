@@ -54,6 +54,14 @@ export class CameraManager {
         if (!entry) {
             console.error(`Cant find camera with selector ${selector}`)
         } else {
+            const select = document.getElementById('cameraSelector') as HTMLSelectElement
+            for (var i = 0; i < select.options.length; i++) {
+                if (select.options[i].value === selector) {
+                    select.selectedIndex = i;
+                    break;
+                }
+            }
+
             this.activeCamera = entry
             APP.updateComposer(entry.camera)
         }
