@@ -1,5 +1,7 @@
-export const starsShader = {
-    vertexShader: `
+import { ShaderDefinition } from "../interfaces/shaderDefinition.interface";
+
+export const starsShader: ShaderDefinition = {
+  vertexShader: `
     // Vertex Shader
     attribute float size;
     attribute vec3 customColor;
@@ -14,7 +16,7 @@ export const starsShader = {
     }
     
     `,
-    fragmentShader: `
+  fragmentShader: `
     #ifdef GL_ES
     precision highp float;
     #endif

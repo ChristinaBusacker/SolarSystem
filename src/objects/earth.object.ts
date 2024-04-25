@@ -10,7 +10,6 @@ import * as THREE from "three";
 import { Moon } from "./moon.object";
 
 import { MathUtils } from "three";
-import { moonShader } from "../shader/moon.shader";
 import { PURE_BLACK_MATERIAL } from "../constant/pureBlackMaterial.constant";
 import { APP } from "..";
 

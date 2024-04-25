@@ -1,4 +1,6 @@
-export const mixPassShader = {
+import { ShaderDefinition } from "../interfaces/shaderDefinition.interface";
+
+export const mixPassShader: ShaderDefinition = {
     vertexShader: `
     varying vec2 vUv;
 

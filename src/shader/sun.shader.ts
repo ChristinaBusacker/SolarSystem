@@ -1,4 +1,6 @@
-export const sunShader = {
+import { ShaderDefinition } from "../interfaces/shaderDefinition.interface";
+
+export const sunShader: ShaderDefinition = {
     vertexShader: `
     uniform float time;
     varying vec2 vUv;

@@ -8,11 +8,10 @@ import { simulationSpeed } from "../../data/settings.data";
 import { SimpleControl } from "../controls/simple.control";
 import { AstronomicalDataset } from "../interfaces/dataset.interface";
 import { APP } from "..";
-import { planetShader } from "../shader/planet.shader";
+import { astronomicalShader } from "../shader/astronomical.shader";
 import { earthShader } from "../shader/earth.shader";
 import { PURE_BLACK_MATERIAL } from "../constant/pureBlackMaterial.constant";
 import { CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer";
-import { moonShader } from "../shader/moon.shader";
 
 export class Astronomical implements AstronomicalObject {
   public data?: AstronomicalDataset;
@@ -123,7 +122,7 @@ export class Astronomical implements AstronomicalObject {
 
   public initCameraAndControl() {
     this.camera = new THREE.PerspectiveCamera(
-      75,
+      50,
       window.innerWidth / window.innerHeight,
       0.1,
       9000000
@@ -139,7 +138,7 @@ export class Astronomical implements AstronomicalObject {
   public addAtmosphere(texturePath: string, size: number) {
     const atmosphereTexture = new THREE.TextureLoader().load(texturePath);
 
-    const { vertexShader, fragmentShader } = planetShader
+    const { vertexShader, fragmentShader } = astronomicalShader
 
     const casterOptions: any = {
       casterPosition1: { value: new THREE.Vector3(0, 0, 0) },
@@ -193,7 +192,7 @@ export class Astronomical implements AstronomicalObject {
     div.style.borderRadius = "50%";
     div.style.cursor = "pointer"
 
-    div.classList.add('object', this.isMoon ? 'moon' : 'planet', this.isMoon ? this.orbitingParent.data.name : this.data.name)
+    div.classList.add('object', this.isMoon ? 'moon' : 'planet', this.isMoon ? this.orbitingParent.data.name : this.data.name, this.data.name)
 
 
     let p = document.createElement('p')
@@ -225,7 +224,7 @@ export class Astronomical implements AstronomicalObject {
   }
 
   public generateMaterials() {
-    const { vertexShader, fragmentShader } = this.texturePath.length < 2 ? planetShader : earthShader
+    const { vertexShader, fragmentShader } = this.texturePath.length < 2 ? astronomicalShader : earthShader
 
     const casterOptions: any = {
       casterPosition1: { value: new THREE.Vector3(0, 0, 0) },

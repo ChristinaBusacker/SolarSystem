@@ -1,6 +1,7 @@
 import * as THREE from "three";
+import { ShaderDefinition } from "../interfaces/shaderDefinition.interface";
 
-export const coronaShader = {
+export const coronaShader: ShaderDefinition = {
   uniforms: {
     time: { value: 0.0 },
     resolution: {

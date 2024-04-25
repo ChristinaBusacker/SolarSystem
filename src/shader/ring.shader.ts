@@ -1,5 +1,7 @@
-export const ringShader = {
-    vertexShader: `
+import { ShaderDefinition } from "../interfaces/shaderDefinition.interface";
+
+export const ringShader: ShaderDefinition = {
+  vertexShader: `
     varying vec3 vWorldPosition;
     varying vec2 vUv; // UV-Koordinaten für den Fragment Shader
     
@@ -11,7 +13,7 @@ export const ringShader = {
     
     
     `,
-    fragmentShader: `
+  fragmentShader: `
     uniform vec3 planetWorldPosition; // Weltkoordinaten des Planeten (Saturn)
     uniform vec3 sunWorldPosition; // Weltkoordinaten der Sonne, in Ihrem Fall (0,0,0)
     uniform float planetRadius; // Der Radius von Saturn
