@@ -21,7 +21,8 @@ export const sunData: AstronomicalDataset = {
   orbitCenter: new THREE.Vector3(0, 0, 0),
   semiMajorAxis: 0,
   semiMinorAxis: 0,
-  color: "#ffd700"
+  color: "#ffd700",
+  denyCamera: true
 };
 
 export const mercuryData: AstronomicalDataset = {

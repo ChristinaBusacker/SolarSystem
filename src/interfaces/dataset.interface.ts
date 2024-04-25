@@ -16,4 +16,6 @@ export interface AstronomicalDataset {
     semiMajorAxis: number,
     semiMinorAxis: number,
     color: string
+
+    denyCamera?: boolean
 }

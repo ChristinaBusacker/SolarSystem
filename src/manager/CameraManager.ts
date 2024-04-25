@@ -16,7 +16,7 @@ export class CameraManager {
         );
 
         defaultCamera.position.set(0, 0, 0);
-        const defaultControl = new SimpleControl(500, 100000, defaultCamera)
+        const defaultControl = new SimpleControl(100, 100000, defaultCamera)
 
         scene.add(defaultControl.group)
 
@@ -42,8 +42,15 @@ export class CameraManager {
     }
 
     public switchCamera(selector: string): CameraManager {
+
+        APP.cssRenderer.domElement.querySelectorAll(`.object`).forEach((elem) => {
+            elem.classList.remove('hide')
+        })
+
         if (selector !== 'Default') {
             APP.cssRenderer.domElement.classList.remove("hideMoons");
+            const marker = APP.cssRenderer.domElement.querySelector(`.object.${selector}`)
+            marker.classList.add('hide')
         } else {
             APP.cssRenderer.domElement.classList.add('hideMoons')
         }

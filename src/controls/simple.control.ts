@@ -4,7 +4,7 @@ import { APP } from "..";
 export class SimpleControl {
   public distanceMin: number;
   public distanceMax: number;
-  public zoom: number = 0;
+  public zoom: number = 0.01;
   public camera: THREE.PerspectiveCamera;
   public horizontal = new THREE.Group()
   public vertical = new THREE.Group()
@@ -96,7 +96,8 @@ export class SimpleControl {
   }
 
   private onWheel = (event: WheelEvent) => {
-    this.zoom = Math.min(1, Math.max(0, this.zoom + event.deltaY * 0.001))
+    this.zoom = Math.min(1, Math.max(0.005, this.zoom + event.deltaY * 0.002))
+    console.log(this.zoom, event.deltaY)
   }
 
   private lerp = (start: number, end: number, t: number) => {

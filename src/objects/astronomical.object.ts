@@ -121,18 +121,20 @@ export class Astronomical implements AstronomicalObject {
   }
 
   public initCameraAndControl() {
-    this.camera = new THREE.PerspectiveCamera(
-      50,
-      window.innerWidth / window.innerHeight,
-      0.1,
-      9000000
-    );
+    if (!this.data.denyCamera) {
+      this.camera = new THREE.PerspectiveCamera(
+        50,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        9000000
+      );
 
-    this.control = new SimpleControl(this.data.size * 6, this.data.size * 12, this.camera)
-    this.control.initEventListener();
-    this.group.add(this.control.group)
+      this.control = new SimpleControl(this.data.size * 6, this.data.size * 12, this.camera)
+      this.control.initEventListener();
+      this.group.add(this.control.group)
 
-    APP.cameraManager.addCamera(this.data.name, this.camera, this.control)
+      APP.cameraManager.addCamera(this.data.name, this.camera, this.control)
+    }
   }
 
   public addAtmosphere(texturePath: string, size: number) {
