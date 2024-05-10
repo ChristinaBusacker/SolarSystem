@@ -188,9 +188,10 @@ export class Astronomical implements AstronomicalObject {
   public addInteractions() {
 
     let div = document.createElement("div");
-    div.style.width = "15px";
-    div.style.height = "15px";
+    div.style.width = "5px";
+    div.style.height = "5px";
     div.style.backgroundColor = this.data.color
+    div.style.border = "2px solid " + this.data.color
     div.style.borderRadius = "50%";
     div.style.cursor = "pointer"
 

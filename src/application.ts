@@ -142,9 +142,6 @@ export class Application {
     }
 
     private initSunLight() {
-        const light = new THREE.PointLight(0xffffff, 1.5, 50000000, 0);
-        light.position.set(0, 0, 0);
-        this.scene.add(light);
     }
 
     public onResize() {

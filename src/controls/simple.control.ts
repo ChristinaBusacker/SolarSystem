@@ -15,14 +15,13 @@ export class SimpleControl {
   public dragspeed = 0.90;
   public verticleRotationLimit = 60;
 
-  // TODO get Webgl renderer dom element for events
   constructor(distanceMin: number, distanceMax: number, camera: THREE.PerspectiveCamera) {
     this.distanceMin = distanceMin
     this.distanceMax = distanceMax
     this.camera = camera;
     this.vertical.add(camera);
-    this.horizontal.add(this.vertical)
-    this.group.add(this.horizontal)
+    this.horizontal.add(this.vertical);
+    this.group.add(this.horizontal);
 
     window.addEventListener("wheel", this.onWheel)
   }
@@ -96,8 +95,7 @@ export class SimpleControl {
   }
 
   private onWheel = (event: WheelEvent) => {
-    this.zoom = Math.min(1, Math.max(0.005, this.zoom + event.deltaY * 0.002))
-    console.log(this.zoom, event.deltaY)
+    this.zoom = Math.min(1, Math.max(0, this.zoom + event.deltaY * 0.002 * Math.max(this.zoom, 0.0005)))
   }
 
   private lerp = (start: number, end: number, t: number) => {
@@ -106,7 +104,8 @@ export class SimpleControl {
 
 
   update(delta: number) {
-    const dist = this.lerp(this.distanceMin, this.distanceMax, this.zoom)
+    let dist = this.lerp(this.distanceMin, this.distanceMax, this.zoom)
+    dist = this.lerp(this.camera.position.z, dist, delta * 5)
     this.camera.position.set(0, 0, dist);
 
     if (!this.isRotating) {

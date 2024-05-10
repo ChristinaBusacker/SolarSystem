@@ -15,7 +15,6 @@ export const sunData: AstronomicalDataset = {
   initialPosition: new THREE.Vector3(0, 0, 0),
   planetaryTilt: 0,
   orbitalTilt: 0,
-
   maxDistanceToOrbiting: 0,
   minDistanceToOrbiting: 0,
   orbitCenter: new THREE.Vector3(0, 0, 0),
@@ -37,8 +36,8 @@ export const mercuryData: AstronomicalDataset = {
   initialPosition: new THREE.Vector3(390, 0, 0),
   planetaryTilt: 0.03,
   orbitalTilt: 3.38,
-  maxDistanceToOrbiting: (69.82 * 10 ** 5) / FINN_TO_KM, // 69,82 Millionen km
-  minDistanceToOrbiting: (46.0 * 10 ** 5) / FINN_TO_KM, // 46,00 Millionen km
+  maxDistanceToOrbiting: (69.82 * 10 ** 5) / FINN_TO_KM,
+  minDistanceToOrbiting: (46.0 * 10 ** 5) / FINN_TO_KM,
   orbitCenter:
     new THREE.Vector3(
       ((69.82 * 10 ** 5) / FINN_TO_KM - (46.0 * 10 ** 5) / FINN_TO_KM) / 2,
@@ -170,7 +169,7 @@ export const jupiterData: AstronomicalDataset = {
   ),
   semiMajorAxis: (((816.62 + 740.52) / 2) * 10 ** 5) / FINN_TO_KM,
   semiMinorAxis: (Math.sqrt(816.62 * 740.52) * 10 ** 5) / FINN_TO_KM,
-  color: '#ff4500'
+  color: '#ff4500',
 };
 
 export const saturnData: AstronomicalDataset = {
@@ -244,21 +243,6 @@ export const neptuneData: AstronomicalDataset = {
   semiMinorAxis: (Math.sqrt(4553.9 * 4459.7) * 10 ** 5) / FINN_TO_KM,
   color: '#4169e1'
 };
-/*
-export const issData: AstronomicalDataset = {
-  title: "Internationale Raumstation",
-  description:
-    "Ein bewohnbares künstliches Satellit und Mikrogravitationslabor, das in einer niedrigen Erdumlaufbahn kreist.",
-  size: 0.00073,
-  distanceToOrbiting: 0.00281,
-  orbitalSpeed: 0.0001066667,
-  rotationSpeed: 0,
-  initialPosition: new THREE.Vector3(1000.00281, 0, 0),
-  planetaryTilt: 51.6,
-  maxDistanceToOrbiting: 420 * 10**3 / FINN_TO_KM, // 420 Tausend km
-  minDistanceToOrbiting: 420 * 10**3 / FINN_TO_KM, // 420 T
-};
-*/
 
 export const plutoData: AstronomicalDataset = {
   title: "Pluto",

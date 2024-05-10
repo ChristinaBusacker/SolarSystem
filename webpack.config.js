@@ -10,7 +10,7 @@ module.exports = {
   output: {
     filename: "bundle.[hash].js",
     path: path.resolve(__dirname, "dist"),
-    publicPath: "/",
+    publicPath: "",
   },
   // Source Maps für besseres Debugging
   devtool: "eval-source-map",

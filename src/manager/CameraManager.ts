@@ -15,8 +15,8 @@ export class CameraManager {
             1000000
         );
 
-        defaultCamera.position.set(0, 0, 0);
-        const defaultControl = new SimpleControl(100, 100000, defaultCamera)
+        defaultCamera.position.set(0, 0, 50);
+        const defaultControl = new SimpleControl(1000, 100000, defaultCamera)
 
         scene.add(defaultControl.group)
 
