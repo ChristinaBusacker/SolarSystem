@@ -1,0 +1,40 @@
+<div class="ui-shell">
+  <aside class="ui-sidebar">
+    <header class="ui-header">
+      <h2>{{title}}</h2>
+      <p class="ui-subtitle">{{subtitle}}</p>
+    </header>
+
+    <section class="ui-section">
+      <label class="ui-toggle">
+        <input
+          type="checkbox"
+          {{checkedHidePlanets}}
+          data-action="toggle-planets"
+        />
+        <span>Hide planets</span>
+      </label>
+
+      <label class="ui-toggle">
+        <input
+          type="checkbox"
+          {{checkedHideMoons}}
+          data-action="toggle-moons"
+        />
+        <span>Hide moons</span>
+      </label>
+    </section>
+
+    <section class="ui-section">
+      <h3>Selected</h3>
+      <div class="ui-kv">
+        <div class="k">Planet</div>
+        <div class="v">{{selectedPlanetName}}</div>
+      </div>
+    </section>
+  </aside>
+
+  <main class="ui-main">
+    <div class="ui-hint">{{hint}}</div>
+  </main>
+</div>

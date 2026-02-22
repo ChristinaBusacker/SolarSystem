@@ -33,6 +33,10 @@ module.exports = {
         test: /\.(glsl|vs|fs|vert|frag)$/i,
         type: "asset/source",
       },
+      {
+        test: /\.tpl\.html$/i,
+        type: "asset/source",
+      },
     ],
   },
   plugins: [

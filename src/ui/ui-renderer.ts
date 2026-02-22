@@ -1,89 +1,66 @@
-import type { Application } from "../application";
+import sidebarTpl from "./templates/sidebar.tpl.html";
+import { renderTemplate } from "./template";
 
-/**
- * Minimal, frameworkless UI layer.
- *
- * This is intentionally small: it provides a dedicated place to grow the
- * educational UI (sidebar with planet info + quizzes) without mixing DOM
- * concerns into the Three.js scene logic.
- */
+export interface UiState {
+  hidePlanets: boolean;
+  hideMoons: boolean;
+  selectedPlanetName?: string;
+}
+
 export class UiRenderer {
-  private static instance: UiRenderer | null = null;
+  private root: HTMLElement;
+  private state: UiState;
 
-  private root!: HTMLElement;
-  private panel!: HTMLElement;
-
-  private constructor(private readonly app: Application) {}
-
-  public static getInstance(app: Application): UiRenderer {
-    if (!UiRenderer.instance) UiRenderer.instance = new UiRenderer(app);
-    return UiRenderer.instance;
+  constructor(root: HTMLElement, initial: UiState) {
+    this.root = root;
+    this.state = initial;
   }
 
   public init(): void {
-    this.root = this.ensureRoot();
-    this.panel = this.renderShell();
-    this.root.appendChild(this.panel);
-
-    this.bindToggles();
+    this.render();
   }
 
-  private ensureRoot(): HTMLElement {
-    const existing = document.getElementById("ui-root");
-    if (existing) return existing;
+  public render() {
+    const html = renderTemplate(sidebarTpl, {
+      title: "Solar System",
+      subtitle: "Frameworkless UI",
+      hint: "Click a planet (soon™) to see details.",
+      selectedPlanetName: this.state.selectedPlanetName ?? "None",
+      checkedHidePlanets: this.state.hidePlanets ? "checked" : "",
+      checkedHideMoons: this.state.hideMoons ? "checked" : "",
+    });
 
-    const root = document.createElement("div");
-    root.id = "ui-root";
-    document.body.appendChild(root);
-    return root;
+    this.root.innerHTML = html;
+    this.bindActions();
   }
 
-  private renderShell(): HTMLElement {
-    const panel = document.createElement("aside");
-    panel.className = "ui-panel";
+  private bindActions() {
+    this.root.querySelectorAll<HTMLElement>("[data-action]").forEach((el) => {
+      const action = el.getAttribute("data-action");
+      if (!action) return;
 
-    panel.innerHTML = `
-      <div class="ui-header">
-        <h2>Solar System</h2>
-        <p>Frameworkless UI layer. Next up: planet sidebar content + quizzes.</p>
-      </div>
-
-      <div class="ui-content">
-        <div class="ui-row">
-          <label for="toggleMoons">Show moons</label>
-          <input id="toggleMoons" type="checkbox" checked />
-        </div>
-        <div class="ui-row">
-          <label for="togglePlanets">Show planets</label>
-          <input id="togglePlanets" type="checkbox" checked />
-        </div>
-      </div>
-
-      <div class="ui-footer">
-        Tip: click a planet later to see facts and mini-tests.
-      </div>
-    `;
-
-    return panel;
+      // For inputs/checkboxes we use change
+      if (el instanceof HTMLInputElement && el.type === "checkbox") {
+        el.addEventListener("change", () => this.dispatch(action, el.checked));
+      } else {
+        el.addEventListener("click", () => this.dispatch(action, null));
+      }
+    });
   }
 
-  private bindToggles(): void {
-    const toggleMoons = this.panel.querySelector<HTMLInputElement>("#toggleMoons");
-    const togglePlanets = this.panel.querySelector<HTMLInputElement>("#togglePlanets");
+  private dispatch(action: string, payload: any) {
+    switch (action) {
+      case "toggle-planets":
+        this.state.hidePlanets = !!payload;
+        // TODO: call into scene/controller
+        this.render();
+        break;
 
-    if (toggleMoons) {
-      toggleMoons.addEventListener("change", () => {
-        this.app.cssRenderer.domElement.classList.toggle("hideMoons", !toggleMoons.checked);
-      });
-    }
-
-    if (togglePlanets) {
-      togglePlanets.addEventListener("change", () => {
-        this.app.cssRenderer.domElement.classList.toggle(
-          "hidePlanets",
-          !togglePlanets.checked
-        );
-      });
+      case "toggle-moons":
+        this.state.hideMoons = !!payload;
+        // TODO: call into scene/controller
+        this.render();
+        break;
     }
   }
 }

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -7,8 +7,21 @@
   </head>
   <body>
     <div id="app"></div>
-    <div id="ui-root"></div>
+    <div id="ui-root">
+      <div data-slot="hud"></div>
+      <div data-slot="left"></div>
+      <div data-slot="right"></div>
+      <div data-slot="modal"></div>
+      <div data-slot="toast"></div>
+    </div>
     <select id="cameraSelector"></select>
-    <input type="range" min="1" max="1000" class="slider" value="50" id="simulationSpeedSlider">
+    <input
+      type="range"
+      min="1"
+      max="1000"
+      class="slider"
+      value="50"
+      id="simulationSpeedSlider"
+    />
   </body>
 </html>
