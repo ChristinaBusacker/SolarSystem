@@ -10,8 +10,18 @@ body {
   margin: 0;
   padding: 0;
   overflow: hidden;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue",
-    Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+  font-family:
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Ubuntu,
+    Cantarell,
+    "Helvetica Neue",
+    Arial,
+    "Noto Sans",
+    "Apple Color Emoji",
+    "Segoe UI Emoji";
   color: rgba(255, 255, 255, 0.9);
 }
 
@@ -52,78 +62,284 @@ body {
   display: none;
 }
 
-// UI root (sidebar etc.)
+// UI overlay root (slots)
 #ui-root {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+
+  // Global click-through so camera controls keep working.
+  pointer-events: none;
+}
+
+// Reserved slots for future UI (matches the design mock).
+#ui-root [data-slot="hud"] {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+#ui-root [data-slot="left"] {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  max-width: min(360px, 90vw);
+  pointer-events: none;
+}
+
+// Right slot hosts the info sidebar. Keep it fixed to the right.
+#ui-root [data-slot="right"] {
   position: absolute;
   top: 0;
   right: 0;
   bottom: 0;
   width: min(420px, 92vw);
-  z-index: 20;
-  pointer-events: none; // Allow click-through except where explicitly enabled
+  pointer-events: none;
 }
 
-.ui-panel {
+.ui-sidebar-shell {
+  position: absolute;
+  inset: 0;
+}
+
+.ui-sidebar {
   pointer-events: auto;
-  height: 100%;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  background: rgba(10, 12, 18, 0.65);
+
+  background: rgba(10, 12, 18, 0.68);
   backdrop-filter: blur(10px);
   border-left: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+
+  transform: translateX(100%);
+  transition: transform 260ms ease;
+  will-change: transform;
 }
 
-.ui-header {
+@media (prefers-reduced-motion: reduce) {
+  .ui-sidebar {
+    transition: none;
+  }
+  .ui-sidebar-tab {
+    transition: none;
+  }
+}
+
+.ui-sidebar-shell.is-open .ui-sidebar {
+  transform: translateX(0);
+}
+
+// Tab to reopen the sidebar when it is closed.
+.ui-sidebar-tab {
+  pointer-events: auto;
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translate(0, -50%);
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-right: 0;
+  border-radius: 12px 0 0 12px;
+
+  background: rgba(10, 12, 18, 0.68);
+  color: rgba(255, 255, 255, 0.92);
+  cursor: pointer;
+  user-select: none;
+
+  transition: opacity 180ms ease;
+}
+
+.ui-sidebar-shell.is-open .ui-sidebar-tab {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.ui-sidebar-tab__icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.ui-sidebar-tab__text {
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.2px;
+}
+
+.ui-sidebar__header {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
   padding: 14px 14px 10px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-
-  h2 {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 650;
-    letter-spacing: 0.2px;
-  }
-
-  p {
-    margin: 6px 0 0;
-    font-size: 12px;
-    opacity: 0.85;
-    line-height: 1.35;
-  }
+  cursor: pointer;
 }
 
-.ui-content {
+.ui-grab {
+  display: none;
+}
+
+.ui-sidebar__title h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: 0.2px;
+}
+
+.ui-subtitle {
+  margin: 6px 0 0;
+  font-size: 12px;
+  opacity: 0.85;
+  line-height: 1.35;
+}
+
+.ui-icon-btn {
+  pointer-events: auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.92);
+  cursor: pointer;
+}
+
+.ui-icon-btn:focus-visible,
+.ui-sidebar-tab:focus-visible,
+.ui-sidebar__header:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.55);
+  outline-offset: 2px;
+}
+
+.ui-sidebar__content {
   padding: 14px;
   display: grid;
-  gap: 10px;
+  gap: 14px;
   overflow: auto;
 }
 
-.ui-row {
+.ui-section {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.ui-section h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 650;
+  opacity: 0.95;
+}
+
+.ui-toggle {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.03);
-}
-
-.ui-row label {
   font-size: 13px;
   opacity: 0.95;
 }
 
-.ui-row input[type="checkbox"] {
+.ui-toggle input[type="checkbox"] {
   transform: scale(1.1);
 }
 
-.ui-footer {
-  margin-top: auto;
-  padding: 12px 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
+.ui-kv {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: 8px;
+
+  .k {
+    opacity: 0.75;
+    font-size: 12px;
+  }
+
+  .v {
+    font-size: 12px;
+    font-weight: 600;
+  }
+}
+
+.ui-hint {
+  margin: 0;
   font-size: 12px;
-  opacity: 0.85;
+  opacity: 0.8;
+  line-height: 1.45;
+}
+
+// Mobile: the sidebar becomes a bottom sheet so the scene stays visible.
+@media (max-width: 768px) {
+  #ui-root [data-slot="right"] {
+    left: 0;
+    right: 0;
+    top: auto;
+    width: 100%;
+    height: min(62vh, 520px);
+  }
+
+  .ui-sidebar {
+    left: 0;
+    right: 0;
+    top: auto;
+    width: 100%;
+    height: 100%;
+
+    border-left: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px 16px 0 0;
+
+    transform: translateY(calc(100% - 56px));
+    transition: transform 280ms ease;
+  }
+
+  .ui-sidebar-shell.is-open .ui-sidebar {
+    transform: translateY(0);
+  }
+
+  .ui-sidebar-tab {
+    top: auto;
+    bottom: 14px;
+    right: 14px;
+    transform: none;
+    border-right: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+  }
+
+  .ui-sidebar-shell.is-open .ui-sidebar-tab {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .ui-sidebar__header {
+    padding-top: 10px;
+  }
+
+  .ui-grab {
+    display: block;
+    width: 44px;
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.35);
+    position: absolute;
+    left: 50%;
+    top: 6px;
+    transform: translateX(-50%);
+  }
 }

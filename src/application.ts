@@ -114,13 +114,17 @@ export class Application {
   }
 
   private initUi() {
-    const uiRoot = document.getElementById("ui-root");
-    if (uiRoot) {
-      const ui = new UiRenderer(uiRoot, {
+    const uiSlotRight = document.querySelector<HTMLElement>(
+      '#ui-root [data-slot="right"]',
+    );
+
+    if (uiSlotRight) {
+      const ui = new UiRenderer(uiSlotRight, {
         hideMoons: false,
         hidePlanets: false,
+        sidebarOpen: true,
       });
-      ui.render();
+      ui.init();
     }
   }
 
