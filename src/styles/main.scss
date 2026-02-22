@@ -343,3 +343,125 @@ body {
     transform: translateX(-50%);
   }
 }
+
+/* ------------------------------------------------------------
+   HUD speed slider (screenshot-style)
+------------------------------------------------------------ */
+
+.hud {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  width: min(820px, calc(100vw - 32px));
+  pointer-events: none;
+  z-index: 20;
+}
+
+.hud-speed {
+  pointer-events: auto;
+  user-select: none;
+  text-align: center;
+  color: #fff;
+}
+
+.hud-speed__value {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  font-size: 16px;
+  margin-bottom: 10px;
+  position: relative;
+  display: inline-block;
+}
+
+.hud-speed__row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 14px;
+}
+
+.hud-speed__min,
+.hud-speed__max {
+  font-size: 13px;
+  opacity: 0.95;
+  white-space: nowrap;
+}
+
+.hud-speed__track {
+  position: relative;
+  height: 26px;
+  display: flex;
+  align-items: center;
+}
+
+.hud-speed__input {
+  width: 100%;
+  margin: 0;
+  background: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 26px;
+  cursor: pointer;
+
+  /* used to position the value label later if desired */
+  --p: 0%;
+}
+
+/* Track */
+.hud-speed__input::-webkit-slider-runnable-track {
+  height: 2px;
+  background: rgba(255, 255, 255, 0.85);
+}
+.hud-speed__input::-moz-range-track {
+  height: 2px;
+  background: rgba(255, 255, 255, 0.85);
+}
+
+/* Thumb: triangle */
+.hud-speed__input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 12px solid #fff;
+  margin-top: -5px; /* aligns triangle tip with track */
+}
+
+.hud-speed__input::-moz-range-thumb {
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 12px solid #fff;
+  border-radius: 0;
+}
+
+.hud-speed__label {
+  margin-top: 10px;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  opacity: 0.9;
+}
+
+@media (max-width: 720px) {
+  .hud {
+    bottom: 12px;
+  }
+
+  .hud-speed__row {
+    gap: 10px;
+  }
+
+  .hud-speed__value {
+    font-size: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-speed__input {
+    scroll-behavior: auto;
+  }
+}

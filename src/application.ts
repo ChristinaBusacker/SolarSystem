@@ -16,6 +16,7 @@ import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass";
 import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass";
 import { mixPassShader } from "./shader/mixpass.shader";
 import { UiRenderer } from "./ui/ui-renderer";
+import { HudRenderer } from "./ui/hud-renderer";
 
 export class Application {
   private static instance: Application | null = null;
@@ -47,11 +48,9 @@ export class Application {
       this.cameraManager.switchCamera(selectedCamera);
     });
 
-    const simulationSpeedSlider = document.getElementById(
-      "simulationSpeedSlider",
-    ) as HTMLInputElement;
-    simulationSpeedSlider.addEventListener("change", () => {
-      this.simulationSpeed = parseInt(simulationSpeedSlider.value);
+    window.addEventListener("ui:speedChange", (e: Event) => {
+      const ce = e as CustomEvent<{ speed: number }>;
+      if (ce.detail?.speed != null) this.simulationSpeed = ce.detail.speed;
     });
   }
 
@@ -114,6 +113,17 @@ export class Application {
   }
 
   private initUi() {
+    const uiSlotHud = document.querySelector<HTMLElement>(
+      '#ui-root [data-slot="hud"]',
+    );
+
+    if (uiSlotHud) {
+      const hud = new HudRenderer(uiSlotHud, {
+        simulationSpeed: this.simulationSpeed,
+      });
+      hud.init();
+    }
+
     const uiSlotRight = document.querySelector<HTMLElement>(
       '#ui-root [data-slot="right"]',
     );
