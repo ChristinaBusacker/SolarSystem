@@ -4,53 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Solar</title>
-    <style>
-      body {
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
-      }
-
-      #cameraSelector {
-        position: absolute;
-        top: 0;
-        right: 0;
-        z-index:4;
-      }
-
-      #simulationSpeedSlider {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        z-index:4;
-      }
-
-      .css-renderer {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index:3
-      }
-
-
-
-      .css-renderer.hideMoons .moon {
-        display: none;
-      }
-
-      .css-renderer.hidePlanets .planets {
-        display: none;
-      }
-
-      .object.hide {
-        display:none;
-      }
-    </style>
   </head>
   <body>
     <div id="app"></div>
+    <div id="ui-root"></div>
     <select id="cameraSelector"></select>
     <input type="range" min="1" max="1000" class="slider" value="50" id="simulationSpeedSlider">
   </body>
