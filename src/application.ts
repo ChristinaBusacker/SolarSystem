@@ -341,6 +341,7 @@ export class Application {
 
     // Always keep camera + CSS2D in sync with the *container* size.
     this.cssRenderer.setSize(width, height);
+    this.astronomicalManager.setOrbitLineResolution(width, height);
 
     activeCamera.aspect = width / height;
     activeCamera.updateProjectionMatrix();

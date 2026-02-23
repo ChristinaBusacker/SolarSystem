@@ -48,6 +48,10 @@ export class Astronomical implements AstronomicalObject {
 
   public isInit = false;
 
+  private orbitTrailPointCount = 0;
+  private orbitTrailParams?: Float32Array;
+  private orbitBaseColor = new THREE.Color();
+
   public constructor(
     texturePath: Array<string>,
     normalPath: string,
@@ -79,37 +83,45 @@ export class Astronomical implements AstronomicalObject {
       0,
     );
 
-    // More segments for large orbits to reduce the "polygon" look.
-    // Ramanujan approximation of ellipse circumference.
+    // Higher tessellation noticeably reduces "wobble" on thin projected ellipses,
+    // especially for the inner orbits.
     const approxCirc =
       Math.PI * (3 * (a + b) - Math.sqrt((3 * a + b) * (a + 3 * b)));
     const segments = Math.max(
-      256,
-      Math.min(4096, Math.ceil(approxCirc * 0.02)),
+      512,
+      Math.min(8192, Math.ceil(approxCirc * 0.05)),
     );
 
     const points = orbitCurve.getPoints(segments);
 
-    // Line2 expects a flat array of xyz positions.
-    // EllipseCurve outputs (x, y) on the XY plane. We render in XZ (y = 0).
     const positions: number[] = [];
-    for (const p of points) {
+    const colorCarrier: number[] = [];
+    const pointCount = points.length;
+
+    // We use vertex colors as a static carrier for the normalized orbit parameter t.
+    // The actual trail fade gets updated per-frame by tinting the segment colors.
+    for (let i = 0; i < pointCount; i++) {
+      const p = points[i];
+      const t = i / Math.max(1, pointCount - 1);
       positions.push(p.x, 0, p.y);
+      colorCarrier.push(t, t, t);
     }
 
     const geometry = new LineGeometry();
     geometry.setPositions(positions);
+    geometry.setColors(colorCarrier);
 
     const material = new LineMaterial({
       color: new THREE.Color(this.data.color),
-      linewidth: 1.5, // pixels (screen-space)
+      linewidth: 1.5,
       transparent: true,
-      opacity: 0.85,
-      depthTest: false,
+      opacity: 1,
+      depthTest: true,
       depthWrite: false,
+      vertexColors: true,
+      alphaToCoverage: true,
     });
 
-    // Initialize resolution once; Application will keep it updated on resize.
     const viewport = document.getElementById("scene-root");
     const rect = viewport?.getBoundingClientRect();
     const w = Math.max(1, Math.floor(rect?.width ?? window.innerWidth));
@@ -119,7 +131,59 @@ export class Astronomical implements AstronomicalObject {
     const line = new Line2(geometry, material);
     line.computeLineDistances();
 
+    this.orbitTrailPointCount = pointCount;
+    this.orbitTrailParams = new Float32Array(pointCount);
+    for (let i = 0; i < pointCount; i++) {
+      this.orbitTrailParams[i] = i / Math.max(1, pointCount - 1);
+    }
+    this.orbitBaseColor.set(this.data.color);
+    this.updateOrbitTrailColors();
+
     return line;
+  }
+
+  private updateOrbitTrailColors(): void {
+    if (!this.marker || !this.orbitTrailParams || this.orbitTrailPointCount < 2) return;
+
+    const geometry = this.marker.geometry as unknown as THREE.InstancedBufferGeometry;
+    const cStart = geometry.getAttribute("instanceColorStart") as THREE.InterleavedBufferAttribute | undefined;
+    const cEnd = geometry.getAttribute("instanceColorEnd") as THREE.InterleavedBufferAttribute | undefined;
+    if (!cStart || !cEnd) return;
+
+    const pointCount = this.orbitTrailPointCount;
+    const current = THREE.MathUtils.euclideanModulo(this.angle, Math.PI * 2) / (Math.PI * 2);
+    const trailLen = 1; // 3/4 orbit visible behind the planet
+
+    const fadeFor = (t: number): number => {
+      let d = t - current;
+      if (d < 0) d += 1;
+      if (d > trailLen) return 0;
+
+      const x = 1 - d / trailLen;
+      // Slightly stronger near the body, gentler tail.
+      return x * x * (3 - 2 * x);
+    };
+
+    for (let seg = 0; seg < pointCount - 1; seg++) {
+      const f0 = fadeFor(this.orbitTrailParams[seg]);
+      const f1 = fadeFor(this.orbitTrailParams[seg + 1]);
+
+      cStart.setXYZ(
+        seg,
+        this.orbitBaseColor.r * f0,
+        this.orbitBaseColor.g * f0,
+        this.orbitBaseColor.b * f0,
+      );
+      cEnd.setXYZ(
+        seg,
+        this.orbitBaseColor.r * f1,
+        this.orbitBaseColor.g * f1,
+        this.orbitBaseColor.b * f1,
+      );
+    }
+
+    cStart.data.needsUpdate = true;
+    cEnd.data.needsUpdate = true;
   }
 
   private setInitialPosition() {
@@ -263,9 +327,9 @@ export class Astronomical implements AstronomicalObject {
   public getShadowCasters() {
     const shadowCasters = this.isMoon
       ? [
-          this.orbitingParent,
-          ...this.orbitingParent.moons.filter((moon) => moon !== this),
-        ]
+        this.orbitingParent,
+        ...this.orbitingParent.moons.filter((moon) => moon !== this),
+      ]
       : this.moons;
 
     return shadowCasters.map((caster) => {
@@ -416,6 +480,8 @@ export class Astronomical implements AstronomicalObject {
         this.data.semiMinorAxis * Math.sin(this.angle),
       );
     }
+
+    this.updateOrbitTrailColors();
 
     this.planetaryGroup.rotation.y +=
       this.data.rotationSpeed * 60 * delta * APP.simulationSpeed;
