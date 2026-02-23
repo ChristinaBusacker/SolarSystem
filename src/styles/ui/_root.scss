@@ -1,0 +1,25 @@
+// UI overlay root (slots) inside the stage.
+#ui-root {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+
+  // Global click-through so camera controls keep working.
+  pointer-events: none;
+}
+
+#ui-root [data-slot="hud"] {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+#ui-root [data-slot="stage-controls"] {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  right: 14px;
+  pointer-events: none;
+}

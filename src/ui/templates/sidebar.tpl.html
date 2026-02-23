@@ -1,30 +1,6 @@
-<div class="ui-sidebar-shell {{sidebarOpenClass}}" data-ui="sidebar">
-  <!--
-    Toggle tab is outside the sliding panel so it stays reachable when closed.
-    (Pointer events are enabled only on actual UI elements, canvas stays interactive.)
-  -->
-  <button
-    class="ui-sidebar-tab"
-    type="button"
-    aria-label="Open information panel"
-    data-action="sidebar-open"
-  >
-    <span class="ui-sidebar-tab__icon">☰</span>
-    <span class="ui-sidebar-tab__text">Info</span>
-  </button>
-
-  <aside
-    class="ui-sidebar"
-    role="complementary"
-    aria-label="Planet information"
-  >
-    <header
-      class="ui-sidebar__header"
-      data-action="sidebar-toggle"
-      role="button"
-      tabindex="0"
-    >
-      <div class="ui-grab" aria-hidden="true"></div>
+<div class="ui-sidebar-shell" data-ui="sidebar-right">
+  <aside class="ui-sidebar ui-sidebar--right" role="complementary" aria-label="Planet information">
+    <header class="ui-sidebar__header">
       <div class="ui-sidebar__title">
         <h2>{{title}}</h2>
         <p class="ui-subtitle">{{subtitle}}</p>
@@ -35,6 +11,7 @@
         type="button"
         aria-label="Close information panel"
         data-action="sidebar-close"
+        data-side="right"
       >
         ✕
       </button>
@@ -45,20 +22,12 @@
         <h3>Visibility</h3>
 
         <label class="ui-toggle">
-          <input
-            type="checkbox"
-            {{checkedHidePlanets}}
-            data-action="toggle-planets"
-          />
+          <input type="checkbox" {{checkedHidePlanets}} data-action="toggle-planets" />
           <span>Hide planets</span>
         </label>
 
         <label class="ui-toggle">
-          <input
-            type="checkbox"
-            {{checkedHideMoons}}
-            data-action="toggle-moons"
-          />
+          <input type="checkbox" {{checkedHideMoons}} data-action="toggle-moons" />
           <span>Hide moons</span>
         </label>
       </section>

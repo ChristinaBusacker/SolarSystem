@@ -1,0 +1,92 @@
+/* ------------------------------------------------------------
+   Left sidebar (planet navigation)
+------------------------------------------------------------ */
+
+.ui-planet-list {
+  display: grid;
+  gap: 8px;
+}
+
+.ui-planet {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  align-items: center;
+  gap: 10px;
+
+  padding: 10px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(255, 255, 255, 0.92);
+
+  cursor: pointer;
+  text-align: left;
+  transition:
+    background 150ms ease,
+    border-color 150ms ease,
+    transform 150ms ease;
+}
+
+.ui-planet:hover {
+  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateY(-1px);
+}
+
+.ui-planet:active {
+  transform: translateY(0);
+}
+
+.ui-planet__icon {
+  width: 22px;
+  height: 22px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  opacity: 0.95;
+}
+
+.ui-planet__name {
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.ui-planet__icon--sun {
+  background-image: url("../assets/svgs/iconP_sonne.svg");
+}
+
+.ui-planet__icon--mercury {
+  background-image: url("../assets/svgs/iconP_merkur.svg");
+}
+
+.ui-planet__icon--venus {
+  background-image: url("../assets/svgs/iconP_venus.svg");
+}
+
+.ui-planet__icon--earth {
+  background-image: url("../assets/svgs/iconP_earth.svg");
+}
+
+.ui-planet__icon--mars {
+  background-image: url("../assets/svgs/iconP_mars.svg");
+}
+
+.ui-planet__icon--jupiter {
+  background-image: url("../assets/svgs/iconP_jupiter.svg");
+}
+
+.ui-planet__icon--saturn {
+  background-image: url("../assets/svgs/iconP_saturn.svg");
+}
+
+.ui-planet__icon--uranus {
+  background-image: url("../assets/svgs/iconP_uranus.svg");
+}
+
+.ui-planet__icon--neptune {
+  background-image: url("../assets/svgs/iconP_neptun.svg");
+}
+
+.ui-planet__icon--pluto {
+  background-image: url("../assets/svgs/iconP_pluto.svg");
+}

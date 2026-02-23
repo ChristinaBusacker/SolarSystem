@@ -1,0 +1,69 @@
+<div class="ui-sidebar-shell" data-ui="sidebar-left">
+  <aside class="ui-sidebar ui-sidebar--left" role="navigation" aria-label="Planets">
+    <header class="ui-sidebar__header">
+      <div class="ui-sidebar__title">
+        <h2>Planets</h2>
+        <p class="ui-subtitle">Navigate</p>
+      </div>
+
+      <button
+        class="ui-icon-btn"
+        type="button"
+        aria-label="Close planets panel"
+        data-action="sidebar-close"
+        data-side="left"
+      >
+        ✕
+      </button>
+    </header>
+
+    <div class="ui-sidebar__content">
+      <section class="ui-section">
+        <div class="ui-planet-list" role="list">
+          <button class="ui-planet" type="button" data-action="select-planet" data-planet="Sun">
+            <span class="ui-planet__icon ui-planet__icon--sun" aria-hidden="true"></span>
+            <span class="ui-planet__name">Sun</span>
+          </button>
+          <button class="ui-planet" type="button" data-action="select-planet" data-planet="Mercury">
+            <span class="ui-planet__icon ui-planet__icon--mercury" aria-hidden="true"></span>
+            <span class="ui-planet__name">Mercury</span>
+          </button>
+          <button class="ui-planet" type="button" data-action="select-planet" data-planet="Venus">
+            <span class="ui-planet__icon ui-planet__icon--venus" aria-hidden="true"></span>
+            <span class="ui-planet__name">Venus</span>
+          </button>
+          <button class="ui-planet" type="button" data-action="select-planet" data-planet="Earth">
+            <span class="ui-planet__icon ui-planet__icon--earth" aria-hidden="true"></span>
+            <span class="ui-planet__name">Earth</span>
+          </button>
+          <button class="ui-planet" type="button" data-action="select-planet" data-planet="Mars">
+            <span class="ui-planet__icon ui-planet__icon--mars" aria-hidden="true"></span>
+            <span class="ui-planet__name">Mars</span>
+          </button>
+          <button class="ui-planet" type="button" data-action="select-planet" data-planet="Jupiter">
+            <span class="ui-planet__icon ui-planet__icon--jupiter" aria-hidden="true"></span>
+            <span class="ui-planet__name">Jupiter</span>
+          </button>
+          <button class="ui-planet" type="button" data-action="select-planet" data-planet="Saturn">
+            <span class="ui-planet__icon ui-planet__icon--saturn" aria-hidden="true"></span>
+            <span class="ui-planet__name">Saturn</span>
+          </button>
+          <button class="ui-planet" type="button" data-action="select-planet" data-planet="Uranus">
+            <span class="ui-planet__icon ui-planet__icon--uranus" aria-hidden="true"></span>
+            <span class="ui-planet__name">Uranus</span>
+          </button>
+          <button class="ui-planet" type="button" data-action="select-planet" data-planet="Neptune">
+            <span class="ui-planet__icon ui-planet__icon--neptune" aria-hidden="true"></span>
+            <span class="ui-planet__name">Neptune</span>
+          </button>
+          <button class="ui-planet" type="button" data-action="select-planet" data-planet="Pluto">
+            <span class="ui-planet__icon ui-planet__icon--pluto" aria-hidden="true"></span>
+            <span class="ui-planet__name">Pluto</span>
+          </button>
+        </div>
+      </section>
+
+      <p class="ui-hint">Click a planet to focus (wiring next).</p>
+    </div>
+  </aside>
+</div>

@@ -5,7 +5,7 @@ import { AstronomicalManager } from "./manager/AstronomicalManager";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer";
-import Stats from "stats.js";
+
 import {
   bloomThreshold,
   bloomStrength,
@@ -17,6 +17,9 @@ import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass";
 import { mixPassShader } from "./shader/mixpass.shader";
 import { UiRenderer } from "./ui/ui-renderer";
 import { HudRenderer } from "./ui/hud-renderer";
+import { StageControlsRenderer } from "./ui/stage-controls-renderer";
+import { PlanetSidebarRenderer } from "./ui/planet-sidebar-renderer";
+import { subscribeLayoutState } from "./ui/layout-state";
 
 export class Application {
   private static instance: Application | null = null;
@@ -25,7 +28,7 @@ export class Application {
   public cssRenderer = new CSS2DRenderer();
   public scene = new THREE.Scene();
   public clock = new THREE.Clock();
-  public stats = new Stats();
+
   public bloomComposer = new EffectComposer(this.webglRenderer);
   public finalComposer = new EffectComposer(this.webglRenderer);
 
@@ -36,11 +39,17 @@ export class Application {
 
   private backgroundImage?: THREE.Texture;
 
+  private lastViewportSize: { width: number; height: number } = {
+    width: 0,
+    height: 0,
+  };
+  private resizeScheduled = false;
+  private transitionResizeTimer: number | null = null;
+  private lastLayoutKey: string | null = null;
+  private viewportObserver: ResizeObserver | null = null;
+
   private constructor() {
-    document.body.appendChild(this.stats.dom);
-    window.addEventListener("resize", () => {
-      this.onResize();
-    });
+    window.addEventListener("resize", () => this.scheduleResize());
 
     const cameraSelector = document.getElementById("cameraSelector");
     cameraSelector.addEventListener("change", (event) => {
@@ -52,17 +61,11 @@ export class Application {
       const ce = e as CustomEvent<{ speed: number }>;
       if (ce.detail?.speed != null) this.simulationSpeed = ce.detail.speed;
     });
-
-
-    window.addEventListener("ui:sidebarTransition", (e: Event) => {
-      const ce = e as CustomEvent<{ durationMs?: number }>;
-      const durationMs = Math.max(0, Number(ce.detail?.durationMs ?? 280));
-      this.resizeDuringTransition(durationMs);
-    });
   }
 
   public init() {
     this.cameraManager.switchCamera("Default").initEventControls();
+    this.attachViewportResizeObserver();
     this.onResize();
     this.astronomicalManager.initObjects(this.scene);
     this.initWebGLRenderer();
@@ -80,7 +83,10 @@ export class Application {
     );
 
     const bloomPass = new UnrealBloomPass(
-      new THREE.Vector2(this.getViewportSize().width, this.getViewportSize().height),
+      new THREE.Vector2(
+        this.getViewportSize().width,
+        this.getViewportSize().height,
+      ),
       bloomStrength,
       bloomRadius,
       bloomThreshold,
@@ -120,6 +126,14 @@ export class Application {
   }
 
   private initUi() {
+    const stageControlsSlot = document.querySelector<HTMLElement>(
+      '#ui-root [data-slot="stage-controls"]',
+    );
+
+    if (stageControlsSlot) {
+      new StageControlsRenderer(stageControlsSlot).init();
+    }
+
     const uiSlotHud = document.querySelector<HTMLElement>(
       '#ui-root [data-slot="hud"]',
     );
@@ -131,24 +145,49 @@ export class Application {
       hud.init();
     }
 
-    const uiSidebarSlot = document.querySelector<HTMLElement>(
-      '#sidebar-slot',
+    const uiRightSidebarSlot = document.querySelector<HTMLElement>(
+      "#sidebar-right-slot",
     );
-
-    if (uiSidebarSlot) {
-      const ui = new UiRenderer(uiSidebarSlot, {
+    if (uiRightSidebarSlot) {
+      new UiRenderer(uiRightSidebarSlot, {
         hideMoons: false,
         hidePlanets: false,
-        sidebarOpen: true,
-      });
-      ui.init();
+      }).init();
     }
+
+    const uiLeftSidebarSlot =
+      document.querySelector<HTMLElement>("#sidebar-left-slot");
+    if (uiLeftSidebarSlot) {
+      new PlanetSidebarRenderer(uiLeftSidebarSlot).init();
+    }
+
+    // Apply open/close state to both sidebars and resize smoothly during transitions.
+    subscribeLayoutState((s) => {
+      const leftRoot = document.getElementById("sidebar-left-root");
+      const rightRoot = document.getElementById("sidebar-right-root");
+
+      if (leftRoot) {
+        leftRoot.classList.toggle("is-open", s.leftOpen);
+        leftRoot.classList.toggle("is-closed", !s.leftOpen);
+      }
+      if (rightRoot) {
+        rightRoot.classList.toggle("is-open", s.rightOpen);
+        rightRoot.classList.toggle("is-closed", !s.rightOpen);
+      }
+
+      const key = `${s.leftOpen ? 1 : 0}${s.rightOpen ? 1 : 0}`;
+      if (this.lastLayoutKey !== null && this.lastLayoutKey !== key) {
+        this.resizeDuringTransition(280);
+      }
+      this.lastLayoutKey = key;
+    });
   }
 
   private initWebGLRenderer() {
     const { width, height } = this.getViewportSize();
 
-    this.webglRenderer.setSize(width, height);
+    // Keep the canvas styled by CSS (100% size) and only update the render buffer size here.
+    this.webglRenderer.setSize(width, height, false);
 
     this.webglRenderer.toneMapping = THREE.CineonToneMapping;
     this.webglRenderer.toneMappingExposure = 1;
@@ -194,9 +233,19 @@ export class Application {
 
   public onResize() {
     const { width, height } = this.getViewportSize();
+
+    // Avoid thrashing render targets during transitions.
+    if (width < 2 || height < 2) return;
+    if (
+      width === this.lastViewportSize.width &&
+      height === this.lastViewportSize.height
+    )
+      return;
+    this.lastViewportSize = { width, height };
+
     const activeCamera = this.cameraManager.getActiveEntry().camera;
 
-    this.webglRenderer.setSize(width, height);
+    this.webglRenderer.setSize(width, height, false);
     this.cssRenderer.setSize(width, height);
     this.bloomComposer.setSize(width, height);
     this.finalComposer.setSize(width, height);
@@ -219,20 +268,52 @@ export class Application {
     };
   }
 
-  private resizeDuringTransition(durationMs: number): void {
-    // During sidebar open/close transitions the viewport size changes gradually.
-    // Fire a few resize updates so the canvas doesn't "jump".
-    const start = performance.now();
-    const maxMs = Math.min(1200, Math.max(0, durationMs) + 80);
-
-    const tick = () => {
+  private scheduleResize(): void {
+    if (this.resizeScheduled) return;
+    this.resizeScheduled = true;
+    requestAnimationFrame(() => {
+      this.resizeScheduled = false;
       this.onResize();
-      if (performance.now() - start < maxMs) {
-        requestAnimationFrame(tick);
-      }
-    };
+    });
+  }
 
-    requestAnimationFrame(tick);
+  private resizeDuringTransition(durationMs: number): void {
+    // Calling onResize every frame can cause flicker on some GPUs.
+    // Instead, update a few times during the CSS transition.
+    if (this.transitionResizeTimer != null) {
+      window.clearInterval(this.transitionResizeTimer);
+      this.transitionResizeTimer = null;
+    }
+
+    const steps = 7;
+    const interval = Math.max(20, Math.floor(Math.max(0, durationMs) / steps));
+    let i = 0;
+
+    this.scheduleResize();
+
+    this.transitionResizeTimer = window.setInterval(() => {
+      this.scheduleResize();
+      i += 1;
+      if (i >= steps) {
+        if (this.transitionResizeTimer != null)
+          window.clearInterval(this.transitionResizeTimer);
+        this.transitionResizeTimer = null;
+        // Final snap to exact size at the end of the transition.
+        window.setTimeout(() => this.scheduleResize(), 30);
+      }
+    }, interval);
+  }
+
+  private attachViewportResizeObserver(): void {
+    const viewport = document.getElementById("scene-root");
+    if (!viewport || typeof ResizeObserver === "undefined") return;
+
+    this.viewportObserver?.disconnect();
+    this.viewportObserver = new ResizeObserver(() => {
+      this.scheduleResize();
+    });
+
+    this.viewportObserver.observe(viewport);
   }
 
   public updateComposer(newCamera: THREE.Camera) {
@@ -246,7 +327,6 @@ export class Application {
   }
 
   public animate() {
-    this.stats.begin();
     const deltaTime = this.clock.getDelta();
     const camera = this.cameraManager.getActiveEntry().camera;
 
@@ -263,7 +343,6 @@ export class Application {
     this.cssRenderer.render(this.scene, camera);
 
     this.cameraManager.updateControls(deltaTime);
-    this.stats.end();
 
     requestAnimationFrame(() => {
       this.animate();

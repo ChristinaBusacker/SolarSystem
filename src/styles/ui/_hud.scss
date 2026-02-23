@@ -1,0 +1,180 @@
+/* ------------------------------------------------------------
+   HUD speed slider (screenshot-style)
+------------------------------------------------------------ */
+
+.hud {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  width: min(400px, calc(100vw - 64px));
+  pointer-events: none;
+  z-index: 20;
+}
+
+.hud-speed {
+  pointer-events: auto;
+  user-select: none;
+  text-align: center;
+  color: #fff;
+}
+
+.hud-speed__value {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  font-size: 16px;
+  margin-bottom: 10px;
+  position: relative;
+  display: inline-block;
+}
+
+.hud-speed__row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 14px;
+}
+
+.hud-speed__min,
+.hud-speed__max {
+  font-size: 13px;
+  opacity: 0.95;
+  white-space: nowrap;
+  min-width: 40px;
+}
+
+.hud-speed__min {
+  text-align: right;
+}
+
+.hud-speed__track {
+  position: relative;
+  height: 26px;
+  display: flex;
+  align-items: center;
+}
+
+.hud-speed__input {
+  width: 100%;
+  margin: 0;
+  background: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 26px;
+  cursor: pointer;
+
+  /* used to position the value label later if desired */
+  --p: 0%;
+}
+
+/* Track */
+.hud-speed__input::-webkit-slider-runnable-track {
+  height: 2px;
+  background: rgba(255, 255, 255, 0.85);
+}
+.hud-speed__input::-moz-range-track {
+  height: 2px;
+  background: rgba(255, 255, 255, 0.85);
+}
+
+/* Thumb: SVG indicator */
+.hud-speed__input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 26px;
+  height: 26px;
+  background: url("../assets/svgs/speed-slider.svg") center / contain no-repeat;
+  border: 0;
+  margin-top: -12px; /* align indicator center with track */
+}
+
+.hud-speed__input::-moz-range-thumb {
+  width: 26px;
+  height: 26px;
+  background: url("../assets/svgs/speed-slider.svg") center / contain no-repeat;
+  border: 0;
+  border-radius: 0;
+}
+
+.hud-speed__label {
+  margin-top: 10px;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  opacity: 0.9;
+}
+
+.hud-speed__pause {
+  margin: 12px auto 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.65);
+  background: transparent;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.hud-speed__pause:hover {
+  border-color: rgba(255, 255, 255, 0.95);
+  transform: scale(1.03);
+}
+
+.hud-speed__pause:active {
+  transform: scale(0.98);
+}
+
+.hud-speed__pauseIcon {
+  position: relative;
+  width: 14px;
+  height: 14px;
+}
+
+/* Pause icon (two bars) */
+.hud-speed__pauseIcon::before,
+.hud-speed__pauseIcon::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 4px;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 1px;
+}
+
+.hud-speed__pauseIcon::before {
+  left: 1px;
+}
+
+.hud-speed__pauseIcon::after {
+  right: 1px;
+}
+
+/* When paused, show a play triangle */
+.hud-speed__pause.is-paused .hud-speed__pauseIcon::before,
+.hud-speed__pause.is-paused .hud-speed__pauseIcon::after {
+  content: none;
+}
+
+.hud-speed__pause.is-paused .hud-speed__pauseIcon {
+  width: 0;
+  height: 0;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-left: 12px solid rgba(255, 255, 255, 0.9);
+}
+
+@media (max-width: 720px) {
+  .hud {
+    bottom: 12px;
+  }
+
+  .hud-speed__row {
+    gap: 10px;
+  }
+}

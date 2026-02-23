@@ -1,0 +1,19 @@
+// CSS2D overlay
+.css-renderer {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+
+  &.hideMoons .moon {
+    display: none;
+  }
+
+  &.hidePlanets .planets {
+    display: none;
+  }
+}
+
+.object.hide {
+  display: none;
+}
