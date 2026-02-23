@@ -1,7 +1,7 @@
 import * as THREE from "three";
-import { PURE_BLACK_MATERIAL } from "../constant/pureBlackMaterial.constant";
 import { APP } from "..";
 import { earthData } from "../../data/objects.data";
+import { asteroidBeltImpostorShader } from "../shader/asteroid-belt-impostor.shader";
 
 type Rng = () => number;
 
@@ -16,273 +16,213 @@ function mulberry32(seed: number): Rng {
 }
 
 function randNormal(rng: Rng): number {
-  // Box–Muller transform
   const u = Math.max(1e-8, rng());
   const v = Math.max(1e-8, rng());
   return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
 }
 
 export interface AsteroidBeltOptions {
-  /** Total instance count across all shape variants. */
   count: number;
-  /** Inner radius of the belt (in your scene units). */
   innerRadius: number;
-  /** Outer radius of the belt (in your scene units). */
   outerRadius: number;
-  /** Maximum eccentricity (0..1). */
   maxEccentricity: number;
-  /** Inclination standard deviation in degrees. */
   inclinationStdDeg: number;
-  /** Minimum asteroid radius (in your planet size units). */
-  minSize: number;
-  /** Maximum asteroid radius (in your planet size units). */
-  maxSize: number;
-  /** How many base shape variants to create (draw calls). */
-  shapeVariants: number;
-  /** Seed for stable generation. */
+  minSpriteSize: number;
+  maxSpriteSize: number;
   seed: number;
 }
 
-interface AsteroidInstance {
-  a: number;
-  b: number;
-  e: number;
-  omega: number;
-  inc: number;
-  phase: number;
-  speed: number;
-  scale: number;
-  spin: number;
-  spinSpeed: number;
-  color: THREE.Color;
-}
-
 /**
- * Main asteroid belt as a small set of InstancedMeshes.
+ * Main belt rendered as procedural point-sprite impostors.
  *
- * Design goals:
- * - performant (few draw calls)
- * - varied shapes (multiple base geometries)
- * - plausible orbits (Kepler-ish speed, small eccentricities & inclinations)
- * - reacts to sunlight (uses StandardMaterial + a point light in the scene)
+ * Why this approach:
+ * - stable visibility for many tiny bodies (screen-space point size)
+ * - very cheap (single draw call)
+ * - custom shader can fake rocky silhouettes + lighting without heavy meshes
  */
 export class AsteroidBelt {
   public readonly group = new THREE.Group();
 
-  private readonly meshes: THREE.InstancedMesh[] = [];
-  private readonly instancesByMesh: AsteroidInstance[][] = [];
-
-  private readonly material: THREE.MeshStandardMaterial;
-  private readonly bloomMaterial = PURE_BLACK_MATERIAL;
-
-  private readonly tmpMatrix = new THREE.Matrix4();
-  private readonly tmpPos = new THREE.Vector3();
-  private readonly tmpQuat = new THREE.Quaternion();
-  private readonly tmpScale = new THREE.Vector3();
-  private readonly tmpEuler = new THREE.Euler();
+  private geometry?: THREE.BufferGeometry;
+  private points?: THREE.Points;
+  private material?: THREE.ShaderMaterial;
 
   private readonly opts: AsteroidBeltOptions;
+  private time = 0;
+
+  private readonly sunWorldPosition = new THREE.Vector3(0, 0, 0);
 
   public constructor(opts?: Partial<AsteroidBeltOptions>) {
-    // Defaults tuned for your cinematic-but-compressed scale.
     this.opts = {
-      count: 6000,
+      // Lower than the earlier version on purpose: less "wimmelbild", more readable chunks.
+      count: 3800,
       innerRadius: 2100,
       outerRadius: 3300,
       maxEccentricity: 0.12,
-      inclinationStdDeg: 5,
-      minSize: 0.02,
-      maxSize: 0.18,
-      shapeVariants: 6,
+      inclinationStdDeg: 4.8,
+      minSpriteSize: 10,
+      maxSpriteSize: 44,
       seed: 1337,
       ...opts,
     };
-
-    this.material = new THREE.MeshStandardMaterial({
-      color: 0xffffff,
-      roughness: 0.85,
-      metalness: 0.05,
-      vertexColors: true,
-    });
   }
 
   public init(): void {
     const rng = mulberry32(this.opts.seed);
 
-    // Create a handful of lowpoly base geometries and "dent" them for variety.
-    const geometries: THREE.BufferGeometry[] = [];
-    for (let i = 0; i < this.opts.shapeVariants; i++) {
-      const base = new THREE.IcosahedronGeometry(1, 0);
-      const pos = base.attributes.position as THREE.BufferAttribute;
-      for (let v = 0; v < pos.count; v++) {
-        const x = pos.getX(v);
-        const y = pos.getY(v);
-        const z = pos.getZ(v);
-        // Small vertex jitter.
-        const j = 1 + (rng() - 0.5) * 0.35;
-        pos.setXYZ(v, x * j, y * j, z * j);
-      }
-      base.computeVertexNormals();
-      geometries.push(base);
+    const count = this.opts.count;
+    const aSemiMajor = new Float32Array(count);
+    const aSemiMinor = new Float32Array(count);
+    const aEcc = new Float32Array(count);
+    const aArgPeri = new Float32Array(count);
+    const aInclination = new Float32Array(count);
+    const aPhase0 = new Float32Array(count);
+    const aAngularSpeed = new Float32Array(count);
+    const aSize = new Float32Array(count);
+    const aShapeSeed = new Float32Array(count);
+    const aColor = new Float32Array(count * 3);
+
+    const incStd = THREE.MathUtils.degToRad(this.opts.inclinationStdDeg);
+
+    for (let i = 0; i < count; i++) {
+      const a = this.sampleRadius(rng);
+      const e = Math.pow(rng(), 2.2) * this.opts.maxEccentricity;
+      const b = a * Math.sqrt(1 - e * e);
+
+      aSemiMajor[i] = a;
+      aSemiMinor[i] = b;
+      aEcc[i] = e;
+      aArgPeri[i] = rng() * Math.PI * 2;
+      aInclination[i] = randNormal(rng) * incStd;
+      aPhase0[i] = rng() * Math.PI * 2;
+      aAngularSpeed[i] =
+        earthData.orbitalSpeed * Math.pow(earthData.distanceToOrbiting / a, 1.5);
+
+      // Many small, some medium, very few larger chunks.
+      const t = Math.pow(rng(), 5.2);
+      aSize[i] = this.opts.minSpriteSize + (this.opts.maxSpriteSize - this.opts.minSpriteSize) * (1.0 - t);
+      aShapeSeed[i] = rng();
+
+      const color = this.sampleColor(rng);
+      aColor[i * 3 + 0] = color.r;
+      aColor[i * 3 + 1] = color.g;
+      aColor[i * 3 + 2] = color.b;
     }
 
-    const perMesh = Math.ceil(this.opts.count / this.opts.shapeVariants);
+    this.geometry = new THREE.BufferGeometry();
+    // Base position is unused but required for Points.
+    this.geometry.setAttribute("position", new THREE.Float32BufferAttribute(new Float32Array(count * 3), 3));
+    this.geometry.setAttribute("aSemiMajor", new THREE.Float32BufferAttribute(aSemiMajor, 1));
+    this.geometry.setAttribute("aSemiMinor", new THREE.Float32BufferAttribute(aSemiMinor, 1));
+    this.geometry.setAttribute("aEcc", new THREE.Float32BufferAttribute(aEcc, 1));
+    this.geometry.setAttribute("aArgPeri", new THREE.Float32BufferAttribute(aArgPeri, 1));
+    this.geometry.setAttribute("aInclination", new THREE.Float32BufferAttribute(aInclination, 1));
+    this.geometry.setAttribute("aPhase0", new THREE.Float32BufferAttribute(aPhase0, 1));
+    this.geometry.setAttribute("aAngularSpeed", new THREE.Float32BufferAttribute(aAngularSpeed, 1));
+    this.geometry.setAttribute("aSize", new THREE.Float32BufferAttribute(aSize, 1));
+    this.geometry.setAttribute("aShapeSeed", new THREE.Float32BufferAttribute(aShapeSeed, 1));
+    this.geometry.setAttribute("aColor", new THREE.Float32BufferAttribute(aColor, 3));
+    this.geometry.computeBoundingSphere();
 
-    for (let gi = 0; gi < geometries.length; gi++) {
-      const mesh = new THREE.InstancedMesh(
-        geometries[gi],
-        this.material,
-        perMesh,
-      );
-      mesh.frustumCulled = false;
-      mesh.castShadow = false;
-      mesh.receiveShadow = false;
-      mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-      mesh.instanceColor = new THREE.InstancedBufferAttribute(
-        new Float32Array(perMesh * 3),
-        3,
-      );
+    const { vertexShader, fragmentShader } = asteroidBeltImpostorShader;
+    this.material = new THREE.ShaderMaterial({
+      name: "AsteroidBeltImpostorMaterial",
+      vertexShader,
+      fragmentShader,
+      uniforms: {
+        uTime: { value: 0 },
+        uViewportScale: { value: APP.webglRenderer.getPixelRatio?.() ?? 1 },
+        uSunWorldPosition: { value: this.sunWorldPosition.clone() },
+        uBloomMode: { value: 0 },
+      },
+      transparent: true,
+      depthTest: true,
+      depthWrite: true,
+      blending: THREE.NormalBlending,
+    });
 
-      this.meshes.push(mesh);
-      this.instancesByMesh.push([]);
-      this.group.add(mesh);
-    }
+    this.points = new THREE.Points(this.geometry, this.material);
+    this.points.frustumCulled = false;
+    this.points.renderOrder = 2;
+    this.points.name = "MainAsteroidBeltPoints";
 
-    // Distribute instances across variants.
-    for (let i = 0; i < this.opts.count; i++) {
-      const mi = i % this.meshes.length;
-      const inst = this.createInstance(rng);
-      this.instancesByMesh[mi].push(inst);
-    }
-
-    // Ensure we only draw initialized instances (some variants may have fewer than perMesh).
-    for (let mi = 0; mi < this.meshes.length; mi++) {
-      this.meshes[mi].count = this.instancesByMesh[mi].length;
-    }
-
-    // Initial placement.
-    this.updateMatrices(0, true);
+    this.group.name = "MainAsteroidBelt";
+    this.group.add(this.points);
   }
 
   public preBloom(): void {
-    // Do not contribute to bloom by default.
-    for (const m of this.meshes) m.material = this.bloomMaterial;
+    if (!this.material) return;
+    this.material.uniforms.uBloomMode.value = 1;
   }
 
   public postBloom(): void {
-    for (const m of this.meshes) m.material = this.material;
+    if (!this.material) return;
+    this.material.uniforms.uBloomMode.value = 0;
   }
 
   public render(delta: number): void {
-    if (delta <= 0) return;
-    this.updateMatrices(delta, false);
+    if (!this.material || delta <= 0) return;
+
+    this.time += delta * 60 * APP.simulationSpeed;
+    this.material.uniforms.uTime.value = this.time;
+    this.material.uniforms.uViewportScale.value = APP.webglRenderer.getPixelRatio?.() ?? 1;
+
+    // Sun is currently at system origin in this app. Keep this as a uniform for future flexibility.
+    const sun = this.material.uniforms.uSunWorldPosition.value as THREE.Vector3;
+    sun.copy(this.sunWorldPosition);
   }
 
-  private createInstance(rng: Rng): AsteroidInstance {
-    // Uniform in area for ring-like distribution.
+  private sampleRadius(rng: Rng): number {
     const r2Min = this.opts.innerRadius * this.opts.innerRadius;
     const r2Max = this.opts.outerRadius * this.opts.outerRadius;
-    const a = Math.sqrt(r2Min + (r2Max - r2Min) * rng());
 
-    // Small eccentricities, biased towards near-circular.
-    const e = Math.pow(rng(), 2.2) * this.opts.maxEccentricity;
-    const b = a * Math.sqrt(1 - e * e);
+    for (let tries = 0; tries < 12; tries++) {
+      const a = Math.sqrt(r2Min + (r2Max - r2Min) * rng());
+      if (rng() <= this.radialDensityWeight(a)) return a;
+    }
 
-    const omega = rng() * Math.PI * 2;
-    const phase = rng() * Math.PI * 2;
-
-    const incStd = THREE.MathUtils.degToRad(this.opts.inclinationStdDeg);
-    const inc = randNormal(rng) * incStd;
-
-    // Kepler-ish scaling based on your Earth reference.
-    const speed =
-      earthData.orbitalSpeed * Math.pow(earthData.distanceToOrbiting / a, 1.5);
-
-    // Size distribution: lots of small, few large.
-    const t = Math.pow(rng(), 6.0);
-    const scale =
-      this.opts.minSize + (this.opts.maxSize - this.opts.minSize) * (1 - t);
-
-    const spin = rng() * Math.PI * 2;
-    const spinSpeed = (rng() - 0.5) * 0.9;
-
-    // Slight color variation.
-    const base = new THREE.Color(0x9e9a93);
-    const warm = new THREE.Color(0xb09a7a);
-    const cool = new THREE.Color(0x8a949e);
-    const mix1 = rng();
-    const mix2 = rng();
-    const c = base
-      .clone()
-      .lerp(warm, mix1 * 0.55)
-      .lerp(cool, mix2 * 0.45);
-
-    return {
-      a,
-      b,
-      e,
-      omega,
-      inc,
-      phase,
-      speed,
-      scale,
-      spin,
-      spinSpeed,
-      color: c,
-    };
+    // Fallback if rejection was unlucky.
+    return Math.sqrt(r2Min + (r2Max - r2Min) * rng());
   }
 
-  private updateMatrices(delta: number, updateColors: boolean): void {
-    const timeFactor = delta * 60 * APP.simulationSpeed;
+  private radialDensityWeight(radius: number): number {
+    // Gentle cinematic density shaping + subtle Kirkwood-like dips.
+    const t = (radius - this.opts.innerRadius) / (this.opts.outerRadius - this.opts.innerRadius);
+    const centerBias = 0.82 + Math.exp(-Math.pow((t - 0.52) / 0.34, 2.0)) * 0.22;
 
-    for (let mi = 0; mi < this.meshes.length; mi++) {
-      const mesh = this.meshes[mi];
-      const instances = this.instancesByMesh[mi];
+    const dip = (center: number, width: number, depth: number) => {
+      const x = (radius - center) / width;
+      return 1.0 - Math.exp(-x * x) * depth;
+    };
 
-      for (let i = 0; i < instances.length; i++) {
-        const it = instances[i];
+    let w = centerBias;
+    w *= dip(2500, 65, 0.45);
+    w *= dip(2820, 70, 0.35);
+    w *= dip(2960, 65, 0.28);
+    w *= dip(3270, 80, 0.52);
 
-        // Advance orbit.
-        it.phase = THREE.MathUtils.euclideanModulo(
-          it.phase - it.speed * timeFactor,
-          Math.PI * 2,
-        );
+    return THREE.MathUtils.clamp(w, 0.08, 1.0);
+  }
 
-        // Ellipse in XZ with an offset for eccentricity.
-        const x0 = it.a * Math.cos(it.phase) - it.a * it.e;
-        const z0 = it.b * Math.sin(it.phase);
+  private sampleColor(rng: Rng): THREE.Color {
+    // Darker, mineral palette so it reads like rock, not snow.
+    const palette = [
+      new THREE.Color("#6f665d"),
+      new THREE.Color("#7f7365"),
+      new THREE.Color("#5f5c57"),
+      new THREE.Color("#71695f"),
+      new THREE.Color("#857864"),
+      new THREE.Color("#6a6f75"),
+    ];
 
-        // Rotate orbit within plane by omega.
-        const cosO = Math.cos(it.omega);
-        const sinO = Math.sin(it.omega);
-        let x = x0 * cosO - z0 * sinO;
-        let z = x0 * sinO + z0 * cosO;
-        let y = 0;
+    const i0 = Math.floor(rng() * palette.length) % palette.length;
+    const i1 = (i0 + 1 + Math.floor(rng() * (palette.length - 1))) % palette.length;
+    const c = palette[i0].clone().lerp(palette[i1], rng() * 0.55);
 
-        // Inclination (rotate around X).
-        const cosI = Math.cos(it.inc);
-        const sinI = Math.sin(it.inc);
-        const z2 = z * cosI - y * sinI;
-        const y2 = z * sinI + y * cosI;
-        z = z2;
-        y = y2;
-
-        this.tmpPos.set(x, y, z);
-
-        // Spin for a bit of life.
-        it.spin += it.spinSpeed * timeFactor * 0.002;
-        this.tmpEuler.set(it.spin, it.spin * 0.7, it.spin * 1.1);
-        this.tmpQuat.setFromEuler(this.tmpEuler);
-
-        this.tmpScale.setScalar(it.scale);
-        this.tmpMatrix.compose(this.tmpPos, this.tmpQuat, this.tmpScale);
-        mesh.setMatrixAt(i, this.tmpMatrix);
-        if (updateColors) mesh.setColorAt(i, it.color);
-      }
-
-      mesh.instanceMatrix.needsUpdate = true;
-      if (updateColors && mesh.instanceColor)
-        mesh.instanceColor.needsUpdate = true;
-    }
+    // Small value variation.
+    const hsl = { h: 0, s: 0, l: 0 };
+    c.getHSL(hsl);
+    c.setHSL(hsl.h, THREE.MathUtils.clamp(hsl.s * (0.85 + rng() * 0.35), 0, 1), THREE.MathUtils.clamp(hsl.l * (0.82 + rng() * 0.38), 0.2, 0.72));
+    return c;
   }
 }
