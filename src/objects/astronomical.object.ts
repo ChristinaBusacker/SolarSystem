@@ -83,13 +83,17 @@ export class Astronomical implements AstronomicalObject {
       0,
     );
 
-    // Higher tessellation noticeably reduces "wobble" on thin projected ellipses,
-    // especially for the inner orbits.
+    // Higher tessellation noticeably reduces the apparent wobble of Line2 on
+    // projected ellipses. We keep planet orbits very dense and moons a bit lighter.
     const approxCirc =
       Math.PI * (3 * (a + b) - Math.sqrt((3 * a + b) * (a + 3 * b)));
+    const minSegments = this.isMoon ? 768 : 2048;
+    const maxSegments = this.isMoon ? 4096 : 16384;
+    const byCircumference = Math.ceil(approxCirc * 0.12);
+    const byAngleStep = Math.ceil((Math.PI * 2) / 0.0035); // ~0.2° per segment
     const segments = Math.max(
-      512,
-      Math.min(8192, Math.ceil(approxCirc * 0.05)),
+      minSegments,
+      Math.min(maxSegments, Math.max(byCircumference, byAngleStep)),
     );
 
     const points = orbitCurve.getPoints(segments);
@@ -119,7 +123,7 @@ export class Astronomical implements AstronomicalObject {
       depthTest: true,
       depthWrite: false,
       vertexColors: true,
-      alphaToCoverage: true,
+      alphaToCoverage: false,
     });
 
     const viewport = document.getElementById("scene-root");
@@ -130,6 +134,7 @@ export class Astronomical implements AstronomicalObject {
 
     const line = new Line2(geometry, material);
     line.computeLineDistances();
+    line.frustumCulled = false;
 
     this.orbitTrailPointCount = pointCount;
     this.orbitTrailParams = new Float32Array(pointCount);
@@ -152,33 +157,47 @@ export class Astronomical implements AstronomicalObject {
 
     const pointCount = this.orbitTrailPointCount;
     const current = THREE.MathUtils.euclideanModulo(this.angle, Math.PI * 2) / (Math.PI * 2);
-    const trailLen = 1; // 3/4 orbit visible behind the planet
 
-    const fadeFor = (t: number): number => {
-      let d = t - current;
-      if (d < 0) d += 1;
-      if (d > trailLen) return 0;
+    // Visible trail spans ~3/4 of the orbit, starts inside the planet silhouette,
+    // then fades towards the tail.
+    const visibleArc = 0.9;
+    const headGap = 0.00002;
+    const headSolidArc = 0.035;
 
-      const x = 1 - d / trailLen;
-      // Slightly stronger near the body, gentler tail.
-      return x * x * (3 - 2 * x);
+    const fadeForBehind = (d: number): number => {
+      if (d < headGap || d > visibleArc) return 0;
+      if (d <= headGap + headSolidArc) return 1;
+
+      const fadeStart = headGap + headSolidArc;
+      const x = THREE.MathUtils.clamp((d - fadeStart) / (visibleArc - fadeStart), 0, 1);
+      // 1 -> 0 smooth fade (tail only)
+      return 1 - (x * x * (3 - 2 * x));
     };
 
     for (let seg = 0; seg < pointCount - 1; seg++) {
-      const f0 = fadeFor(this.orbitTrailParams[seg]);
-      const f1 = fadeFor(this.orbitTrailParams[seg + 1]);
+      const t0 = this.orbitTrailParams[seg];
+      const t1 = this.orbitTrailParams[seg + 1];
 
+      // Planet motion in this app goes towards decreasing angle.
+      // Use the segment midpoint so the first visible segment does not fade-in/blink.
+      let tm = (t0 + t1) * 0.5;
+      if (t1 < t0) tm = (tm + 0.5) % 1;
+
+      let d = current - tm;
+      if (d < 0) d += 1;
+
+      const f = fadeForBehind(d);
       cStart.setXYZ(
         seg,
-        this.orbitBaseColor.r * f0,
-        this.orbitBaseColor.g * f0,
-        this.orbitBaseColor.b * f0,
+        this.orbitBaseColor.r * f,
+        this.orbitBaseColor.g * f,
+        this.orbitBaseColor.b * f,
       );
       cEnd.setXYZ(
         seg,
-        this.orbitBaseColor.r * f1,
-        this.orbitBaseColor.g * f1,
-        this.orbitBaseColor.b * f1,
+        this.orbitBaseColor.r * f,
+        this.orbitBaseColor.g * f,
+        this.orbitBaseColor.b * f,
       );
     }
 
