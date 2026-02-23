@@ -12,6 +12,9 @@ export class UiRenderer {
   private root: HTMLElement;
   private state: UiState;
   private isMounted = false;
+  private lastSidebarOpen: boolean | null = null;
+
+  private static readonly SIDEBAR_TRANSITION_MS = 280;
 
   constructor(root: HTMLElement, initial: UiState) {
     this.root = root;
@@ -134,6 +137,23 @@ export class UiRenderer {
       shell.classList.toggle("is-closed", !this.state.sidebarOpen);
     }
 
+    // Also toggle the layout container so the scene can resize.
+    const sidebarRoot = document.getElementById("sidebar-root");
+    if (sidebarRoot) {
+      sidebarRoot.classList.toggle("is-open", this.state.sidebarOpen);
+      sidebarRoot.classList.toggle("is-closed", !this.state.sidebarOpen);
+    }
+
+    // Fire resize updates during transitions so the canvas doesn't jump.
+    if (this.lastSidebarOpen !== null && this.lastSidebarOpen !== this.state.sidebarOpen) {
+      window.dispatchEvent(
+        new CustomEvent("ui:sidebarTransition", {
+          detail: { durationMs: UiRenderer.SIDEBAR_TRANSITION_MS },
+        }),
+      );
+    }
+    this.lastSidebarOpen = this.state.sidebarOpen;
+
     // Keep checkboxes in sync without re-rendering.
     const planets = this.root.querySelector<HTMLInputElement>(
       'input[type="checkbox"][data-action="toggle-planets"]',
@@ -153,3 +173,4 @@ export class UiRenderer {
     }
   }
 }
+

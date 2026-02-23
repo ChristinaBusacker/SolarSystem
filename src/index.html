@@ -6,15 +6,23 @@
     <title>Solar</title>
   </head>
   <body>
-    <div id="app"></div>
-    <div id="ui-root">
-      <div data-slot="hud"></div>
-      <div data-slot="left"></div>
-      <div data-slot="right"></div>
-      <div data-slot="modal"></div>
-      <div data-slot="toast"></div>
-      <div data-slot="sidebar"></div>
+    <div id="layout">
+      <div id="scene-root">
+        <div id="app"></div>
+
+        <div id="ui-root">
+          <div data-slot="hud"></div>
+          <div data-slot="left"></div>
+          <div data-slot="modal"></div>
+          <div data-slot="toast"></div>
+        </div>
+
+        <select id="cameraSelector"></select>
+      </div>
+
+      <div id="sidebar-root" class="is-open">
+        <div id="sidebar-slot"></div>
+      </div>
     </div>
-    <select id="cameraSelector"></select>
   </body>
 </html>

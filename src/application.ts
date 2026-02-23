@@ -52,6 +52,13 @@ export class Application {
       const ce = e as CustomEvent<{ speed: number }>;
       if (ce.detail?.speed != null) this.simulationSpeed = ce.detail.speed;
     });
+
+
+    window.addEventListener("ui:sidebarTransition", (e: Event) => {
+      const ce = e as CustomEvent<{ durationMs?: number }>;
+      const durationMs = Math.max(0, Number(ce.detail?.durationMs ?? 280));
+      this.resizeDuringTransition(durationMs);
+    });
   }
 
   public init() {
@@ -73,7 +80,7 @@ export class Application {
     );
 
     const bloomPass = new UnrealBloomPass(
-      new THREE.Vector2(window.innerWidth, window.innerHeight),
+      new THREE.Vector2(this.getViewportSize().width, this.getViewportSize().height),
       bloomStrength,
       bloomRadius,
       bloomThreshold,
@@ -124,12 +131,12 @@ export class Application {
       hud.init();
     }
 
-    const uiSlotRight = document.querySelector<HTMLElement>(
-      '#ui-root [data-slot="right"]',
+    const uiSidebarSlot = document.querySelector<HTMLElement>(
+      '#sidebar-slot',
     );
 
-    if (uiSlotRight) {
-      const ui = new UiRenderer(uiSlotRight, {
+    if (uiSidebarSlot) {
+      const ui = new UiRenderer(uiSidebarSlot, {
         hideMoons: false,
         hidePlanets: false,
         sidebarOpen: true,
@@ -139,7 +146,9 @@ export class Application {
   }
 
   private initWebGLRenderer() {
-    this.webglRenderer.setSize(window.innerWidth, window.innerHeight);
+    const { width, height } = this.getViewportSize();
+
+    this.webglRenderer.setSize(width, height);
 
     this.webglRenderer.toneMapping = THREE.CineonToneMapping;
     this.webglRenderer.toneMappingExposure = 1;
@@ -153,7 +162,9 @@ export class Application {
   }
 
   private initCSS2DRenderer() {
-    this.cssRenderer.setSize(window.innerWidth, window.innerHeight);
+    const { width, height } = this.getViewportSize();
+
+    this.cssRenderer.setSize(width, height);
 
     this.cssRenderer.domElement.classList.add("css-renderer");
     document.getElementById("app").appendChild(this.cssRenderer.domElement);
@@ -182,9 +193,9 @@ export class Application {
   private initSunLight() {}
 
   public onResize() {
-    const width = window.innerWidth;
-    const height = window.innerHeight;
+    const { width, height } = this.getViewportSize();
     const activeCamera = this.cameraManager.getActiveEntry().camera;
+
     this.webglRenderer.setSize(width, height);
     this.cssRenderer.setSize(width, height);
     this.bloomComposer.setSize(width, height);
@@ -192,6 +203,36 @@ export class Application {
 
     activeCamera.aspect = width / height;
     activeCamera.updateProjectionMatrix();
+  }
+
+  private getViewportSize(): { width: number; height: number } {
+    const viewport = document.getElementById("scene-root");
+    if (!viewport) {
+      return { width: window.innerWidth, height: window.innerHeight };
+    }
+
+    const rect = viewport.getBoundingClientRect();
+    // Guard against 0 sizes during early init.
+    return {
+      width: Math.max(1, Math.floor(rect.width)),
+      height: Math.max(1, Math.floor(rect.height)),
+    };
+  }
+
+  private resizeDuringTransition(durationMs: number): void {
+    // During sidebar open/close transitions the viewport size changes gradually.
+    // Fire a few resize updates so the canvas doesn't "jump".
+    const start = performance.now();
+    const maxMs = Math.min(1200, Math.max(0, durationMs) + 80);
+
+    const tick = () => {
+      this.onResize();
+      if (performance.now() - start < maxMs) {
+        requestAnimationFrame(tick);
+      }
+    };
+
+    requestAnimationFrame(tick);
   }
 
   public updateComposer(newCamera: THREE.Camera) {
