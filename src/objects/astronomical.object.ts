@@ -225,6 +225,7 @@ export class Astronomical implements AstronomicalObject {
     div.style.border = "2px solid " + this.data.color;
     div.style.borderRadius = "50%";
     div.style.cursor = "pointer";
+    div.style.opacity = "0.5";
 
     div.dataset.body = this.data.name;
     div.dataset.kind = this.isMoon ? "moon" : "planet";
