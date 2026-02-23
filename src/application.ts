@@ -88,6 +88,10 @@ export class Application {
     this.attachViewportResizeObserver();
     this.onResize();
     this.astronomicalManager.initObjects(this.scene);
+    {
+      const { width, height } = this.getViewportSize();
+      this.astronomicalManager.setOrbitLineResolution(width, height);
+    }
     this.initWebGLRenderer();
     this.initCSS2DRenderer();
     this.initBackground();

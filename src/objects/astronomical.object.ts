@@ -12,41 +12,41 @@ import { astronomicalShader } from "../shader/astronomical.shader";
 import { earthShader } from "../shader/earth.shader";
 import { PURE_BLACK_MATERIAL } from "../constant/pureBlackMaterial.constant";
 import { CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer";
+import { Line2 } from "three/examples/jsm/lines/Line2";
+import { LineGeometry } from "three/examples/jsm/lines/LineGeometry";
+import { LineMaterial } from "three/examples/jsm/lines/LineMaterial";
 
 export class Astronomical implements AstronomicalObject {
   public data?: AstronomicalDataset;
 
   public texture: THREE.Texture;
-  public texturePath: Array<string>
+  public texturePath: Array<string>;
   public material: THREE.ShaderMaterial;
   public bloomMaterial: THREE.ShaderMaterial;
   public mesh: THREE.Mesh<THREE.SphereGeometry>;
   public camera: THREE.PerspectiveCamera;
   public group = new THREE.Group();
-  public marker: THREE.Line<
-    THREE.BufferGeometry<THREE.NormalBufferAttributes>,
-    THREE.LineBasicMaterial
-  >;
+  public marker: Line2;
 
   public cssObject: CSS2DObject;
   public angle = 0;
   public planetaryGroup = new THREE.Group();
   public orbitalGroup = new THREE.Group();
   public atmosphereMesh?: THREE.Mesh;
-  public atmosphereMaterial?: THREE.ShaderMaterial
-  public control: SimpleControl
-  public specMap: THREE.Texture
-  public moons: Array<AstronomicalObject> = []
-  public orbitingParent?: AstronomicalObject
+  public atmosphereMaterial?: THREE.ShaderMaterial;
+  public control: SimpleControl;
+  public specMap: THREE.Texture;
+  public moons: Array<AstronomicalObject> = [];
+  public orbitingParent?: AstronomicalObject;
   public isMoon = false;
 
-  public materials: Array<THREE.ShaderMaterial> = []
+  public materials: Array<THREE.ShaderMaterial> = [];
 
-  private initialOffset = 7000000 * 9
+  private initialOffset = 7000000 * 9;
 
-  public emissive = false
+  public emissive = false;
 
-  public isInit = false
+  public isInit = false;
 
   public constructor(
     texturePath: Array<string>,
@@ -54,61 +54,86 @@ export class Astronomical implements AstronomicalObject {
     data: AstronomicalDataset,
     emissive = false,
   ) {
-    this.data = data
+    this.data = data;
     const textureLoader = new THREE.TextureLoader();
-    this.texturePath = texturePath
+    this.texturePath = texturePath;
     this.texture = textureLoader.load(texturePath[0]);
-    this.specMap = textureLoader.load('/assets/spec/2k_earth_specular_map.png');
-    this.emissive = emissive
+    this.specMap = textureLoader.load("/assets/spec/2k_earth_specular_map.png");
+    this.emissive = emissive;
 
-    this.angle = this.data.orbitalSpeed * this.initialOffset
+    this.angle = THREE.MathUtils.euclideanModulo(
+      this.data.orbitalSpeed * this.initialOffset,
+      Math.PI * 2,
+    );
   }
 
-  public addMarker(
-    minDistance: number,
-    maxDistance: number
-  ): THREE.Line<
-    THREE.BufferGeometry<THREE.NormalBufferAttributes>,
-    THREE.LineBasicMaterial
-  > {
+  public addMarker(a: number, b: number): Line2 {
     const orbitCurve = new THREE.EllipseCurve(
       0,
-      0, // ax, aY
-      minDistance,
-      maxDistance, // xRadius, yRadius
       0,
-      2 * Math.PI, // aStartAngle, aEndAngle
-      false, // aClockwise
-      0 // aRotation
+      a,
+      b,
+      0,
+      2 * Math.PI,
+      false,
+      0,
     );
 
-    const points = orbitCurve.getPoints(2000);
-    const geometry = new THREE.BufferGeometry().setFromPoints(points);
+    // More segments for large orbits to reduce the "polygon" look.
+    // Ramanujan approximation of ellipse circumference.
+    const approxCirc =
+      Math.PI * (3 * (a + b) - Math.sqrt((3 * a + b) * (a + 3 * b)));
+    const segments = Math.max(
+      256,
+      Math.min(4096, Math.ceil(approxCirc * 0.02)),
+    );
 
-    const material = new THREE.LineBasicMaterial({
-      color: new THREE.Color(this.data.color)
+    const points = orbitCurve.getPoints(segments);
+
+    // Line2 expects a flat array of xyz positions.
+    // EllipseCurve outputs (x, y) on the XY plane. We render in XZ (y = 0).
+    const positions: number[] = [];
+    for (const p of points) {
+      positions.push(p.x, 0, p.y);
+    }
+
+    const geometry = new LineGeometry();
+    geometry.setPositions(positions);
+
+    const material = new LineMaterial({
+      color: new THREE.Color(this.data.color),
+      linewidth: 1.5, // pixels (screen-space)
+      transparent: true,
+      opacity: 0.85,
+      depthTest: false,
+      depthWrite: false,
     });
 
+    // Initialize resolution once; Application will keep it updated on resize.
+    const viewport = document.getElementById("scene-root");
+    const rect = viewport?.getBoundingClientRect();
+    const w = Math.max(1, Math.floor(rect?.width ?? window.innerWidth));
+    const h = Math.max(1, Math.floor(rect?.height ?? window.innerHeight));
+    material.resolution.set(w, h);
 
-    const ellipse = new THREE.Line(geometry, material);
+    const line = new Line2(geometry, material);
+    line.computeLineDistances();
 
-    ellipse.rotateX(Math.PI / 2);
-
-    return ellipse;
+    return line;
   }
 
   private setInitialPosition() {
     this.group.position.set(
       this.data.initialPosition.x,
       this.data.initialPosition.y,
-      this.data.initialPosition.z
+      this.data.initialPosition.z,
     );
   }
 
   private initOrbit() {
     this.marker = this.addMarker(
       this.data.semiMajorAxis,
-      this.data.semiMinorAxis
+      this.data.semiMinorAxis,
     );
 
     this.orbitalGroup.add(this.marker);
@@ -116,7 +141,7 @@ export class Astronomical implements AstronomicalObject {
     this.orbitalGroup.position.set(
       this.data.orbitCenter.x,
       this.data.orbitCenter.y,
-      this.data.orbitCenter.z
+      this.data.orbitCenter.z,
     );
   }
 
@@ -126,21 +151,25 @@ export class Astronomical implements AstronomicalObject {
         50,
         window.innerWidth / window.innerHeight,
         0.1,
-        9000000
+        9000000,
       );
 
-      this.control = new SimpleControl(this.data.size * 6, this.data.size * 12, this.camera)
+      this.control = new SimpleControl(
+        this.data.size * 6,
+        this.data.size * 12,
+        this.camera,
+      );
       this.control.initEventListener();
-      this.group.add(this.control.group)
+      this.group.add(this.control.group);
 
-      APP.cameraManager.addCamera(this.data.name, this.camera, this.control)
+      APP.cameraManager.addCamera(this.data.name, this.camera, this.control);
     }
   }
 
   public addAtmosphere(texturePath: string, size: number) {
     const atmosphereTexture = new THREE.TextureLoader().load(texturePath);
 
-    const { vertexShader, fragmentShader } = astronomicalShader
+    const { vertexShader, fragmentShader } = astronomicalShader;
 
     const casterOptions: any = {
       casterPosition1: { value: new THREE.Vector3(0, 0, 0) },
@@ -150,16 +179,16 @@ export class Astronomical implements AstronomicalObject {
       casterPosition3: { value: new THREE.Vector3(0, 0, 0) },
       casterRadius3: { value: 0.0 },
       casterPosition4: { value: new THREE.Vector3(0, 0, 0) },
-      casterRadius4: { value: 0.0 }
-    }
+      casterRadius4: { value: 0.0 },
+    };
 
     const options = {
       dayTexture: { value: atmosphereTexture },
       sunPosition: { value: new THREE.Vector3(0, 0, 0) },
       lightIntensity: { value: 1.0 },
       shininess: { value: 16 },
-      ...casterOptions
-    }
+      ...casterOptions,
+    };
 
     this.atmosphereMaterial = new THREE.ShaderMaterial({
       uniforms: {
@@ -169,42 +198,48 @@ export class Astronomical implements AstronomicalObject {
       vertexShader: vertexShader,
       fragmentShader: fragmentShader,
       transparent: true,
-      side: THREE.DoubleSide
+      side: THREE.DoubleSide,
     });
 
-
-    const atmosphereGeometry = new THREE.SphereGeometry(size + 0.0001, 128, 128); // Atmosphäre leicht größer als die Oberfläche
+    const atmosphereGeometry = new THREE.SphereGeometry(
+      size + 0.0001,
+      128,
+      128,
+    ); // Atmosphäre leicht größer als die Oberfläche
     this.atmosphereMesh = new THREE.Mesh(
       atmosphereGeometry,
-      this.atmosphereMaterial
+      this.atmosphereMaterial,
     );
 
-    this.materials.push(this.atmosphereMaterial)
-    this.atmosphereMesh.name = this.data.name + " Atmo"
+    this.materials.push(this.atmosphereMaterial);
+    this.atmosphereMesh.name = this.data.name + " Atmo";
 
     this.planetaryGroup.add(this.atmosphereMesh);
   }
 
   public addInteractions() {
-
     let div = document.createElement("div");
     div.style.width = "5px";
     div.style.height = "5px";
-    div.style.backgroundColor = this.data.color
-    div.style.border = "2px solid " + this.data.color
+    div.style.backgroundColor = this.data.color;
+    div.style.border = "2px solid " + this.data.color;
     div.style.borderRadius = "50%";
-    div.style.cursor = "pointer"
+    div.style.cursor = "pointer";
 
     div.dataset.body = this.data.name;
-    div.dataset.kind = this.isMoon ? 'moon' : 'planet';
+    div.dataset.kind = this.isMoon ? "moon" : "planet";
 
-    div.classList.add('object', this.isMoon ? 'moon' : 'planet', this.isMoon ? this.orbitingParent.data.name : this.data.name, this.data.name)
+    div.classList.add(
+      "object",
+      this.isMoon ? "moon" : "planet",
+      this.isMoon ? this.orbitingParent.data.name : this.data.name,
+      this.data.name,
+    );
 
-
-    let p = document.createElement('p')
-    p.style.color = 'white'
-    p.innerText = this.data.name
-    div.appendChild(p)
+    let p = document.createElement("p");
+    p.style.color = "white";
+    p.innerText = this.data.name;
+    div.appendChild(p);
 
     div.onclick = (ev) => {
       ev.stopPropagation();
@@ -216,7 +251,7 @@ export class Astronomical implements AstronomicalObject {
           },
         }),
       );
-    }
+    };
 
     document.body.appendChild(div);
 
@@ -225,7 +260,12 @@ export class Astronomical implements AstronomicalObject {
   }
 
   public getShadowCasters() {
-    const shadowCasters = this.isMoon ? [this.orbitingParent, ...this.orbitingParent.moons.filter((moon) => moon !== this)] : this.moons
+    const shadowCasters = this.isMoon
+      ? [
+          this.orbitingParent,
+          ...this.orbitingParent.moons.filter((moon) => moon !== this),
+        ]
+      : this.moons;
 
     return shadowCasters.map((caster) => {
       const position = new THREE.Vector3();
@@ -234,13 +274,14 @@ export class Astronomical implements AstronomicalObject {
       return {
         radius: caster.data.size,
         name: caster.data.name,
-        position: [position.x, position.y, position.z]
-      }
-    })
+        position: [position.x, position.y, position.z],
+      };
+    });
   }
 
   public generateMaterials() {
-    const { vertexShader, fragmentShader } = this.texturePath.length < 2 ? astronomicalShader : earthShader
+    const { vertexShader, fragmentShader } =
+      this.texturePath.length < 2 ? astronomicalShader : earthShader;
 
     const casterOptions: any = {
       casterPosition1: { value: new THREE.Vector3(0, 0, 0) },
@@ -250,18 +291,24 @@ export class Astronomical implements AstronomicalObject {
       casterPosition3: { value: new THREE.Vector3(0, 0, 0) },
       casterRadius3: { value: 0.0 },
       casterPosition4: { value: new THREE.Vector3(0, 0, 0) },
-      casterRadius4: { value: 0.0 }
-    }
+      casterRadius4: { value: 0.0 },
+    };
 
     const options = {
       dayTexture: { value: this.texturePath[0] ? this.texture : null },
-      nightTexture: { value: this.texturePath[1] ? new THREE.TextureLoader().load(this.texturePath[1]) : this.texturePath[0] ? this.texture : null },
+      nightTexture: {
+        value: this.texturePath[1]
+          ? new THREE.TextureLoader().load(this.texturePath[1])
+          : this.texturePath[0]
+            ? this.texture
+            : null,
+      },
       sunPosition: { value: new THREE.Vector3(0, 0, 0) },
       lightIntensity: { value: 1.0 },
       specMap: { value: this.specMap },
       shininess: { value: 16 },
-      ...casterOptions
-    }
+      ...casterOptions,
+    };
 
     this.material = new THREE.ShaderMaterial({
       uniforms: {
@@ -270,7 +317,7 @@ export class Astronomical implements AstronomicalObject {
       },
       vertexShader: vertexShader,
       fragmentShader: fragmentShader,
-      side: THREE.DoubleSide
+      side: THREE.DoubleSide,
     });
 
     this.bloomMaterial = new THREE.ShaderMaterial({
@@ -280,12 +327,12 @@ export class Astronomical implements AstronomicalObject {
       },
       vertexShader: vertexShader,
       fragmentShader: fragmentShader,
-      side: THREE.DoubleSide
+      side: THREE.DoubleSide,
     });
 
-    this.materials.push(this.material)
-    this.materials.push(this.bloomMaterial)
-    this.mesh.material = this.material
+    this.materials.push(this.material);
+    this.materials.push(this.bloomMaterial);
+    this.mesh.material = this.material;
   }
 
   public init() {
@@ -293,12 +340,14 @@ export class Astronomical implements AstronomicalObject {
 
     this.mesh = new THREE.Mesh(geometry);
     this.mesh.name = this.data.name;
-    this.group.name = this.data.name + " Gruppe"
-    this.planetaryGroup.name = this.data.name + " planetaryGroup"
-    this.orbitalGroup.name = this.data.name + " orbitalGroup"
+    this.group.name = this.data.name + " Gruppe";
+    this.planetaryGroup.name = this.data.name + " planetaryGroup";
+    this.orbitalGroup.name = this.data.name + " orbitalGroup";
 
     this.planetaryGroup.add(this.mesh);
-    this.planetaryGroup.rotateX(this.data.planetaryTilt * THREE.MathUtils.DEG2RAD * 0.5)
+    this.planetaryGroup.rotateX(
+      this.data.planetaryTilt * THREE.MathUtils.DEG2RAD * 0.5,
+    );
 
     this.group.add(this.addInteractions());
 
@@ -313,53 +362,62 @@ export class Astronomical implements AstronomicalObject {
 
   public preBloom(): void {
     if (!this.emissive) {
-      this.mesh.material = this.bloomMaterial
-      this.marker.material.color = new THREE.Color(0x000000);
+      this.mesh.material = this.bloomMaterial;
+      (this.marker.material as LineMaterial).color.set(0x000000);
       if (this.atmosphereMesh) {
-        this.atmosphereMesh.material = PURE_BLACK_MATERIAL
+        this.atmosphereMesh.material = PURE_BLACK_MATERIAL;
       }
-
     }
   }
 
   public postBloom(): void {
     if (!this.emissive) {
-      this.mesh.material = this.material
-      this.marker.material.color = new THREE.Color(this.data.color)
+      this.mesh.material = this.material;
+      (this.marker.material as LineMaterial).color.set(this.data.color);
 
       if (this.atmosphereMesh) {
-        this.atmosphereMesh.material = this.atmosphereMaterial
+        this.atmosphereMesh.material = this.atmosphereMaterial;
       }
     }
   }
 
   public render(delta: number, activeCamera?: THREE.PerspectiveCamera) {
-    if (!this.isInit) return
+    if (!this.isInit) return;
 
     if ((this.orbitingParent || this.moons.length > 0) && this.material) {
-
       const shadowCasters = this.getShadowCasters();
 
       this.materials.forEach((material) => {
-        const params: any = {}
+        const params: any = {};
 
         shadowCasters.forEach((caster, i) => {
           params[`casterPosition${i + 1}`] = { value: caster.position };
           params[`casterRadius${i + 1}`] = { value: caster.radius };
-        })
+        });
 
-        Object.assign(material.uniforms, params)
-      })
-
+        Object.assign(material.uniforms, params);
+      });
     }
 
     if (this.data.distanceToOrbiting > 0) {
-      this.angle -= this.data.orbitalSpeed * delta * 60 * APP.simulationSpeed;
-      this.group.position.x = this.data.semiMajorAxis * Math.cos(this.angle);
-      this.group.position.z = this.data.semiMinorAxis * Math.sin(this.angle);
+      const deltaAngle =
+        this.data.orbitalSpeed * delta * 60 * APP.simulationSpeed;
+
+      // Keep angle bounded to avoid precision loss over long runtimes.
+      this.angle = THREE.MathUtils.euclideanModulo(
+        this.angle - deltaAngle,
+        Math.PI * 2,
+      );
+
+      this.group.position.set(
+        this.data.semiMajorAxis * Math.cos(this.angle),
+        0,
+        this.data.semiMinorAxis * Math.sin(this.angle),
+      );
     }
 
-    this.planetaryGroup.rotation.y += this.data.rotationSpeed * 60 * delta * APP.simulationSpeed;
+    this.planetaryGroup.rotation.y +=
+      this.data.rotationSpeed * 60 * delta * APP.simulationSpeed;
 
     if (activeCamera && this.cssObject) {
       this.cssObject.lookAt(activeCamera.position);

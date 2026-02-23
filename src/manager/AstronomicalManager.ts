@@ -10,6 +10,7 @@ import { Sun } from "../objects/sun.object";
 import { Uranus } from "../objects/uranus.object";
 import { Venus } from "../objects/venus.object";
 import type * as THREE from "three";
+import { LineMaterial } from "three/examples/jsm/lines/LineMaterial";
 
 export class AstronomicalManager {
   private entrys: Array<AstronomicalEntry> = [
@@ -62,6 +63,23 @@ export class AstronomicalManager {
     });
   }
 
+  public setOrbitLineResolution(width: number, height: number): void {
+    this.entrys.forEach((entry) => {
+      const obj: any = entry.object as any;
+      if (obj.marker && obj.marker.material) {
+        const m = obj.marker.material as LineMaterial;
+        if (m.resolution) m.resolution.set(width, height);
+      }
+
+      entry.object.moons.forEach((moon) => {
+        const mo: any = moon as any;
+        if (mo.marker && mo.marker.material) {
+          const mm = mo.marker.material as LineMaterial;
+          if (mm.resolution) mm.resolution.set(width, height);
+        }
+      });
+    });
+  }
 
   public setOrbitsVisible(visible: boolean): void {
     this.entrys.forEach((entry) => {
@@ -74,5 +92,4 @@ export class AstronomicalManager {
       });
     });
   }
-
 }
