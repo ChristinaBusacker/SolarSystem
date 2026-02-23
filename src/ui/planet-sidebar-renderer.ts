@@ -1,5 +1,6 @@
 import sidebarLeftTpl from "./templates/sidebar-left.tpl.html";
 import { closeSidebar } from "./layout-state";
+import { router } from "../router/router";
 
 export class PlanetSidebarRenderer {
   private root: HTMLElement;
@@ -33,7 +34,7 @@ export class PlanetSidebarRenderer {
       if (planetBtn) {
         e.stopPropagation();
         const planet = planetBtn.getAttribute("data-planet") ?? "";
-        window.dispatchEvent(new CustomEvent("ui:planetSelect", { detail: { planet } }));
+        if (planet) router.goPlanet(planet);
       }
     });
 

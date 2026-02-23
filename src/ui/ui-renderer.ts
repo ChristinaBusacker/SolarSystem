@@ -33,6 +33,12 @@ export class UiRenderer {
     this.applyState();
   }
 
+  public setSelectedPlanetName(name?: string): void {
+    this.state.selectedPlanetName = name;
+    this.render();
+    this.applyState();
+  }
+
   public render(): void {
     const html = renderTemplate(sidebarTpl, {
       title: "Solar System",

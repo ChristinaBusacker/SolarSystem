@@ -21,7 +21,7 @@ export class AstronomicalManager {
     { selector: "Jupiter", object: new Jupiter() },
     { selector: "Saturn", object: new Saturn() },
     { selector: "Uranus", object: new Uranus() },
-    { selector: "Neptun", object: new Neptun() },
+    { selector: "Neptune", object: new Neptun() },
     { selector: "Pluto", object: new Pluto() },
   ];
 

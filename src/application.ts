@@ -19,7 +19,8 @@ import { UiRenderer } from "./ui/ui-renderer";
 import { HudRenderer } from "./ui/hud-renderer";
 import { StageControlsRenderer } from "./ui/stage-controls-renderer";
 import { PlanetSidebarRenderer } from "./ui/planet-sidebar-renderer";
-import { subscribeLayoutState } from "./ui/layout-state";
+import { openSidebar, subscribeLayoutState } from "./ui/layout-state";
+import { AppRoute, router } from "./router/router";
 
 export class Application {
   private static instance: Application | null = null;
@@ -39,23 +40,28 @@ export class Application {
 
   private backgroundImage?: THREE.Texture;
 
+  // Container size (scene-root).
   private lastViewportSize: { width: number; height: number } = {
     width: 0,
     height: 0,
   };
+
+  // Actual WebGL render-buffer size (we avoid re-allocations during sidebar transitions).
+  private lastRenderSize: { width: number; height: number } = {
+    width: 0,
+    height: 0,
+  };
+
+  private isLayoutTransitioning = false;
   private resizeScheduled = false;
   private transitionResizeTimer: number | null = null;
   private lastLayoutKey: string | null = null;
   private viewportObserver: ResizeObserver | null = null;
 
+  private uiRight?: UiRenderer;
+
   private constructor() {
     window.addEventListener("resize", () => this.scheduleResize());
-
-    const cameraSelector = document.getElementById("cameraSelector");
-    cameraSelector.addEventListener("change", (event) => {
-      const selectedCamera = (event.target as HTMLSelectElement).value;
-      this.cameraManager.switchCamera(selectedCamera);
-    });
 
     window.addEventListener("ui:speedChange", (e: Event) => {
       const ce = e as CustomEvent<{ speed: number }>;
@@ -74,6 +80,7 @@ export class Application {
     this.initSunLight();
     this.initPostProcessing();
     this.initUi();
+    this.initRouter();
   }
 
   public initPostProcessing() {
@@ -149,10 +156,11 @@ export class Application {
       "#sidebar-right-slot",
     );
     if (uiRightSidebarSlot) {
-      new UiRenderer(uiRightSidebarSlot, {
+      this.uiRight = new UiRenderer(uiRightSidebarSlot, {
         hideMoons: false,
         hidePlanets: false,
-      }).init();
+      });
+      this.uiRight.init();
     }
 
     const uiLeftSidebarSlot =
@@ -183,11 +191,36 @@ export class Application {
     });
   }
 
+  private initRouter(): void {
+    router.start();
+    router.subscribe((r) => this.applyRoute(r));
+  }
+
+  private applyRoute(route: AppRoute): void {
+    if (route.name === "home") {
+      this.cameraManager.switchCamera("Default");
+      this.uiRight?.setSelectedPlanetName(undefined);
+      return;
+    }
+
+    // Planet route.
+    const planet = route.planet;
+    this.cameraManager.switchCamera(planet);
+    this.uiRight?.setSelectedPlanetName(planet);
+
+    // Show info panel when a planet is selected.
+    openSidebar("right");
+  }
+
   private initWebGLRenderer() {
     const { width, height } = this.getViewportSize();
 
     // Keep the canvas styled by CSS (100% size) and only update the render buffer size here.
     this.webglRenderer.setSize(width, height, false);
+    this.lastRenderSize = { width, height };
+
+    // Prevent "white flash" if rendering stalls during resizes/transitions.
+    this.webglRenderer.setClearColor(0x000000, 1);
 
     this.webglRenderer.toneMapping = THREE.CineonToneMapping;
     this.webglRenderer.toneMappingExposure = 1;
@@ -245,13 +278,26 @@ export class Application {
 
     const activeCamera = this.cameraManager.getActiveEntry().camera;
 
-    this.webglRenderer.setSize(width, height, false);
+    // Always keep camera + CSS2D in sync with the *container* size.
     this.cssRenderer.setSize(width, height);
-    this.bloomComposer.setSize(width, height);
-    this.finalComposer.setSize(width, height);
 
     activeCamera.aspect = width / height;
     activeCamera.updateProjectionMatrix();
+
+    // During sidebar transitions we keep the WebGL render buffers stable to avoid
+    // GPU stalls & render-target reallocations (the "flashbang" problem).
+    if (this.isLayoutTransitioning) return;
+
+    if (
+      width === this.lastRenderSize.width &&
+      height === this.lastRenderSize.height
+    )
+      return;
+    this.lastRenderSize = { width, height };
+
+    this.webglRenderer.setSize(width, height, false);
+    this.bloomComposer.setSize(width, height);
+    this.finalComposer.setSize(width, height);
   }
 
   private getViewportSize(): { width: number; height: number } {
@@ -289,6 +335,7 @@ export class Application {
     const interval = Math.max(20, Math.floor(Math.max(0, durationMs) / steps));
     let i = 0;
 
+    this.isLayoutTransitioning = true;
     this.scheduleResize();
 
     this.transitionResizeTimer = window.setInterval(() => {
@@ -299,7 +346,18 @@ export class Application {
           window.clearInterval(this.transitionResizeTimer);
         this.transitionResizeTimer = null;
         // Final snap to exact size at the end of the transition.
-        window.setTimeout(() => this.scheduleResize(), 30);
+        window.setTimeout(() => {
+          this.isLayoutTransitioning = false;
+          // First update camera/CSS2D.
+          this.scheduleResize();
+          // Then resize heavy WebGL buffers once.
+          const { width, height } = this.getViewportSize();
+          this.lastRenderSize = { width: 0, height: 0 };
+          this.webglRenderer.setSize(width, height, false);
+          this.bloomComposer.setSize(width, height);
+          this.finalComposer.setSize(width, height);
+          this.lastRenderSize = { width, height };
+        }, 60);
       }
     }, interval);
   }
