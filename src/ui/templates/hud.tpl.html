@@ -10,7 +10,7 @@
           type="range"
           min="0"
           max="1000"
-          step="1"
+          step="5"
           value="0"
           data-action="speed-change"
           aria-label="Simulation speed"
@@ -20,5 +20,14 @@
     </div>
 
     <div class="hud-speed__label">SPEED</div>
+
+    <button
+      class="hud-speed__pause"
+      type="button"
+      data-action="speed-toggle-pause"
+      aria-label="Pause / resume simulation"
+    >
+      <span class="hud-speed__pauseIcon" aria-hidden="true"></span>
+    </button>
   </div>
 </div>
