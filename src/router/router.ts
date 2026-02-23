@@ -1,19 +1,28 @@
 // A tiny frameworkless router.
 //
-// Uses the navigation api if possible
+// 2026-ish decision:
+// - Prefer the Navigation API when available (cleaner interception / future-proof).
+// - Fallback to History API + popstate.
 
-export type AppRoute = { name: "home" } | { name: "planet"; planet: string };
+export type AppRoute =
+  | { name: "home" }
+  | { name: "planet"; planet: string }
+  | { name: "moon"; moon: string };
 
 type Listener = (route: AppRoute) => void;
 
-function normalizePlanetName(name: string): string {
+function normalizeBodyName(name: string): string {
+  // Historical naming mismatch in the project.
   if (name === "Neptun") return "Neptune";
   return name;
 }
 
 function buildUrl(route: AppRoute): string {
   if (route.name === "home") return "/";
-  return `/planet/${encodeURIComponent(normalizePlanetName(route.planet))}`;
+  if (route.name === "planet") {
+    return `/planet/${encodeURIComponent(normalizeBodyName(route.planet))}`;
+  }
+  return `/moon/${encodeURIComponent(normalizeBodyName(route.moon))}`;
 }
 
 function parseUrl(urlLike: string): AppRoute {
@@ -21,10 +30,17 @@ function parseUrl(urlLike: string): AppRoute {
   const path = url.pathname.replace(/\/+$/, "") || "/";
 
   // /planet/Earth
-  const m = path.match(/^\/planet\/([^/]+)$/);
+  let m = path.match(/^\/planet\/([^/]+)$/);
   if (m) {
     const planet = decodeURIComponent(m[1]);
-    return { name: "planet", planet: normalizePlanetName(planet) };
+    return { name: "planet", planet: normalizeBodyName(planet) };
+  }
+
+  // /moon/Titan
+  m = path.match(/^\/moon\/([^/]+)$/);
+  if (m) {
+    const moon = decodeURIComponent(m[1]);
+    return { name: "moon", moon: normalizeBodyName(moon) };
   }
 
   return { name: "home" };
@@ -96,6 +112,10 @@ export class AppRouter {
     this.navigate({ name: "planet", planet }, opts);
   }
 
+  public goMoon(moon: string, opts?: { replace?: boolean }): void {
+    this.navigate({ name: "moon", moon }, opts);
+  }
+
   private navigate(route: AppRoute, opts?: { replace?: boolean }): void {
     const url = buildUrl(route);
     const replace = !!opts?.replace;
@@ -114,14 +134,17 @@ export class AppRouter {
 
   private commit(route: AppRoute): void {
     // Avoid noisy updates.
-    if (
+    const same =
       route.name === this.current.name &&
-      (route.name !== "planet" ||
-        this.current.name !== "planet" ||
-        route.planet === this.current.planet)
-    ) {
-      return;
-    }
+      (route.name === "home" ||
+        (route.name === "planet" &&
+          this.current.name === "planet" &&
+          route.planet === this.current.planet) ||
+        (route.name === "moon" &&
+          this.current.name === "moon" &&
+          route.moon === this.current.moon));
+
+    if (same) return;
 
     this.current = route;
     this.listeners.forEach((l) => l(route));

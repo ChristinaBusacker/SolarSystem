@@ -18,8 +18,10 @@ import { mixPassShader } from "./shader/mixpass.shader";
 import { UiRenderer } from "./ui/ui-renderer";
 import { HudRenderer } from "./ui/hud-renderer";
 import { StageControlsRenderer } from "./ui/stage-controls-renderer";
+import { SceneTogglesRenderer } from "./ui/scene-toggles-renderer";
 import { PlanetSidebarRenderer } from "./ui/planet-sidebar-renderer";
 import { openSidebar, subscribeLayoutState } from "./ui/layout-state";
+import { subscribeSceneVisibilityState } from "./ui/scene-visibility-state";
 import { AppRoute, router } from "./router/router";
 
 export class Application {
@@ -67,6 +69,16 @@ export class Application {
       const ce = e as CustomEvent<{ speed: number }>;
       if (ce.detail?.speed != null) this.simulationSpeed = ce.detail.speed;
     });
+
+    window.addEventListener("ui:select-body", (e: Event) => {
+      const ce = e as CustomEvent<{ name: string; kind: "planet" | "moon" }>;
+      const name = ce.detail?.name;
+      const kind = ce.detail?.kind;
+      if (!name || !kind) return;
+      if (kind === "moon") router.goMoon(name);
+      else router.goPlanet(name);
+    });
+
   }
 
   public init() {
@@ -141,6 +153,15 @@ export class Application {
       new StageControlsRenderer(stageControlsSlot).init();
     }
 
+
+    const sceneTogglesSlot = document.querySelector<HTMLElement>(
+      '#ui-root [data-slot="scene-toggles"]',
+    );
+
+    if (sceneTogglesSlot) {
+      new SceneTogglesRenderer(sceneTogglesSlot).init();
+    }
+
     const uiSlotHud = document.querySelector<HTMLElement>(
       '#ui-root [data-slot="hud"]',
     );
@@ -189,6 +210,18 @@ export class Application {
       }
       this.lastLayoutKey = key;
     });
+
+    // Scene visibility toggles (markers/orbits)
+    subscribeSceneVisibilityState((v) => {
+      const overlay = this.cssRenderer?.domElement as HTMLElement | undefined;
+      if (overlay) {
+        overlay.classList.toggle("markers-off", !v.markersVisible);
+        overlay.classList.toggle("markers-on", v.markersVisible);
+      }
+
+      this.astronomicalManager.setOrbitsVisible(v.orbitsVisible);
+    });
+
   }
 
   private initRouter(): void {
@@ -199,16 +232,17 @@ export class Application {
   private applyRoute(route: AppRoute): void {
     if (route.name === "home") {
       this.cameraManager.switchCamera("Default");
-      this.uiRight?.setSelectedPlanetName(undefined);
+      this.uiRight?.setSelectedBodyName(undefined);
       return;
     }
 
-    // Planet route.
-    const planet = route.planet;
-    this.cameraManager.switchCamera(planet);
-    this.uiRight?.setSelectedPlanetName(planet);
+    // Body route (planet or moon).
+    const bodyName = route.name === "planet" ? route.planet : route.moon;
 
-    // Show info panel when a planet is selected.
+    this.cameraManager.switchCamera(bodyName);
+    this.uiRight?.setSelectedBodyName(bodyName);
+
+    // Show info panel when a body is selected.
     openSidebar("right");
   }
 
@@ -239,6 +273,7 @@ export class Application {
     this.cssRenderer.setSize(width, height);
 
     this.cssRenderer.domElement.classList.add("css-renderer");
+    this.cssRenderer.domElement.classList.add("markers-on");
     document.getElementById("app").appendChild(this.cssRenderer.domElement);
   }
 

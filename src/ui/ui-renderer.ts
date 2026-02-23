@@ -5,7 +5,7 @@ import { closeSidebar } from "./layout-state";
 export interface UiState {
   hidePlanets: boolean;
   hideMoons: boolean;
-  selectedPlanetName?: string;
+  selectedBodyName?: string;
 }
 
 /**
@@ -33,8 +33,8 @@ export class UiRenderer {
     this.applyState();
   }
 
-  public setSelectedPlanetName(name?: string): void {
-    this.state.selectedPlanetName = name;
+  public setSelectedBodyName(name?: string): void {
+    this.state.selectedBodyName = name;
     this.render();
     this.applyState();
   }
@@ -43,8 +43,8 @@ export class UiRenderer {
     const html = renderTemplate(sidebarTpl, {
       title: "Solar System",
       subtitle: "Frameworkless UI",
-      hint: "Click a planet (soon™) to see details.",
-      selectedPlanetName: this.state.selectedPlanetName ?? "None",
+      hint: "Click a marker (or a planet) to see details.",
+      selectedBodyName: this.state.selectedBodyName ?? "None",
       checkedHidePlanets: this.state.hidePlanets ? "checked" : "",
       checkedHideMoons: this.state.hideMoons ? "checked" : "",
     });

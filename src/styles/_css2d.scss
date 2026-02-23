@@ -3,13 +3,23 @@
   position: absolute;
   inset: 0;
   z-index: 3;
+
   pointer-events: none;
+
+  &.markers-on .object {
+    pointer-events: auto;
+  }
+
+  &.markers-off .object {
+    display: none;
+    pointer-events: none;
+  }
 
   &.hideMoons .moon {
     display: none;
   }
 
-  &.hidePlanets .planets {
+  &.hidePlanets .planet {
     display: none;
   }
 }

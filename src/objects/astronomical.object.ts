@@ -195,6 +195,9 @@ export class Astronomical implements AstronomicalObject {
     div.style.borderRadius = "50%";
     div.style.cursor = "pointer"
 
+    div.dataset.body = this.data.name;
+    div.dataset.kind = this.isMoon ? 'moon' : 'planet';
+
     div.classList.add('object', this.isMoon ? 'moon' : 'planet', this.isMoon ? this.orbitingParent.data.name : this.data.name, this.data.name)
 
 
@@ -203,7 +206,17 @@ export class Astronomical implements AstronomicalObject {
     p.innerText = this.data.name
     div.appendChild(p)
 
-    div.onclick = () => { APP.cameraManager.switchCamera(this.data.name) }
+    div.onclick = (ev) => {
+      ev.stopPropagation();
+      window.dispatchEvent(
+        new CustomEvent("ui:select-body", {
+          detail: {
+            name: this.data.name,
+            kind: this.isMoon ? "moon" : "planet",
+          },
+        }),
+      );
+    }
 
     document.body.appendChild(div);
 

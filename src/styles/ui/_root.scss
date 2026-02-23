@@ -23,3 +23,10 @@
   right: 14px;
   pointer-events: none;
 }
+
+#ui-root [data-slot="scene-toggles"] {
+  position: absolute;
+  left: 14px;
+  bottom: 88px;
+  pointer-events: none;
+}

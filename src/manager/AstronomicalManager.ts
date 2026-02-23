@@ -61,4 +61,18 @@ export class AstronomicalManager {
       entry.object.render(delta, camera, scene);
     });
   }
+
+
+  public setOrbitsVisible(visible: boolean): void {
+    this.entrys.forEach((entry) => {
+      const obj: any = entry.object as any;
+      if (obj.marker) obj.marker.visible = visible;
+
+      entry.object.moons.forEach((moon) => {
+        const m: any = moon as any;
+        if (m.marker) m.marker.visible = visible;
+      });
+    });
+  }
+
 }

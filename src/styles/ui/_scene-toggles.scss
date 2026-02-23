@@ -1,0 +1,88 @@
+.scene-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-end;
+  pointer-events: none;
+}
+
+.scene-toggle {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 8px 12px;
+  border-radius: 14px;
+
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(10, 12, 18, 0.55);
+  backdrop-filter: blur(10px);
+
+  cursor: pointer;
+  user-select: none;
+
+  transition:
+    transform 160ms ease,
+    background 160ms ease,
+    border-color 160ms ease;
+}
+
+.scene-toggle:hover {
+  transform: scale(1.02);
+  border-color: rgba(255, 255, 255, 0.32);
+}
+
+.scene-toggle:active {
+  transform: scale(0.99);
+}
+
+.scene-toggle__icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background-color: rgba(0, 0, 0, 0.18);
+
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 70% 70%;
+}
+
+.scene-toggle__text {
+  font-family: system-ui;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.92);
+  white-space: nowrap;
+}
+
+.scene-toggle--marker .scene-toggle__icon {
+  background-image: url("../assets/svgs/icon_markerCLOSE.svg");
+}
+
+.scene-toggle--marker.is-off .scene-toggle__icon {
+  background-image: url("../assets/svgs/icon_markerOFF.svg");
+}
+
+.scene-toggle--orbit .scene-toggle__icon {
+  background-image: url("../assets/svgs/icon_orbitON.svg");
+}
+
+.scene-toggle--orbit.is-off .scene-toggle__icon {
+  background-image: url("../assets/svgs/icon_orbitOFF.svg");
+}
+
+.scene-toggle:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.55);
+  outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+  // On mobile keep the toggles a bit higher so they don't fight with the bottom HUD.
+  #ui-root [data-slot="scene-toggles"] {
+    bottom: 120px;
+  }
+}
