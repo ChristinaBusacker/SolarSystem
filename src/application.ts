@@ -293,7 +293,7 @@ export class Application {
     const loader = new THREE.TextureLoader();
 
     const backgroundImage = await loader.loadAsync(
-      "assets/backgrounds/background6.jpg",
+      "assets/backgrounds/background3.jpg",
     );
 
     backgroundImage.colorSpace = THREE.SRGBColorSpace;
