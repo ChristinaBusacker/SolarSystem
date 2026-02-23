@@ -54,14 +54,13 @@ export class AsteroidBelt {
 
   public constructor(opts?: Partial<AsteroidBeltOptions>) {
     this.opts = {
-      // Lower than the earlier version on purpose: less "wimmelbild", more readable chunks.
-      count: 3800,
-      innerRadius: 2100,
-      outerRadius: 3300,
-      maxEccentricity: 0.12,
-      inclinationStdDeg: 4.8,
-      minSpriteSize: 10,
-      maxSpriteSize: 44,
+      count: 1900,
+      innerRadius: 2250,
+      outerRadius: 3150,
+      maxEccentricity: 0.075,
+      inclinationStdDeg: 3.0,
+      minSpriteSize: 6,
+      maxSpriteSize: 28,
       seed: 1337,
       ...opts,
     };
@@ -99,8 +98,8 @@ export class AsteroidBelt {
         earthData.orbitalSpeed * Math.pow(earthData.distanceToOrbiting / a, 1.5);
 
       // Many small, some medium, very few larger chunks.
-      const t = Math.pow(rng(), 5.2);
-      aSize[i] = this.opts.minSpriteSize + (this.opts.maxSpriteSize - this.opts.minSpriteSize) * (1.0 - t);
+      const t = Math.pow(rng(), 1.9);
+      aSize[i] = this.opts.minSpriteSize + (this.opts.maxSpriteSize - this.opts.minSpriteSize) * t;
       aShapeSeed[i] = rng();
 
       const color = this.sampleColor(rng);
