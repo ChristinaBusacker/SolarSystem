@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { CSS2DRenderer } from "three/examples/jsm/renderers/CSS2DRenderer";
 import { CameraManager } from "./manager/CameraManager";
 import { AstronomicalManager } from "./manager/AstronomicalManager";
+import { MinorBodyManager } from "./manager/minor-body-manager";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer";
@@ -42,6 +43,7 @@ export class Application {
 
   public cameraManager = new CameraManager(this.scene);
   public astronomicalManager = new AstronomicalManager();
+  public minorBodyManager = new MinorBodyManager();
 
   private backgroundImage?: THREE.Texture;
 
@@ -88,6 +90,7 @@ export class Application {
     this.attachViewportResizeObserver();
     this.onResize();
     this.astronomicalManager.initObjects(this.scene);
+    this.minorBodyManager.init(this.scene);
     {
       const { width, height } = this.getViewportSize();
       this.astronomicalManager.setOrbitLineResolution(width, height);
@@ -301,13 +304,25 @@ export class Application {
     this.backgroundImage =
       pmremGenerator.fromEquirectangular(backgroundImage).texture;
     this.scene.background = this.backgroundImage;
+    // Makes Standard/Physical materials (e.g. asteroids) pick up cinematic IBL.
+    this.scene.environment = this.backgroundImage;
 
     pmremGenerator.dispose();
 
     return this.scene.background;
   }
 
-  private initSunLight() {}
+  private initSunLight() {
+    // Your planets use custom shaders (sunPosition uniforms), so they don't rely on Three lights.
+    // Minor bodies (asteroids) use StandardMaterial for cheap specular highlights.
+    const sunLight = new THREE.PointLight(0xffffff, 6, 0, 2);
+    sunLight.position.set(0, 0, 0);
+    sunLight.castShadow = false;
+    this.scene.add(sunLight);
+
+    // Slight ambient so the "night side" isn't pure black.
+    this.scene.add(new THREE.AmbientLight(0xffffff, 0.06));
+  }
 
   public onResize() {
     const { width, height } = this.getViewportSize();
@@ -436,11 +451,14 @@ export class Application {
     const camera = this.cameraManager.getActiveEntry().camera;
 
     this.astronomicalManager.render(deltaTime, camera, this.scene);
+    this.minorBodyManager.render(deltaTime);
 
     //this.scene.background = null
     this.astronomicalManager.preBloom();
+    this.minorBodyManager.preBloom();
     this.bloomComposer.render(deltaTime * this.simulationSpeed);
     this.astronomicalManager.postBloom();
+    this.minorBodyManager.postBloom();
     //this.scene.background = this.backgroundImage
 
     this.finalComposer.render(deltaTime);
