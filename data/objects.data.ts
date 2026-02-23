@@ -15,8 +15,6 @@ export const sunData: AstronomicalDataset = {
   initialPosition: new THREE.Vector3(0, 0, 0),
   planetaryTilt: 0,
   orbitalTilt: 0,
-  maxDistanceToOrbiting: 0,
-  minDistanceToOrbiting: 0,
   orbitCenter: new THREE.Vector3(0, 0, 0),
   semiMajorAxis: 0,
   semiMinorAxis: 0,
@@ -36,8 +34,6 @@ export const mercuryData: AstronomicalDataset = {
   initialPosition: new THREE.Vector3(390, 0, 0),
   planetaryTilt: 0.03,
   orbitalTilt: 3.38,
-  maxDistanceToOrbiting: (69.82 * 10 ** 5) / FINN_TO_KM,
-  minDistanceToOrbiting: (46.0 * 10 ** 5) / FINN_TO_KM,
   orbitCenter:
     new THREE.Vector3(
       ((69.82 * 10 ** 5) / FINN_TO_KM - (46.0 * 10 ** 5) / FINN_TO_KM) / 2,
@@ -63,8 +59,6 @@ export const venusData: AstronomicalDataset = {
   initialPosition: new THREE.Vector3(720, 0, 0),
   planetaryTilt: 2.64,
   orbitalTilt: 3.86,
-  maxDistanceToOrbiting: (108.94 * 10 ** 5) / FINN_TO_KM, // 108,94 Millionen km
-  minDistanceToOrbiting: (107.48 * 10 ** 5) / FINN_TO_KM, // 107,48 Millionen km
   orbitCenter: new THREE.Vector3(
     (((108.94 - 107.48) / 2) * 10 ** 5) / FINN_TO_KM,
     0,
@@ -87,8 +81,6 @@ export const earthData: AstronomicalDataset = {
   initialPosition: new THREE.Vector3(1000, 0, 0),
   planetaryTilt: 23.44,
   orbitalTilt: 7.155,
-  maxDistanceToOrbiting: (152.1 * 10 ** 5) / FINN_TO_KM, // 152,10 Millionen km
-  minDistanceToOrbiting: (147.1 * 10 ** 5) / FINN_TO_KM, // 147,10 Millionen km
   orbitCenter: new THREE.Vector3(
     (((152.1 - 147.1) / 2) * 10 ** 5) / FINN_TO_KM,
     0,
@@ -111,8 +103,6 @@ export const moonData: AstronomicalDataset = {
   initialPosition: new THREE.Vector3(2.57, 0, 0), // Relative Position zur Erde in der Gruppe
   planetaryTilt: 6.68,
   orbitalTilt: 5.145,
-  maxDistanceToOrbiting: 405.5 * 10 ** 3 / FINN_TO_KM, // 405,5 Tausend km
-  minDistanceToOrbiting: 363.3 * 10 ** 3 / FINN_TO_KM, // 363,3 Tausend km
   orbitCenter: new THREE.Vector3(
     ((405.5 - 363.3) / 2) * 10 ** 3 / FINN_TO_KM,
     0,
@@ -136,8 +126,6 @@ export const marsData: AstronomicalDataset = {
   initialPosition: new THREE.Vector3(1520, 0, 0),
   planetaryTilt: 25.19,
   orbitalTilt: 5.65,
-  maxDistanceToOrbiting: 249.23 * 10 ** 6 / FINN_TO_KM, // 249,23 Millionen km
-  minDistanceToOrbiting: 206.62 * 10 ** 6 / FINN_TO_KM, // 206,62 Millionen km
   orbitCenter: new THREE.Vector3(
     (((249.23 - 206.62) / 2) * 10 ** 5) / FINN_TO_KM,
     0,
@@ -160,8 +148,6 @@ export const jupiterData: AstronomicalDataset = {
   initialPosition: new THREE.Vector3(5200, 0, 0),
   planetaryTilt: 6.09,
   orbitalTilt: 1.31,
-  maxDistanceToOrbiting: 816.62 * 10 ** 6 / FINN_TO_KM, // 816,62 Millionen km
-  minDistanceToOrbiting: 740.52 * 10 ** 6 / FINN_TO_KM, // 740,52 Millionen km
   orbitCenter: new THREE.Vector3(
     (((816.62 - 740.52) / 2) * 10 ** 5) / FINN_TO_KM,
     0,
@@ -184,8 +170,6 @@ export const saturnData: AstronomicalDataset = {
   initialPosition: new THREE.Vector3(9580, 0, 0),
   planetaryTilt: 5.51,
   orbitalTilt: 2.49,
-  maxDistanceToOrbiting: 1504.5 * 10 ** 6 / FINN_TO_KM, // 1,504 Milliarden km
-  minDistanceToOrbiting: 1352.6 * 10 ** 6 / FINN_TO_KM, // 1,352 Milliarden km
   orbitCenter: new THREE.Vector3(
     (((1504.5 - 1352.6) / 2) * 10 ** 5) / FINN_TO_KM,
     0,
@@ -208,8 +192,6 @@ export const uranusData: AstronomicalDataset = {
   initialPosition: new THREE.Vector3(19220, 0, 0),
   planetaryTilt: 6.48,
   orbitalTilt: 0.77,
-  maxDistanceToOrbiting: 3003.6 * 10 ** 6 / FINN_TO_KM, // 3,003 Milliarden km
-  minDistanceToOrbiting: 2741.3 * 10 ** 6 / FINN_TO_KM, // 2,741 Milliarden km
   orbitCenter: new THREE.Vector3(
     (((3003.6 - 2741.3) / 2) * 10 ** 5) / FINN_TO_KM,
     0,
@@ -232,8 +214,6 @@ export const neptuneData: AstronomicalDataset = {
   initialPosition: new THREE.Vector3(30050, 0, 0),
   planetaryTilt: 6.43,
   orbitalTilt: 1.77,
-  maxDistanceToOrbiting: 4553.9 * 10 ** 6 / FINN_TO_KM, // 4,554 Milliarden km
-  minDistanceToOrbiting: 4459.7 * 10 ** 6 / FINN_TO_KM, // 4,460 Milliarden km
   orbitCenter: new THREE.Vector3(
     (((4553.9 - 4459.7) / 2) * 10 ** 5) / FINN_TO_KM,
     0,
@@ -250,21 +230,19 @@ export const plutoData: AstronomicalDataset = {
   description:
     "Ein kleiner, eisiger Zwergplanet am Rand unseres Sonnensystems, bekannt für seine elliptische Umlaufbahn.",
   size: 0.186, // Größe in Finn
-  distanceToOrbiting: 5900, // Durchschnittliche Entfernung zur Sonne in Finn
-  orbitalSpeed: 0.0000004745,
+  distanceToOrbiting: 39500,
+  orbitalSpeed: 0.0000000105,
   rotationSpeed: 0.0000027134,
-  initialPosition: new THREE.Vector3(5900, 0, 0),
+  initialPosition: new THREE.Vector3(39500, 0, 0),
   planetaryTilt: 122.5,
   orbitalTilt: 17.16,
-  maxDistanceToOrbiting: 7375.93 * 10 ** 6 / FINN_TO_KM,
-  minDistanceToOrbiting: 4444.45 * 10 ** 6 / FINN_TO_KM,
   orbitCenter: new THREE.Vector3(
-    ((7375.93 - 4444.45) / 2) * 10 ** 6 / FINN_TO_KM,
+    ((7375.93 - 4444.45) / 2) * 10 ** 5 / FINN_TO_KM,
     0,
     0
   ),
-  semiMajorAxis: ((7375.93 + 4444.45) / 2) * 10 ** 6 / FINN_TO_KM,
-  semiMinorAxis: Math.sqrt(7375.93 * 4444.45) * 10 ** 6 / FINN_TO_KM,
+  semiMajorAxis: ((7375.93 + 4444.45) / 2) * 10 ** 5 / FINN_TO_KM,
+  semiMinorAxis: Math.sqrt(7375.93 * 4444.45) * 10 ** 5 / FINN_TO_KM,
   color: '#a6a6a6'
 };
 
@@ -282,8 +260,6 @@ export const ioData: AstronomicalDataset = {
   orbitalTilt: 0.05,
   semiMajorAxis: 421.8 * 10 ** 3 / FINN_TO_KM,  // Durchschnittliche Orbitalentfernung in Finn
   semiMinorAxis: 421.8 * 10 ** 3 * 0.99 / FINN_TO_KM,  // Leicht reduziert für Exzentrizität
-  maxDistanceToOrbiting: 421.8 * 10 ** 3 / FINN_TO_KM * 1.002,  // leicht erhöhte maximale Entfernung
-  minDistanceToOrbiting: 421.8 * 10 ** 3 / FINN_TO_KM * 0.998,  // leicht reduzierte minimale Entfernung
   orbitCenter: new THREE.Vector3(0, 0, 0), // Jupiter als Zentrum
   color: '#ff4500'
 };
@@ -302,8 +278,6 @@ export const europaData: AstronomicalDataset = {
   orbitalTilt: 0.47,
   semiMajorAxis: 671 * 10 ** 3 / FINN_TO_KM,
   semiMinorAxis: 671 * 10 ** 3 * 0.99 / FINN_TO_KM,
-  maxDistanceToOrbiting: 671 * 10 ** 3 / FINN_TO_KM * 1.002,
-  minDistanceToOrbiting: 671 * 10 ** 3 / FINN_TO_KM * 0.998,
   orbitCenter: new THREE.Vector3(0, 0, 0),
   color: '#add8e6'
 };
@@ -322,8 +296,6 @@ export const ganymedData: AstronomicalDataset = {
   orbitalTilt: 0.20,
   semiMajorAxis: 1070 * 10 ** 3 / FINN_TO_KM,
   semiMinorAxis: 1070 * 10 ** 3 * 0.99 / FINN_TO_KM,
-  maxDistanceToOrbiting: 1070 * 10 ** 3 / FINN_TO_KM * 1.002,
-  minDistanceToOrbiting: 1070 * 10 ** 3 / FINN_TO_KM * 0.998,
   orbitCenter: new THREE.Vector3(0, 0, 0),
   color: '#808080'
 };
@@ -342,8 +314,6 @@ export const callistoData: AstronomicalDataset = {
   orbitalTilt: 0.28,
   semiMajorAxis: 1883 * 10 ** 3 / FINN_TO_KM,
   semiMinorAxis: 1883 * 10 ** 3 * 0.99 / FINN_TO_KM,
-  maxDistanceToOrbiting: 1883 * 10 ** 3 / FINN_TO_KM * 1.002,
-  minDistanceToOrbiting: 1883 * 10 ** 3 / FINN_TO_KM * 0.998,
   orbitCenter: new THREE.Vector3(0, 0, 0),
   color: '#a9a9a9'
 };
@@ -359,8 +329,6 @@ export const enceladusData: AstronomicalDataset = {
   initialPosition: new THREE.Vector3(238.02, 0, 0),
   planetaryTilt: 0,
   orbitalTilt: 0.019,
-  maxDistanceToOrbiting: 238.02 * 1.002,
-  minDistanceToOrbiting: 238.02 * 0.998,
   orbitCenter: new THREE.Vector3(0, 0, 0), // Saturn als Zentrum
   semiMajorAxis: 238.02,
   semiMinorAxis: 238.02 * 0.99,
@@ -379,8 +347,6 @@ export const iapetusData: AstronomicalDataset = {
   initialPosition: new THREE.Vector3(3561.3, 0, 0),
   planetaryTilt: 0,
   orbitalTilt: 8.298,
-  maxDistanceToOrbiting: 3561.3 * 1.002,
-  minDistanceToOrbiting: 3561.3 * 0.998,
   orbitCenter: new THREE.Vector3(0, 0, 0), // Saturn als Zentrum
   semiMajorAxis: 3561.3,
   semiMinorAxis: 3561.3 * 0.99,
@@ -398,8 +364,6 @@ export const rheaData: AstronomicalDataset = {
   initialPosition: new THREE.Vector3(527.04, 0, 0),
   planetaryTilt: 0,
   orbitalTilt: 0.333,
-  maxDistanceToOrbiting: 527.04 * 1.002,
-  minDistanceToOrbiting: 527.04 * 0.998,
   orbitCenter: new THREE.Vector3(0, 0, 0), // Saturn als Zentrum
   semiMajorAxis: 527.04,
   semiMinorAxis: 527.04 * 0.99,
@@ -417,8 +381,6 @@ export const titanData: AstronomicalDataset = {
   initialPosition: new THREE.Vector3(1221.83, 0, 0),
   planetaryTilt: 0,
   orbitalTilt: 0.348,
-  maxDistanceToOrbiting: 1221.83 * 1.002,
-  minDistanceToOrbiting: 1221.83 * 0.998,
   orbitCenter: new THREE.Vector3(0, 0, 0), // Saturn als Zentrum
   semiMajorAxis: 1221.83,
   semiMinorAxis: 1221.83 * 0.99,
@@ -436,8 +398,6 @@ export const tritonData: AstronomicalDataset = {
   initialPosition: new THREE.Vector3(354.76, 0, 0),
   planetaryTilt: 0,
   orbitalTilt: 156.885, // Hohe Neigung aufgrund der rückläufigen Umlaufbahn
-  maxDistanceToOrbiting: 354.76 * 1.002,
-  minDistanceToOrbiting: 354.76 * 0.998,
   orbitCenter: new THREE.Vector3(0, 0, 0), // Neptun als Zentrum
   semiMajorAxis: 354.76,
   semiMinorAxis: 354.76 * 0.99,
@@ -455,8 +415,6 @@ export const titaniaData: AstronomicalDataset = {
   initialPosition: new THREE.Vector3(435.91, 0, 0),
   planetaryTilt: 0,
   orbitalTilt: 0.079,
-  maxDistanceToOrbiting: 435.91 * 1.002,
-  minDistanceToOrbiting: 435.91 * 0.998,
   orbitCenter: new THREE.Vector3(0, 0, 0), // Uranus als Zentrum
   semiMajorAxis: 435.91,
   semiMinorAxis: 435.91 * 0.99,

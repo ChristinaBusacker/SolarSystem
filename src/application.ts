@@ -295,6 +295,7 @@ export class Application {
     pmremGenerator.compileEquirectangularShader();
     const loader = new THREE.TextureLoader();
 
+    return
     const backgroundImage = await loader.loadAsync(
       "assets/backgrounds/background3.jpg",
     );

@@ -4,7 +4,7 @@ import { earthData } from "../../data/objects.data";
 import { asteroidBeltImpostorShader } from "../shader/asteroid-belt-impostor.shader";
 
 type Rng = () => number;
-type BeltProfile = "main" | "kuiper";
+type BeltProfile = "main" | "kuiperCold" | "kuiperHot" | "ambient";
 
 function mulberry32(seed: number): Rng {
   let t = seed >>> 0;
@@ -37,11 +37,11 @@ export interface AsteroidBeltOptions {
 }
 
 /**
- * Belt rendered as procedural point-sprite impostors.
+ * Belt / debris field rendered as procedural point-sprite impostors.
  *
  * Why this approach:
  * - stable visibility for many tiny bodies (screen-space point size)
- * - very cheap (single draw call per belt)
+ * - very cheap (single draw call per population)
  * - custom shader can fake rocky/icy silhouettes + lighting without heavy meshes
  */
 export class AsteroidBelt {
@@ -59,7 +59,7 @@ export class AsteroidBelt {
   public constructor(opts?: Partial<AsteroidBeltOptions>) {
     this.opts = {
       // Main belt defaults (Mars–Jupiter) tuned for readability.
-      count: 1900,
+      count: 1256,
       innerRadius: 2250,
       outerRadius: 3150,
       maxEccentricity: 0.075,
@@ -93,7 +93,7 @@ export class AsteroidBelt {
 
     for (let i = 0; i < count; i++) {
       const a = this.sampleRadius(rng);
-      const e = Math.pow(rng(), 2.2) * this.opts.maxEccentricity;
+      const e = Math.pow(rng(), this.opts.profile === "ambient" ? 1.8 : 2.2) * this.opts.maxEccentricity;
       const b = a * Math.sqrt(1 - e * e);
 
       aSemiMajor[i] = a;
@@ -105,19 +105,7 @@ export class AsteroidBelt {
       aAngularSpeed[i] =
         earthData.orbitalSpeed * Math.pow(earthData.distanceToOrbiting / a, 1.5);
 
-      // Three-tier sprite-size distribution: mostly small, some medium, few larger.
-      const u = rng();
-      let t: number;
-      if (u < 0.8) {
-        t = Math.pow(rng(), 2.6) * 0.35;
-      } else if (u < 0.97) {
-        t = 0.25 + Math.pow(rng(), 1.4) * 0.45;
-      } else {
-        t = 0.6 + Math.pow(rng(), 0.65) * 0.4;
-      }
-      aSize[i] =
-        this.opts.minSpriteSize +
-        (this.opts.maxSpriteSize - this.opts.minSpriteSize) * THREE.MathUtils.clamp(t, 0, 1);
+      aSize[i] = this.sampleSpriteSize(rng);
       aShapeSeed[i] = rng();
 
       const color = this.sampleColor(rng);
@@ -143,7 +131,7 @@ export class AsteroidBelt {
 
     const { vertexShader, fragmentShader } = asteroidBeltImpostorShader;
     this.material = new THREE.ShaderMaterial({
-      name: this.opts.profile === "kuiper" ? "KuiperBeltImpostorMaterial" : "AsteroidBeltImpostorMaterial",
+      name: `${this.opts.groupName}ImpostorMaterial`,
       vertexShader,
       fragmentShader,
       uniforms: {
@@ -160,7 +148,7 @@ export class AsteroidBelt {
 
     this.points = new THREE.Points(this.geometry, this.material);
     this.points.frustumCulled = false;
-    this.points.renderOrder = 2;
+    this.points.renderOrder = this.opts.profile === "ambient" ? 1 : 2;
     this.points.name = this.opts.pointsName;
 
     this.group.name = this.opts.groupName;
@@ -189,6 +177,36 @@ export class AsteroidBelt {
     sun.copy(this.sunWorldPosition);
   }
 
+  private sampleSpriteSize(rng: Rng): number {
+    // Three-tier distribution: mostly small, some medium, few larger "hero" chunks.
+    // Ambient debris gets slightly more medium pieces so it remains noticeable without many sprites.
+    const u = rng();
+    let t: number;
+
+    if (this.opts.profile === "ambient") {
+      if (u < 0.68) {
+        t = Math.pow(rng(), 2.2) * 0.36;
+      } else if (u < 0.95) {
+        t = 0.24 + Math.pow(rng(), 1.2) * 0.48;
+      } else {
+        t = 0.62 + Math.pow(rng(), 0.65) * 0.38;
+      }
+    } else {
+      if (u < 0.8) {
+        t = Math.pow(rng(), 2.6) * 0.35;
+      } else if (u < 0.97) {
+        t = 0.25 + Math.pow(rng(), 1.4) * 0.45;
+      } else {
+        t = 0.6 + Math.pow(rng(), 0.65) * 0.4;
+      }
+    }
+
+    return (
+      this.opts.minSpriteSize +
+      (this.opts.maxSpriteSize - this.opts.minSpriteSize) * THREE.MathUtils.clamp(t, 0, 1)
+    );
+  }
+
   private sampleRadius(rng: Rng): number {
     const r2Min = this.opts.innerRadius * this.opts.innerRadius;
     const r2Max = this.opts.outerRadius * this.opts.outerRadius;
@@ -203,12 +221,30 @@ export class AsteroidBelt {
   }
 
   private radialDensityWeight(radius: number): number {
-    if (this.opts.profile === "kuiper") {
-      // Broad, clumpy trans-Neptunian distribution. Cinematic, not a strict MPC model.
+    if (this.opts.profile === "kuiperCold") {
+      // Flatter, denser classical component.
       const t = (radius - this.opts.innerRadius) / (this.opts.outerRadius - this.opts.innerRadius);
-      const broad = 0.68 + Math.exp(-Math.pow((t - 0.45) / 0.36, 2.0)) * 0.24;
-      const outerFalloff = 1.0 - smooth01((t - 0.9) / 0.14) * 0.35;
-      const innerFalloff = 0.72 + smooth01((t - 0.04) / 0.14) * 0.28;
+      const broad = 0.78 + Math.exp(-Math.pow((t - 0.52) / 0.28, 2.0)) * 0.26;
+      const innerRise = 0.72 + smooth01((t - 0.04) / 0.14) * 0.28;
+      const outerSoft = 1.0 - smooth01((t - 0.92) / 0.12) * 0.24;
+
+      const dip = (center: number, width: number, depth: number) => {
+        const x = (radius - center) / width;
+        return 1.0 - Math.exp(-x * x) * depth;
+      };
+
+      let w = broad * innerRise * outerSoft;
+      w *= dip(41200, 1200, 0.12);
+      w *= dip(45500, 900, 0.1);
+      return THREE.MathUtils.clamp(w, 0.06, 1.0);
+    }
+
+    if (this.opts.profile === "kuiperHot") {
+      // Broader, more inclined component. Helps Pluto feel "in-family" without overfilling the scene.
+      const t = (radius - this.opts.innerRadius) / (this.opts.outerRadius - this.opts.innerRadius);
+      const broad = 0.58 + Math.exp(-Math.pow((t - 0.48) / 0.4, 2.0)) * 0.2;
+      const outerFalloff = 1.0 - smooth01((t - 0.9) / 0.15) * 0.3;
+      const innerSoft = 0.62 + smooth01((t - 0.06) / 0.16) * 0.34;
 
       const cluster = (center: number, width: number, boost: number) => {
         const x = (radius - center) / width;
@@ -219,11 +255,36 @@ export class AsteroidBelt {
         return 1.0 - Math.exp(-x * x) * depth;
       };
 
-      let w = broad * outerFalloff * innerFalloff;
-      w *= cluster(38200, 1600, 0.14);
-      w *= cluster(43800, 1900, 0.1);
-      w *= dip(47200, 1400, 0.18);
-      return THREE.MathUtils.clamp(w, 0.05, 1.0);
+      let w = broad * outerFalloff * innerSoft;
+      w *= cluster(37200, 1800, 0.1);
+      w *= cluster(43800, 2200, 0.08);
+      w *= dip(49200, 1500, 0.18);
+      return THREE.MathUtils.clamp(w, 0.04, 1.0);
+    }
+
+    if (this.opts.profile === "ambient") {
+      // Very sparse debris spread with mild concentrations near the giant-planet region.
+      const t = (radius - this.opts.innerRadius) / (this.opts.outerRadius - this.opts.innerRadius);
+      const base = 0.12 + Math.exp(-Math.pow((t - 0.58) / 0.24, 2.0)) * 0.14;
+
+      const cluster = (center: number, width: number, boost: number) => {
+        const x = (radius - center) / width;
+        return 1.0 + Math.exp(-x * x) * boost;
+      };
+      const dip = (center: number, width: number, depth: number) => {
+        const x = (radius - center) / width;
+        return 1.0 - Math.exp(-x * x) * depth;
+      };
+
+      let w = base;
+      // Keep the inner terrestrial region relatively clean to avoid clutter around labels.
+      w *= 0.55 + smooth01((t - 0.14) / 0.12) * 0.45;
+      w *= cluster(7200, 2200, 0.32);
+      w *= cluster(11500, 2600, 0.28);
+      w *= cluster(18500, 3800, 0.24);
+      w *= dip(3050, 700, 0.55);
+      w *= dip(9800, 900, 0.25);
+      return THREE.MathUtils.clamp(w, 0.015, 0.42);
     }
 
     // Main belt: gentle cinematic density shaping + subtle Kirkwood-like dips.
@@ -245,36 +306,68 @@ export class AsteroidBelt {
   }
 
   private sampleColor(rng: Rng): THREE.Color {
-    // Main belt is darker rock. Kuiper gets colder, slightly icier tones.
-    const palette = this.opts.profile === "kuiper"
-      ? [
-          new THREE.Color("#666a72"),
-          new THREE.Color("#707985"),
-          new THREE.Color("#5f6670"),
-          new THREE.Color("#7b7f86"),
-          new THREE.Color("#6f7480"),
-          new THREE.Color("#8a867d"),
-        ]
-      : [
-          new THREE.Color("#6f665d"),
-          new THREE.Color("#7f7365"),
-          new THREE.Color("#5f5c57"),
-          new THREE.Color("#71695f"),
-          new THREE.Color("#857864"),
-          new THREE.Color("#6a6f75"),
-        ];
+    let palette: THREE.Color[];
+
+    if (this.opts.profile === "kuiperCold") {
+      palette = [
+        new THREE.Color("#666a72"),
+        new THREE.Color("#707985"),
+        new THREE.Color("#5f6670"),
+        new THREE.Color("#7b7f86"),
+        new THREE.Color("#6f7480"),
+        new THREE.Color("#8a867d"),
+      ];
+    } else if (this.opts.profile === "kuiperHot") {
+      palette = [
+        new THREE.Color("#645f59"),
+        new THREE.Color("#6c7078"),
+        new THREE.Color("#7b746b"),
+        new THREE.Color("#5e656f"),
+        new THREE.Color("#858179"),
+        new THREE.Color("#787e88"),
+      ];
+    } else if (this.opts.profile === "ambient") {
+      palette = [
+        new THREE.Color("#625d56"),
+        new THREE.Color("#6d675f"),
+        new THREE.Color("#5e636b"),
+        new THREE.Color("#7a7267"),
+        new THREE.Color("#666b72"),
+        new THREE.Color("#817968"),
+      ];
+    } else {
+      palette = [
+        new THREE.Color("#6f665d"),
+        new THREE.Color("#7f7365"),
+        new THREE.Color("#5f5c57"),
+        new THREE.Color("#71695f"),
+        new THREE.Color("#857864"),
+        new THREE.Color("#6a6f75"),
+      ];
+    }
 
     const i0 = Math.floor(rng() * palette.length) % palette.length;
     const i1 = (i0 + 1 + Math.floor(rng() * (palette.length - 1))) % palette.length;
     const c = palette[i0].clone().lerp(palette[i1], rng() * 0.55);
 
-    // Small value variation.
     const hsl = { h: 0, s: 0, l: 0 };
     c.getHSL(hsl);
-    const satFactor = this.opts.profile === "kuiper" ? (0.75 + rng() * 0.28) : (0.85 + rng() * 0.35);
-    const lightFactor = this.opts.profile === "kuiper" ? (0.78 + rng() * 0.46) : (0.82 + rng() * 0.38);
-    const lightMin = this.opts.profile === "kuiper" ? 0.22 : 0.2;
-    const lightMax = this.opts.profile === "kuiper" ? 0.78 : 0.72;
+
+    const satFactor = this.opts.profile === "kuiperCold"
+      ? (0.72 + rng() * 0.24)
+      : this.opts.profile === "ambient"
+        ? (0.78 + rng() * 0.22)
+        : (0.85 + rng() * 0.35);
+    const lightFactor = this.opts.profile === "kuiperCold"
+      ? (0.8 + rng() * 0.42)
+      : this.opts.profile === "kuiperHot"
+        ? (0.78 + rng() * 0.4)
+        : this.opts.profile === "ambient"
+          ? (0.76 + rng() * 0.34)
+          : (0.82 + rng() * 0.38);
+    const lightMin = this.opts.profile === "ambient" ? 0.18 : 0.2;
+    const lightMax = this.opts.profile === "kuiperCold" ? 0.8 : this.opts.profile === "kuiperHot" ? 0.76 : 0.72;
+
     c.setHSL(
       hsl.h,
       THREE.MathUtils.clamp(hsl.s * satFactor, 0, 1),

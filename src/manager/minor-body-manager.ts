@@ -6,26 +6,53 @@ import { AsteroidBelt } from "../objects/asteroid-belt.object";
  *
  * Includes:
  * - Main asteroid belt (Mars–Jupiter)
- * - Kuiper belt (beyond Neptune, cinematic/compressed scale)
+ * - Kuiper belt as two populations (cold + hot)
+ * - Sparse ambient debris for a little motion in the wider system
  */
 export class MinorBodyManager {
   private readonly mainAsteroidBelt = new AsteroidBelt();
 
-  private readonly kuiperBelt = new AsteroidBelt({
-    profile: "kuiper",
-    groupName: "KuiperBelt",
-    pointsName: "KuiperBeltPoints",
-    count: 1300,
-    // Cinematic but still beyond Neptune (~30050 in this project scale)
-    innerRadius: 34000,
-    outerRadius: 52000,
-    maxEccentricity: 0.12,
-    inclinationStdDeg: 9.0,
-    // Screen-space sprite sizes must be much larger at these distances
-    // so the impostors stay visible and don't collapse to star pixels.
-    minSpriteSize: 180,
-    maxSpriteSize: 540,
+  private readonly kuiperColdBelt = new AsteroidBelt({
+    profile: "kuiperCold",
+    groupName: "KuiperBeltCold",
+    pointsName: "KuiperBeltColdPoints",
+    count: 2048,
+    innerRadius: 36000,
+    outerRadius: 48000,
+    maxEccentricity: 0.08,
+    inclinationStdDeg: 3.5,
+    minSpriteSize: 190,
+    maxSpriteSize: 560,
     seed: 7331,
+  });
+
+  private readonly kuiperHotBelt = new AsteroidBelt({
+    profile: "kuiperHot",
+    groupName: "KuiperBeltHot",
+    pointsName: "KuiperBeltHotPoints",
+    count: 512,
+    innerRadius: 33000,
+    outerRadius: 54000,
+    maxEccentricity: 0.22,
+    inclinationStdDeg: 14.0,
+    minSpriteSize: 150,
+    maxSpriteSize: 460,
+    seed: 7349,
+  });
+
+  private readonly ambientDebris = new AsteroidBelt({
+    profile: "ambient",
+    groupName: "AmbientDebrisField",
+    pointsName: "AmbientDebrisFieldPoints",
+    count: 256,
+    // Very sparse cinematic filler across the planetary region (not a real belt).
+    innerRadius: 1400,
+    outerRadius: 32000,
+    maxEccentricity: 0.16,
+    inclinationStdDeg: 5.0,
+    minSpriteSize: 8,
+    maxSpriteSize: 34,
+    seed: 9911,
   });
 
   private isInit = false;
@@ -35,27 +62,37 @@ export class MinorBodyManager {
     this.isInit = true;
 
     this.mainAsteroidBelt.init();
-    this.kuiperBelt.init();
+    this.kuiperColdBelt.init();
+    this.kuiperHotBelt.init();
+    this.ambientDebris.init();
 
     scene.add(this.mainAsteroidBelt.group);
-    scene.add(this.kuiperBelt.group);
+    scene.add(this.kuiperColdBelt.group);
+    scene.add(this.kuiperHotBelt.group);
+    scene.add(this.ambientDebris.group);
   }
 
   public render(delta: number): void {
     if (!this.isInit) return;
     this.mainAsteroidBelt.render(delta);
-    this.kuiperBelt.render(delta);
+    this.kuiperColdBelt.render(delta);
+    this.kuiperHotBelt.render(delta);
+    this.ambientDebris.render(delta);
   }
 
   public preBloom(): void {
     if (!this.isInit) return;
     this.mainAsteroidBelt.preBloom();
-    this.kuiperBelt.preBloom();
+    this.kuiperColdBelt.preBloom();
+    this.kuiperHotBelt.preBloom();
+    this.ambientDebris.preBloom();
   }
 
   public postBloom(): void {
     if (!this.isInit) return;
     this.mainAsteroidBelt.postBloom();
-    this.kuiperBelt.postBloom();
+    this.kuiperColdBelt.postBloom();
+    this.kuiperHotBelt.postBloom();
+    this.ambientDebris.postBloom();
   }
 }
