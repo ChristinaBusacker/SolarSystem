@@ -5,6 +5,7 @@ import { AstronomicalManager } from "./manager/AstronomicalManager";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer";
+import { SMAAPass } from "three/examples/jsm/postprocessing/SMAAPass";
 
 import {
   bloomThreshold,
@@ -34,6 +35,8 @@ export class Application {
 
   public bloomComposer = new EffectComposer(this.webglRenderer);
   public finalComposer = new EffectComposer(this.webglRenderer);
+
+  private smaaPass?: SMAAPass;
 
   public simulationSpeed = simulationSpeed;
 
@@ -78,7 +81,6 @@ export class Application {
       if (kind === "moon") router.goMoon(name);
       else router.goPlanet(name);
     });
-
   }
 
   public init() {
@@ -133,8 +135,14 @@ export class Application {
 
     const outputPass = new OutputPass();
 
+    // SMAA helps smooth thin lines (orbits) when rendering through EffectComposer
+    const { width, height } = this.getViewportSize();
+    this.smaaPass = new SMAAPass();
+    this.smaaPass.setSize(width, height);
+
     this.finalComposer.addPass(renderScene);
     this.finalComposer.addPass(mixPass);
+    this.finalComposer.addPass(this.smaaPass);
     this.finalComposer.addPass(outputPass);
   }
   public static getInstance(): Application {
@@ -152,7 +160,6 @@ export class Application {
     if (stageControlsSlot) {
       new StageControlsRenderer(stageControlsSlot).init();
     }
-
 
     const sceneTogglesSlot = document.querySelector<HTMLElement>(
       '#ui-root [data-slot="scene-toggles"]',
@@ -221,7 +228,6 @@ export class Application {
 
       this.astronomicalManager.setOrbitsVisible(v.orbitsVisible);
     });
-
   }
 
   private initRouter(): void {
@@ -333,6 +339,7 @@ export class Application {
     this.webglRenderer.setSize(width, height, false);
     this.bloomComposer.setSize(width, height);
     this.finalComposer.setSize(width, height);
+    this.smaaPass?.setSize(width, height);
   }
 
   private getViewportSize(): { width: number; height: number } {
@@ -391,6 +398,7 @@ export class Application {
           this.webglRenderer.setSize(width, height, false);
           this.bloomComposer.setSize(width, height);
           this.finalComposer.setSize(width, height);
+          this.smaaPass?.setSize(width, height);
           this.lastRenderSize = { width, height };
         }, 60);
       }
