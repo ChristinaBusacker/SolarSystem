@@ -7,7 +7,7 @@ import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer";
 import { SMAAPass } from "three/examples/jsm/postprocessing/SMAAPass";
-
+import { EXRLoader } from "three/examples/jsm/loaders/EXRLoader";
 import {
   bloomThreshold,
   bloomStrength,
@@ -269,7 +269,8 @@ export class Application {
     // Prevent "white flash" if rendering stalls during resizes/transitions.
     this.webglRenderer.setClearColor(0x000000, 1);
 
-    this.webglRenderer.toneMapping = THREE.CineonToneMapping;
+    this.webglRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+    this.webglRenderer.outputColorSpace = THREE.SRGBColorSpace;
     this.webglRenderer.toneMappingExposure = 1;
     document.getElementById("app").appendChild(this.webglRenderer.domElement);
 
@@ -291,14 +292,26 @@ export class Application {
   }
 
   private async initBackground() {
+
     const pmremGenerator = new THREE.PMREMGenerator(this.webglRenderer);
     pmremGenerator.compileEquirectangularShader();
+
+    /*
+    const loader = new EXRLoader()
+
+    const backgroundImage = await loader.loadAsync(
+      "assets/backgrounds/starmap_2020_64k.exr",
+    );
+
+*/
     const loader = new THREE.TextureLoader();
 
-    return
     const backgroundImage = await loader.loadAsync(
-      "assets/backgrounds/background3.jpg",
+      "assets/backgrounds/background9.jpg",
     );
+
+
+
 
     backgroundImage.colorSpace = THREE.SRGBColorSpace;
 
@@ -307,8 +320,8 @@ export class Application {
     this.scene.background = this.backgroundImage;
     // Makes Standard/Physical materials (e.g. asteroids) pick up cinematic IBL.
     this.scene.environment = this.backgroundImage;
-
     pmremGenerator.dispose();
+
 
     return this.scene.background;
   }
@@ -455,13 +468,13 @@ export class Application {
     this.astronomicalManager.render(deltaTime, camera, this.scene);
     this.minorBodyManager.render(deltaTime);
 
-    //this.scene.background = null
+    this.scene.background = null
     this.astronomicalManager.preBloom();
     this.minorBodyManager.preBloom();
     this.bloomComposer.render(deltaTime * this.simulationSpeed);
     this.astronomicalManager.postBloom();
     this.minorBodyManager.postBloom();
-    //this.scene.background = this.backgroundImage
+    this.scene.background = this.backgroundImage
 
     this.finalComposer.render(deltaTime);
 

@@ -112,6 +112,7 @@ export class Astronomical implements AstronomicalObject {
     }
 
     const geometry = new LineGeometry();
+
     geometry.setPositions(positions);
     geometry.setColors(colorCarrier);
 
@@ -124,8 +125,40 @@ export class Astronomical implements AstronomicalObject {
       depthWrite: false,
       vertexColors: true,
       alphaToCoverage: false,
+      blendSrcAlpha: THREE.ZeroFactor,
+      blendDstAlpha: THREE.ZeroFactor
     });
 
+    /*
+    material.onBeforeCompile = (shader) => {
+      const alphaPatch = (varyingName: string) => `
+        float trailAlpha = clamp(max(${varyingName}.r, max(${varyingName}.g, ${varyingName}.b)), 0.0, 1.0);
+        diffuseColor.a *= trailAlpha;
+        // Keep RGB from the material color. Vertex colors only drive trail alpha.
+      `;
+
+      const candidates: Array<{ needle: string; varyingName: string }> = [
+        { needle: 'diffuseColor.rgb *= vLineColor.rgb;', varyingName: 'vLineColor' },
+        { needle: 'diffuseColor.rgb *= vLineColor;', varyingName: 'vLineColor' },
+        { needle: 'diffuseColor.rgb *= vColor.rgb;', varyingName: 'vColor' },
+        { needle: 'diffuseColor.rgb *= vColor;', varyingName: 'vColor' },
+      ];
+
+      let patched = false;
+      for (const c of candidates) {
+        if (shader.fragmentShader.includes(c.needle)) {
+          shader.fragmentShader = shader.fragmentShader.replace(c.needle, alphaPatch(c.varyingName));
+          patched = true;
+          break;
+        }
+      }
+
+      if (!patched) {
+        // Fallback warning only. The line still renders, just without alpha trail fade.
+        console.warn('[OrbitTrail] LineMaterial shader patch not applied');
+      }
+    };
+*/
     const viewport = document.getElementById("scene-root");
     const rect = viewport?.getBoundingClientRect();
     const w = Math.max(1, Math.floor(rect?.width ?? window.innerWidth));
@@ -139,7 +172,7 @@ export class Astronomical implements AstronomicalObject {
     this.orbitTrailPointCount = pointCount;
     this.orbitTrailParams = new Float32Array(pointCount);
     for (let i = 0; i < pointCount; i++) {
-      this.orbitTrailParams[i] = i / Math.max(1, pointCount - 1);
+      this.orbitTrailParams[i] = (i / Math.max(1, pointCount - 1));
     }
     this.orbitBaseColor.set(this.data.color);
     this.updateOrbitTrailColors();
@@ -160,18 +193,16 @@ export class Astronomical implements AstronomicalObject {
 
     // Visible trail spans ~3/4 of the orbit, starts inside the planet silhouette,
     // then fades towards the tail.
-    const visibleArc = 0.9;
-    const headGap = 0.00002;
-    const headSolidArc = 0.035;
+    const visibleArc = 0.5;
+    const headGap = 0;
+    const headSolidArc = 0.2;
 
     const fadeForBehind = (d: number): number => {
-      if (d < headGap || d > visibleArc) return 0;
-      if (d <= headGap + headSolidArc) return 1;
 
       const fadeStart = headGap + headSolidArc;
       const x = THREE.MathUtils.clamp((d - fadeStart) / (visibleArc - fadeStart), 0, 1);
       // 1 -> 0 smooth fade (tail only)
-      return 1 - (x * x * (3 - 2 * x));
+      return (x * x * (3 - 2 * x));
     };
 
     for (let seg = 0; seg < pointCount - 1; seg++) {
@@ -186,18 +217,21 @@ export class Astronomical implements AstronomicalObject {
       let d = current - tm;
       if (d < 0) d += 1;
 
+
       const f = fadeForBehind(d);
-      cStart.setXYZ(
+      cStart.setXYZW(
         seg,
-        this.orbitBaseColor.r * f,
-        this.orbitBaseColor.g * f,
-        this.orbitBaseColor.b * f,
+        f,
+        f,
+        f,
+        f
       );
-      cEnd.setXYZ(
+      cEnd.setXYZW(
         seg,
-        this.orbitBaseColor.r * f,
-        this.orbitBaseColor.g * f,
-        this.orbitBaseColor.b * f,
+        f,
+        f,
+        f,
+        f
       );
     }
 
