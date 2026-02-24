@@ -39,6 +39,8 @@ export class HudRenderer {
     { label: "12 h / s", secondsPerSecond: 12 * 60 * 60 },
     { label: "1 d / s", secondsPerSecond: 24 * 60 * 60 },
     { label: "3 d / s", secondsPerSecond: 3 * 24 * 60 * 60 },
+    { label: "1 w / s", secondsPerSecond: 7 * 24 * 60 * 60 },
+    { label: "2 w / s", secondsPerSecond: 14 * 24 * 60 * 60 }
   ];
 
   constructor(root: HTMLElement, initial: HudState) {

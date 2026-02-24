@@ -2,12 +2,12 @@
   <aside
     class="ui-sidebar ui-sidebar--left"
     role="navigation"
-    aria-label="Planets"
+    aria-label="Solar system navigation"
   >
     <header class="ui-sidebar__header">
       <div class="ui-sidebar__title">
-        <h2>Planets</h2>
-        <p class="ui-subtitle">Navigate</p>
+        <h2>Navigation</h2>
+        <p class="ui-subtitle">Bodies</p>
       </div>
 
       <button
@@ -22,68 +22,224 @@
     </header>
 
     <div class="ui-sidebar__content">
-      <section class="ui-section">
+      <section class="ui-nav-group" aria-labelledby="nav-group-planets">
+        <header class="ui-nav-group__header">
+          <h3 class="ui-nav-group__title" id="nav-group-planets">Planets</h3>
+          <span class="ui-nav-group__meta">Main bodies</span>
+        </header>
+
         <div class="ui-planet-list" role="list">
-          <button class="ui-planet" type="button" data-action="select-planet" data-planet="sun">
+          <button class="ui-planet" type="button" data-action="select-body" data-kind="planet" data-name="Sun">
             <span class="ui-planet__icon ui-planet__icon--sun" aria-hidden="true"></span>
             <span class="ui-planet__name">Sun</span>
           </button>
-          <button class="ui-planet" type="button" data-action="select-planet" data-planet="mercury">
+          <button class="ui-planet" type="button" data-action="select-body" data-kind="planet" data-name="Mercury">
             <span class="ui-planet__icon ui-planet__icon--mercury" aria-hidden="true"></span>
             <span class="ui-planet__name">Mercury</span>
           </button>
-          <button class="ui-planet" type="button" data-action="select-planet" data-planet="venus">
+          <button class="ui-planet" type="button" data-action="select-body" data-kind="planet" data-name="Venus">
             <span class="ui-planet__icon ui-planet__icon--venus" aria-hidden="true"></span>
             <span class="ui-planet__name">Venus</span>
           </button>
-          <button class="ui-planet" type="button" data-action="select-planet" data-planet="earth">
+          <button class="ui-planet" type="button" data-action="select-body" data-kind="planet" data-name="Earth">
             <span class="ui-planet__icon ui-planet__icon--earth" aria-hidden="true"></span>
             <span class="ui-planet__name">Earth</span>
           </button>
-          <button class="ui-planet" type="button" data-action="select-planet" data-planet="mars">
+          <button class="ui-planet" type="button" data-action="select-body" data-kind="planet" data-name="Mars">
             <span class="ui-planet__icon ui-planet__icon--mars" aria-hidden="true"></span>
             <span class="ui-planet__name">Mars</span>
           </button>
-          <button class="ui-planet" type="button" data-action="select-planet" data-planet="ceres">
-            <span class="ui-planet__icon ui-planet__icon--ceres" aria-hidden="true"></span>
-            <span class="ui-planet__name">Ceres</span>
-          </button>
-          <button class="ui-planet" type="button" data-action="select-planet" data-planet="jupiter">
+          <button class="ui-planet" type="button" data-action="select-body" data-kind="planet" data-name="Jupiter">
             <span class="ui-planet__icon ui-planet__icon--jupiter" aria-hidden="true"></span>
             <span class="ui-planet__name">Jupiter</span>
           </button>
-          <button class="ui-planet" type="button" data-action="select-planet" data-planet="saturn">
+          <button class="ui-planet" type="button" data-action="select-body" data-kind="planet" data-name="Saturn">
             <span class="ui-planet__icon ui-planet__icon--saturn" aria-hidden="true"></span>
             <span class="ui-planet__name">Saturn</span>
           </button>
-          <button class="ui-planet" type="button" data-action="select-planet" data-planet="uranus">
+          <button class="ui-planet" type="button" data-action="select-body" data-kind="planet" data-name="Uranus">
             <span class="ui-planet__icon ui-planet__icon--uranus" aria-hidden="true"></span>
             <span class="ui-planet__name">Uranus</span>
           </button>
-          <button class="ui-planet" type="button" data-action="select-planet" data-planet="neptune">
+          <button class="ui-planet" type="button" data-action="select-body" data-kind="planet" data-name="Neptune">
             <span class="ui-planet__icon ui-planet__icon--neptune" aria-hidden="true"></span>
             <span class="ui-planet__name">Neptune</span>
           </button>
-          <button class="ui-planet" type="button" data-action="select-planet" data-planet="pluto">
+        </div>
+      </section>
+
+      <section class="ui-nav-group" aria-labelledby="nav-group-dwarfs">
+        <header class="ui-nav-group__header">
+          <h3 class="ui-nav-group__title" id="nav-group-dwarfs">Dwarf planets</h3>
+          <span class="ui-nav-group__meta">Outer / minor</span>
+        </header>
+
+        <div class="ui-planet-list" role="list">
+          <button class="ui-planet" type="button" data-action="select-body" data-kind="planet" data-name="Ceres">
+            <span class="ui-planet__icon ui-planet__icon--ceres" aria-hidden="true"></span>
+            <span class="ui-planet__name">Ceres</span>
+          </button>
+          <button class="ui-planet" type="button" data-action="select-body" data-kind="planet" data-name="Pluto">
             <span class="ui-planet__icon ui-planet__icon--pluto" aria-hidden="true"></span>
             <span class="ui-planet__name">Pluto</span>
           </button>
-          <button class="ui-planet" type="button" data-action="select-planet" data-planet="haumea">
+          <button class="ui-planet" type="button" data-action="select-body" data-kind="planet" data-name="Haumea">
             <span class="ui-planet__icon ui-planet__icon--haumea" aria-hidden="true"></span>
             <span class="ui-planet__name">Haumea</span>
           </button>
-          <button class="ui-planet" type="button" data-action="select-planet" data-planet="makemake">
+          <button class="ui-planet" type="button" data-action="select-body" data-kind="planet" data-name="Makemake">
             <span class="ui-planet__icon ui-planet__icon--makemake" aria-hidden="true"></span>
             <span class="ui-planet__name">Makemake</span>
           </button>
-          <button class="ui-planet" type="button" data-action="select-planet" data-planet="eris">
+          <button class="ui-planet" type="button" data-action="select-body" data-kind="planet" data-name="Eris">
             <span class="ui-planet__icon ui-planet__icon--eris" aria-hidden="true"></span>
             <span class="ui-planet__name">Eris</span>
           </button>
         </div>
       </section>
 
-      <p class="ui-hint">Click a planet to focus (wiring next).</p>
+      <section class="ui-nav-group" aria-labelledby="nav-group-moons">
+        <header class="ui-nav-group__header">
+          <h3 class="ui-nav-group__title" id="nav-group-moons">Moons</h3>
+          <span class="ui-nav-group__meta">Grouped by parent</span>
+        </header>
+
+        <div class="ui-nav-subgroup">
+          <p class="ui-nav-subgroup__label">Earth</p>
+          <div class="ui-planet-list ui-planet-list--moons" role="list">
+            <button class="ui-planet ui-planet--moon" type="button" data-action="select-body" data-kind="moon" data-name="Moon">
+              <span class="ui-planet__icon ui-planet__icon--moon-generic" aria-hidden="true"></span>
+              <span class="ui-planet__name">Moon</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="ui-nav-subgroup">
+          <p class="ui-nav-subgroup__label">Mars</p>
+          <div class="ui-planet-list ui-planet-list--moons" role="list">
+            <button class="ui-planet ui-planet--moon" type="button" data-action="select-body" data-kind="moon" data-name="Phobos">
+              <span class="ui-planet__icon ui-planet__icon--moon-generic" aria-hidden="true"></span>
+              <span class="ui-planet__name">Phobos</span>
+            </button>
+            <button class="ui-planet ui-planet--moon" type="button" data-action="select-body" data-kind="moon" data-name="Deimos">
+              <span class="ui-planet__icon ui-planet__icon--moon-generic" aria-hidden="true"></span>
+              <span class="ui-planet__name">Deimos</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="ui-nav-subgroup">
+          <p class="ui-nav-subgroup__label">Jupiter</p>
+          <div class="ui-planet-list ui-planet-list--moons" role="list">
+            <button class="ui-planet ui-planet--moon" type="button" data-action="select-body" data-kind="moon" data-name="Io">
+              <span class="ui-planet__icon ui-planet__icon--moon-generic" aria-hidden="true"></span>
+              <span class="ui-planet__name">Io</span>
+            </button>
+            <button class="ui-planet ui-planet--moon" type="button" data-action="select-body" data-kind="moon" data-name="Europa">
+              <span class="ui-planet__icon ui-planet__icon--moon-generic" aria-hidden="true"></span>
+              <span class="ui-planet__name">Europa</span>
+            </button>
+            <button class="ui-planet ui-planet--moon" type="button" data-action="select-body" data-kind="moon" data-name="Ganymede">
+              <span class="ui-planet__icon ui-planet__icon--moon-generic" aria-hidden="true"></span>
+              <span class="ui-planet__name">Ganymede</span>
+            </button>
+            <button class="ui-planet ui-planet--moon" type="button" data-action="select-body" data-kind="moon" data-name="Callisto">
+              <span class="ui-planet__icon ui-planet__icon--moon-generic" aria-hidden="true"></span>
+              <span class="ui-planet__name">Callisto</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="ui-nav-subgroup">
+          <p class="ui-nav-subgroup__label">Saturn</p>
+          <div class="ui-planet-list ui-planet-list--moons" role="list">
+            <button class="ui-planet ui-planet--moon" type="button" data-action="select-body" data-kind="moon" data-name="Mimas">
+              <span class="ui-planet__icon ui-planet__icon--moon-generic" aria-hidden="true"></span>
+              <span class="ui-planet__name">Mimas</span>
+            </button>
+            <button class="ui-planet ui-planet--moon" type="button" data-action="select-body" data-kind="moon" data-name="Enceladus">
+              <span class="ui-planet__icon ui-planet__icon--moon-generic" aria-hidden="true"></span>
+              <span class="ui-planet__name">Enceladus</span>
+            </button>
+            <button class="ui-planet ui-planet--moon" type="button" data-action="select-body" data-kind="moon" data-name="Tethys">
+              <span class="ui-planet__icon ui-planet__icon--moon-generic" aria-hidden="true"></span>
+              <span class="ui-planet__name">Tethys</span>
+            </button>
+            <button class="ui-planet ui-planet--moon" type="button" data-action="select-body" data-kind="moon" data-name="Dione">
+              <span class="ui-planet__icon ui-planet__icon--moon-generic" aria-hidden="true"></span>
+              <span class="ui-planet__name">Dione</span>
+            </button>
+            <button class="ui-planet ui-planet--moon" type="button" data-action="select-body" data-kind="moon" data-name="Rhea">
+              <span class="ui-planet__icon ui-planet__icon--moon-generic" aria-hidden="true"></span>
+              <span class="ui-planet__name">Rhea</span>
+            </button>
+            <button class="ui-planet ui-planet--moon" type="button" data-action="select-body" data-kind="moon" data-name="Titan">
+              <span class="ui-planet__icon ui-planet__icon--moon-generic" aria-hidden="true"></span>
+              <span class="ui-planet__name">Titan</span>
+            </button>
+            <button class="ui-planet ui-planet--moon" type="button" data-action="select-body" data-kind="moon" data-name="Iapetus">
+              <span class="ui-planet__icon ui-planet__icon--moon-generic" aria-hidden="true"></span>
+              <span class="ui-planet__name">Iapetus</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="ui-nav-subgroup">
+          <p class="ui-nav-subgroup__label">Uranus</p>
+          <div class="ui-planet-list ui-planet-list--moons" role="list">
+            <button class="ui-planet ui-planet--moon" type="button" data-action="select-body" data-kind="moon" data-name="Miranda">
+              <span class="ui-planet__icon ui-planet__icon--moon-generic" aria-hidden="true"></span>
+              <span class="ui-planet__name">Miranda</span>
+            </button>
+            <button class="ui-planet ui-planet--moon" type="button" data-action="select-body" data-kind="moon" data-name="Ariel">
+              <span class="ui-planet__icon ui-planet__icon--moon-generic" aria-hidden="true"></span>
+              <span class="ui-planet__name">Ariel</span>
+            </button>
+            <button class="ui-planet ui-planet--moon" type="button" data-action="select-body" data-kind="moon" data-name="Umbriel">
+              <span class="ui-planet__icon ui-planet__icon--moon-generic" aria-hidden="true"></span>
+              <span class="ui-planet__name">Umbriel</span>
+            </button>
+            <button class="ui-planet ui-planet--moon" type="button" data-action="select-body" data-kind="moon" data-name="Titania">
+              <span class="ui-planet__icon ui-planet__icon--moon-generic" aria-hidden="true"></span>
+              <span class="ui-planet__name">Titania</span>
+            </button>
+            <button class="ui-planet ui-planet--moon" type="button" data-action="select-body" data-kind="moon" data-name="Oberon">
+              <span class="ui-planet__icon ui-planet__icon--moon-generic" aria-hidden="true"></span>
+              <span class="ui-planet__name">Oberon</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="ui-nav-subgroup">
+          <p class="ui-nav-subgroup__label">Neptune</p>
+          <div class="ui-planet-list ui-planet-list--moons" role="list">
+            <button class="ui-planet ui-planet--moon" type="button" data-action="select-body" data-kind="moon" data-name="Triton">
+              <span class="ui-planet__icon ui-planet__icon--moon-generic" aria-hidden="true"></span>
+              <span class="ui-planet__name">Triton</span>
+            </button>
+            <button class="ui-planet ui-planet--moon" type="button" data-action="select-body" data-kind="moon" data-name="Proteus">
+              <span class="ui-planet__icon ui-planet__icon--moon-generic" aria-hidden="true"></span>
+              <span class="ui-planet__name">Proteus</span>
+            </button>
+            <button class="ui-planet ui-planet--moon" type="button" data-action="select-body" data-kind="moon" data-name="Nereid">
+              <span class="ui-planet__icon ui-planet__icon--moon-generic" aria-hidden="true"></span>
+              <span class="ui-planet__name">Nereid</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="ui-nav-subgroup">
+          <p class="ui-nav-subgroup__label">Pluto</p>
+          <div class="ui-planet-list ui-planet-list--moons" role="list">
+            <button class="ui-planet ui-planet--moon" type="button" data-action="select-body" data-kind="moon" data-name="Charon">
+              <span class="ui-planet__icon ui-planet__icon--moon-generic" aria-hidden="true"></span>
+              <span class="ui-planet__name">Charon</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <p class="ui-hint ui-hint--compact">Grouped navigation so the panel stops looking like a random grocery list.</p>
     </div>
   </aside>
 </div>

@@ -2,9 +2,64 @@
    Left sidebar (planet navigation)
 ------------------------------------------------------------ */
 
+.ui-nav-group {
+  display: grid;
+  gap: 10px;
+}
+
+.ui-nav-group + .ui-nav-group {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ui-nav-group__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ui-nav-group__title {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.ui-nav-group__meta {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.52);
+  white-space: nowrap;
+}
+
+.ui-nav-subgroup {
+  display: grid;
+  gap: 6px;
+}
+
+.ui-nav-subgroup + .ui-nav-subgroup {
+  margin-top: 6px;
+}
+
+.ui-nav-subgroup__label {
+  margin: 0;
+  padding-left: 2px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.58);
+}
+
 .ui-planet-list {
   display: grid;
   gap: 8px;
+}
+
+.ui-planet-list--moons {
+  gap: 6px;
 }
 
 .ui-planet {
@@ -27,6 +82,14 @@
     transform 150ms ease;
 }
 
+.ui-planet--moon {
+  grid-template-columns: 18px 1fr;
+  gap: 8px;
+  padding: 8px 9px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.018);
+}
+
 .ui-planet:hover {
   border-color: rgba(255, 255, 255, 0.22);
   background: rgba(255, 255, 255, 0.06);
@@ -46,9 +109,20 @@
   opacity: 0.95;
 }
 
+.ui-planet--moon .ui-planet__icon {
+  width: 16px;
+  height: 16px;
+  opacity: 0.82;
+}
+
 .ui-planet__name {
   font-size: 13px;
   font-weight: 650;
+}
+
+.ui-planet--moon .ui-planet__name {
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .ui-planet__icon--sun {
@@ -91,6 +165,9 @@
   background-image: url("../assets/svgs/iconP_pluto.svg");
 }
 
+.ui-planet__icon--moon-generic {
+  background-image: url("../assets/svgs/icon_moon_1.svg");
+}
 
 /* Dwarf-planet fallback icons (no dedicated SVGs yet) */
 .ui-planet__icon--ceres,
@@ -115,4 +192,9 @@
 
 .ui-planet__icon--eris {
   background: radial-gradient(circle at 35% 30%, #e4e7eb 0%, #b9c0c8 55%, #79818a 100%);
+}
+
+.ui-hint--compact {
+  margin-top: 14px;
+  font-size: 11px;
 }

@@ -20,7 +20,7 @@ export class PlanetSidebarRenderer {
   }
 
   private bind(): void {
-    // Close button
+    // Close button + body navigation
     this.root.addEventListener("click", (e) => {
       const target = e.target as HTMLElement | null;
       const closeBtn = target?.closest<HTMLElement>("[data-action='sidebar-close'][data-side='left']");
@@ -30,6 +30,20 @@ export class PlanetSidebarRenderer {
         return;
       }
 
+      const bodyBtn = target?.closest<HTMLElement>("[data-action='select-body']");
+      if (bodyBtn) {
+        e.stopPropagation();
+
+        const kind = (bodyBtn.getAttribute("data-kind") ?? "planet") as "planet" | "moon";
+        const name = bodyBtn.getAttribute("data-name") ?? bodyBtn.getAttribute("data-planet") ?? "";
+        if (!name) return;
+
+        if (kind === "moon") router.goMoon(name);
+        else router.goPlanet(name);
+        return;
+      }
+
+      // Legacy fallback for older buttons (kept so partial template edits don't explode)
       const planetBtn = target?.closest<HTMLElement>("[data-action='select-planet']");
       if (planetBtn) {
         e.stopPropagation();
