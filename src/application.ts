@@ -182,9 +182,16 @@ export class Application {
 
     if (uiSlotHud) {
       const hud = new HudRenderer(uiSlotHud, {
+        bodyName: "None",
         simulationSpeed: this.simulationSpeed,
+        paused: this.simulationSpeed <= 0,
+        orbitsVisible: {
+          planets: true,
+          moons: true,
+        },
+        markersVisible: true,
       });
-      hud.init();
+
     }
 
     const uiRightSidebarSlot = document.querySelector<HTMLElement>(

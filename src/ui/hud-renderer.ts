@@ -1,55 +1,72 @@
-import hudTpl from "./templates/hud.tpl.html";
+import hudTemplate from "./templates/hud.tpl.html";
 
-export interface HudState {
-  /** The simulation speed multiplier (e.g. 0..5000). 0 pauses the simulation. */
+export type OrbitVisibilityToggles = {
+  planets: boolean;
+  moons: boolean;
+};
+
+export type HudState = {
+  bodyName: string;
   simulationSpeed: number;
-}
+  paused: boolean;
+  orbitsVisible: OrbitVisibilityToggles;
+  markersVisible: boolean;
+};
+
+type SpeedPreset = {
+  label: string;
+  secondsPerSecond: number;
+};
+
+const ENGINE_BASE_SECONDS = 60;
 
 export class HudRenderer {
-  private root: HTMLElement;
+  private readonly root: HTMLElement;
   private state: HudState;
-  private mounted = false;
 
   private paused = false;
-  private lastNonZeroSpeed = 1;
+  private lastNonZeroPresetIndex = 1;
 
-  private readonly minSpeed = 1;
-  private readonly maxSpeed = 5000;
-  private readonly midSpeed = 500;
-  private readonly sliderMax = 1000;
-
-  /**
-   * Convex curve exponent so that the midpoint (50% slider) maps to ~×500.
-   * f(t) = min + (max-min) * t^gamma
-   */
-  private readonly gamma =
-    Math.log((this.midSpeed - this.minSpeed) / (this.maxSpeed - this.minSpeed)) / Math.log(0.5);
+  private readonly speedPresets: SpeedPreset[] = [
+    { label: "Real-time", secondsPerSecond: 1 },
+    { label: "1 min / s", secondsPerSecond: 60 },
+    { label: "5 min / s", secondsPerSecond: 5 * 60 },
+    { label: "15 min / s", secondsPerSecond: 15 * 60 },
+    { label: "30 min / s", secondsPerSecond: 30 * 60 },
+    { label: "1 h / s", secondsPerSecond: 60 * 60 },
+    { label: "3 h / s", secondsPerSecond: 3 * 60 * 60 },
+    { label: "6 h / s", secondsPerSecond: 6 * 60 * 60 },
+    { label: "12 h / s", secondsPerSecond: 12 * 60 * 60 },
+    { label: "1 d / s", secondsPerSecond: 24 * 60 * 60 },
+    { label: "3 d / s", secondsPerSecond: 3 * 24 * 60 * 60 },
+  ];
 
   constructor(root: HTMLElement, initial: HudState) {
     this.root = root;
-    this.state = initial;
+    this.state = { ...initial };
 
-    const initialSpeed = Math.round(initial.simulationSpeed);
+    const initialSpeed = Number(initial.simulationSpeed) || 0;
     if (initialSpeed <= 0) {
       this.paused = true;
-      this.lastNonZeroSpeed = this.midSpeed;
       this.state.simulationSpeed = 0;
+      this.lastNonZeroPresetIndex = 1;
     } else {
       this.paused = false;
-      this.lastNonZeroSpeed = this.clamp(initialSpeed, this.minSpeed, this.maxSpeed);
-      this.state.simulationSpeed = this.lastNonZeroSpeed;
+      this.lastNonZeroPresetIndex = this.speedToPresetIndex(initialSpeed);
+      this.state.simulationSpeed = this.presetIndexToSpeed(this.lastNonZeroPresetIndex);
     }
+
+    this.root.innerHTML = this.compileTemplate(hudTemplate, {
+      bodyName: this.state.bodyName,
+    });
+
+    this.bind();
+    this.syncFromState();
   }
 
-  public init(): void {
-    this.root.innerHTML = hudTpl;
-
-    if (!this.mounted) {
-      this.bind();
-      this.mounted = true;
-    }
-
-    this.syncFromState();
+  public setSelectedBodyName(name: string): void {
+    this.state.bodyName = name;
+    this.syncBodyName();
   }
 
   public setSimulationSpeed(speed: number): void {
@@ -58,123 +75,242 @@ export class HudRenderer {
       this.state.simulationSpeed = 0;
     } else {
       this.paused = false;
-      this.state.simulationSpeed = this.clamp(Math.round(speed), this.minSpeed, this.maxSpeed);
-      this.lastNonZeroSpeed = this.state.simulationSpeed;
+      this.lastNonZeroPresetIndex = this.speedToPresetIndex(speed);
+      this.state.simulationSpeed = this.presetIndexToSpeed(this.lastNonZeroPresetIndex);
     }
 
     this.syncFromState();
   }
 
+  public setOrbitVisibility(toggles: OrbitVisibilityToggles): void {
+    this.state.orbitsVisible = { ...toggles };
+    this.syncOrbitToggles();
+  }
+
+  public setMarkersVisible(visible: boolean): void {
+    this.state.markersVisible = visible;
+    this.syncMarkerToggle();
+  }
+
+  private compileTemplate(template: string, vars: Record<string, string>): string {
+    return template.replace(/{{\s*([a-zA-Z0-9_]+)\s*}}/g, (_, key: string) => vars[key] ?? "");
+  }
+
   private bind(): void {
-    // Slider input
-    this.root.addEventListener("input", (e) => {
-      const target = e.target as HTMLElement | null;
-      const el = target?.closest<HTMLInputElement>('[data-action="speed-change"]');
-      if (!el) return;
+    const speedSlider = this.root.querySelector<HTMLInputElement>("[data-speed-slider]");
+    if (speedSlider) {
+      speedSlider.addEventListener("input", () => {
+        const presetIndex = this.clamp(Math.round(Number(speedSlider.value)), 0, this.speedPresets.length - 1);
+        const speed = this.presetIndexToSpeed(presetIndex);
 
-      e.stopPropagation();
+        this.lastNonZeroPresetIndex = presetIndex;
+        this.state.simulationSpeed = speed;
+        this.paused = false;
 
-      // Moving the slider always resumes.
-      this.paused = false;
+        this.syncFromState();
+        this.emitSpeedChange(speed);
+      });
+    }
 
-      const sliderValue = Number(el.value);
-      const speed = this.sliderToSpeed(sliderValue);
+    const pauseButton = this.root.querySelector<HTMLButtonElement>("[data-speed-pause]");
+    if (pauseButton) {
+      pauseButton.addEventListener("click", () => {
+        this.paused = !this.paused;
 
-      this.lastNonZeroSpeed = speed;
-      this.state.simulationSpeed = speed;
+        const speed = this.paused ? 0 : this.presetIndexToSpeed(this.lastNonZeroPresetIndex);
+        this.state.simulationSpeed = speed;
 
-      this.syncFromState();
+        this.syncFromState();
+        this.emitSpeedChange(speed);
+      });
+    }
 
-      window.dispatchEvent(
-        new CustomEvent("ui:speedChange", {
-          detail: { speed },
-        }),
-      );
-    });
+    const markerToggle = this.root.querySelector<HTMLButtonElement>("[data-toggle-markers]");
+    if (markerToggle) {
+      markerToggle.addEventListener("click", () => {
+        this.state.markersVisible = !this.state.markersVisible;
+        this.syncMarkerToggle();
 
-    // Pause/resume button
-    this.root.addEventListener("click", (e) => {
-      const target = e.target as HTMLElement | null;
-      const btn = target?.closest<HTMLButtonElement>('[data-action="speed-toggle-pause"]');
-      if (!btn) return;
+        window.dispatchEvent(
+          new CustomEvent("ui:toggleMarkers", {
+            detail: { visible: this.state.markersVisible },
+          })
+        );
+      });
+    }
 
-      e.stopPropagation();
+    const orbitPlanetToggle = this.root.querySelector<HTMLButtonElement>("[data-toggle-orbits-planets]");
+    if (orbitPlanetToggle) {
+      orbitPlanetToggle.addEventListener("click", () => {
+        this.state.orbitsVisible.planets = !this.state.orbitsVisible.planets;
+        this.syncOrbitToggles();
+        this.emitOrbitVisibilityChange();
+      });
+    }
 
-      this.paused = !this.paused;
-      const speed = this.paused ? 0 : this.lastNonZeroSpeed;
-      this.state.simulationSpeed = speed;
+    const orbitMoonToggle = this.root.querySelector<HTMLButtonElement>("[data-toggle-orbits-moons]");
+    if (orbitMoonToggle) {
+      orbitMoonToggle.addEventListener("click", () => {
+        this.state.orbitsVisible.moons = !this.state.orbitsVisible.moons;
+        this.syncOrbitToggles();
+        this.emitOrbitVisibilityChange();
+      });
+    }
+  }
 
-      this.syncFromState();
-
-      window.dispatchEvent(
-        new CustomEvent("ui:speedChange", {
-          detail: { speed },
-        }),
-      );
-    });
-
-    // Prevent camera controls from stealing drag/wheel while interacting with the HUD.
-    this.root.addEventListener(
-      "pointerdown",
-      (e) => {
-        const target = e.target as HTMLElement | null;
-        if (target?.closest("input, button, select, textarea, [data-stop-camera]")) {
-          e.stopPropagation();
-        }
-      },
-      true,
+  private emitSpeedChange(speed: number): void {
+    window.dispatchEvent(
+      new CustomEvent("ui:speedChange", {
+        detail: { speed },
+      })
     );
+  }
 
-    this.root.addEventListener(
-      "wheel",
-      (e) => {
-        const target = e.target as HTMLElement | null;
-        if (target?.closest("input, button, select, textarea, [data-stop-camera]")) {
-          e.stopPropagation();
-        }
-      },
-      { passive: true, capture: true },
+
+
+  private emitOrbitVisibilityChange(): void {
+    window.dispatchEvent(
+      new CustomEvent("ui:toggleOrbits", {
+        detail: { ...this.state.orbitsVisible },
+      })
     );
   }
 
   private syncFromState(): void {
-    const input = this.root.querySelector<HTMLInputElement>('.hud-speed__input[data-action="speed-change"]');
-    if (input) {
-      // While paused, keep the thumb at the last chosen speed.
-      const baseSpeed = this.paused ? this.lastNonZeroSpeed : Math.max(this.state.simulationSpeed, 1);
-      const sliderValue = this.speedToSlider(baseSpeed);
-      input.value = String(sliderValue);
-      input.style.setProperty("--p", `${(sliderValue / this.sliderMax) * 100}%`);
+    this.syncBodyName();
+
+    const speedSlider = this.root.querySelector<HTMLInputElement>("[data-speed-slider]");
+    if (speedSlider) {
+      const baseSpeed = this.paused
+        ? this.presetIndexToSpeed(this.lastNonZeroPresetIndex)
+        : Math.max(this.state.simulationSpeed, this.presetIndexToSpeed(0));
+      const sliderIndex = this.speedToPresetIndex(baseSpeed);
+
+      speedSlider.min = "0";
+      speedSlider.max = String(this.speedPresets.length - 1);
+      speedSlider.step = "1";
+      speedSlider.value = String(sliderIndex);
+      this.applySpeedTrackProgress(speedSlider, sliderIndex);
     }
 
     this.updateValueLabel(this.paused ? 0 : this.state.simulationSpeed);
+    this.syncScaleLabels();
     this.syncPauseButton();
+    this.syncOrbitToggles();
+    this.syncMarkerToggle();
+  }
+
+  private syncBodyName(): void {
+    const bodyLabel = this.root.querySelector<HTMLElement>("[data-body-name]");
+    if (bodyLabel) bodyLabel.textContent = this.state.bodyName;
   }
 
   private updateValueLabel(speed: number): void {
     const label = this.root.querySelector<HTMLElement>("[data-speed-value]");
-    if (label) label.textContent = `×${speed}`;
+    if (!label) return;
+
+    if (speed <= 0) {
+      label.textContent = "Paused";
+      return;
+    }
+
+    label.textContent = this.speedPresets[this.speedToPresetIndex(speed)]?.label ?? this.formatSpeedFallback(speed);
+  }
+
+  private syncScaleLabels(): void {
+    const min = this.root.querySelector<HTMLElement>(".hud-speed__min");
+    const max = this.root.querySelector<HTMLElement>(".hud-speed__max");
+
+    if (min) min.textContent = this.speedPresets[0]?.label ?? "Min";
+    if (max) max.textContent = this.speedPresets[this.speedPresets.length - 1]?.label ?? "Max";
   }
 
   private syncPauseButton(): void {
-    const btn = this.root.querySelector<HTMLElement>('[data-action="speed-toggle-pause"]');
+    const pauseButton = this.root.querySelector<HTMLButtonElement>("[data-speed-pause]");
+    if (!pauseButton) return;
+
+    pauseButton.classList.toggle("is-paused", this.paused);
+    pauseButton.setAttribute("aria-pressed", String(this.paused));
+    pauseButton.setAttribute("aria-label", this.paused ? "Resume simulation" : "Pause simulation");
+
+  }
+
+  private syncOrbitToggles(): void {
+    const syncButton = (selector: string, visible: boolean, labels: { on: string; off: string }) => {
+      const btn = this.root.querySelector<HTMLButtonElement>(selector);
+      if (!btn) return;
+
+      btn.classList.toggle("is-active", visible);
+      btn.setAttribute("aria-pressed", String(visible));
+      btn.setAttribute("aria-label", visible ? labels.off : labels.on);
+
+      const text = btn.querySelector<HTMLElement>("[data-toggle-label]");
+      if (text) text.textContent = visible ? labels.off : labels.on;
+    };
+
+    syncButton("[data-toggle-orbits-planets]", this.state.orbitsVisible.planets, {
+      on: "Orbits on",
+      off: "Orbits off",
+    });
+
+    syncButton("[data-toggle-orbits-moons]", this.state.orbitsVisible.moons, {
+      on: "Moon orbits on",
+      off: "Moon orbits off",
+    });
+  }
+
+  private syncMarkerToggle(): void {
+    const btn = this.root.querySelector<HTMLButtonElement>("[data-toggle-markers]");
     if (!btn) return;
-    btn.classList.toggle("is-paused", this.paused);
+
+    const visible = this.state.markersVisible;
+    btn.classList.toggle("is-active", visible);
+    btn.setAttribute("aria-pressed", String(visible));
+    btn.setAttribute("aria-label", visible ? "Hide markers" : "Show markers");
+
+    const text = btn.querySelector<HTMLElement>("[data-toggle-label]");
+    if (text) text.textContent = visible ? "Marker on" : "Marker off";
   }
 
-  private sliderToSpeed(slider: number): number {
-    const t = this.clamp(slider, 0, this.sliderMax) / this.sliderMax;
-    const v = this.minSpeed + (this.maxSpeed - this.minSpeed) * Math.pow(t, this.gamma);
-    return this.clamp(Math.round(v), this.minSpeed, this.maxSpeed);
+  private presetIndexToSpeed(index: number): number {
+    const preset = this.speedPresets[this.clamp(index, 0, this.speedPresets.length - 1)];
+    if (!preset) return 1;
+
+    return preset.secondsPerSecond / ENGINE_BASE_SECONDS;
   }
 
-  private speedToSlider(speed: number): number {
-    const s = this.clamp(speed, this.minSpeed, this.maxSpeed);
-    const t = Math.pow((s - this.minSpeed) / (this.maxSpeed - this.minSpeed), 1 / this.gamma);
-    return this.clamp(Math.round(t * this.sliderMax), 0, this.sliderMax);
+  private speedToPresetIndex(speed: number): number {
+    let bestIndex = 0;
+    let bestDistance = Number.POSITIVE_INFINITY;
+
+    for (let i = 0; i < this.speedPresets.length; i++) {
+      const distance = Math.abs(this.presetIndexToSpeed(i) - speed);
+      if (distance < bestDistance) {
+        bestDistance = distance;
+        bestIndex = i;
+      }
+    }
+
+    return bestIndex;
   }
 
-  private clamp(n: number, min: number, max: number): number {
-    return Math.min(max, Math.max(min, n));
+  private formatSpeedFallback(speed: number): string {
+    const secondsPerSecond = speed * ENGINE_BASE_SECONDS;
+
+    if (secondsPerSecond >= 86400) return `${(secondsPerSecond / 86400).toFixed(1)} d / s`;
+    if (secondsPerSecond >= 3600) return `${(secondsPerSecond / 3600).toFixed(1)} h / s`;
+    if (secondsPerSecond >= 60) return `${(secondsPerSecond / 60).toFixed(1)} min / s`;
+
+    return `${secondsPerSecond.toFixed(1)} s / s`;
+  }
+
+  private clamp(value: number, min: number, max: number): number {
+    return Math.min(max, Math.max(min, value));
+  }
+
+  private applySpeedTrackProgress(input: HTMLInputElement, sliderIndex: number): void {
+    const max = Math.max(1, this.speedPresets.length - 1);
+    const percentage = (sliderIndex / max) * 100;
+    input.style.setProperty("--hud-slider-fill", `${percentage}%`);
   }
 }

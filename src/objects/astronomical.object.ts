@@ -67,10 +67,22 @@ export class Astronomical implements AstronomicalObject {
     this.specMap = textureLoader.load("/assets/spec/2k_earth_specular_map.png");
     this.emissive = emissive;
 
-    this.angle = THREE.MathUtils.euclideanModulo(
-      this.data.orbitalSpeed * this.initialOffset,
-      Math.PI * 2,
-    );
+    this.angle = this.data.isOrbiting
+      ? this.getInitialOrbitAngle()
+      : 0;
+  }
+
+  private getInitialOrbitAngle(): number {
+    const a = Math.abs(this.data.semiMajorAxis);
+    const b = Math.abs(this.data.semiMinorAxis);
+
+    if (a <= 0 || b <= 0) return 0;
+
+    const normalizedX = THREE.MathUtils.clamp(this.data.initialPosition.x / a, -1, 1);
+    const normalizedZ = THREE.MathUtils.clamp(this.data.initialPosition.z / b, -1, 1);
+    const angle = Math.atan2(normalizedZ, normalizedX);
+
+    return Number.isFinite(angle) ? angle : 0;
   }
 
   public addMarker(a: number, b: number): Line2 {
