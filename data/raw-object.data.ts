@@ -36,7 +36,7 @@ export const mercuryRawData: AstronomicalRawData = {
     periapsisKm: 46001200,
     apoapsisKm: 69816900,
 
-    initialOrbitPhaseDeg: 0,
+    initialOrbitPhaseDeg: 317,
 };
 
 export const venusRawData: AstronomicalRawData = {
@@ -59,7 +59,7 @@ export const venusRawData: AstronomicalRawData = {
     periapsisKm: 107477000,
     apoapsisKm: 108939000,
 
-    initialOrbitPhaseDeg: 0,
+    initialOrbitPhaseDeg: 59,
 };
 
 export const earthRawData: AstronomicalRawData = {
@@ -82,7 +82,7 @@ export const earthRawData: AstronomicalRawData = {
     periapsisKm: 147095000,
     apoapsisKm: 152100000,
 
-    initialOrbitPhaseDeg: 0,
+    initialOrbitPhaseDeg: 248,
 };
 
 export const moonRawData: AstronomicalRawData = {
@@ -105,7 +105,7 @@ export const moonRawData: AstronomicalRawData = {
     periapsisKm: 363300,
     apoapsisKm: 405500,
 
-    initialOrbitPhaseDeg: 0,
+    initialOrbitPhaseDeg: 133,
 };
 
 export const marsRawData: AstronomicalRawData = {
@@ -128,7 +128,7 @@ export const marsRawData: AstronomicalRawData = {
     periapsisKm: 206700000,
     apoapsisKm: 249200000,
 
-    initialOrbitPhaseDeg: 0,
+    initialOrbitPhaseDeg: 12,
 };
 
 export const jupiterRawData: AstronomicalRawData = {
@@ -151,7 +151,7 @@ export const jupiterRawData: AstronomicalRawData = {
     periapsisKm: 740595000,
     apoapsisKm: 816363000,
 
-    initialOrbitPhaseDeg: 0,
+    initialOrbitPhaseDeg: 274,
 
     ringInnerRadiusKm: 92000,
     ringOuterRadiusKm: 226000,
@@ -177,7 +177,7 @@ export const saturnRawData: AstronomicalRawData = {
     periapsisKm: 1352550000,
     apoapsisKm: 1514490000,
 
-    initialOrbitPhaseDeg: 0,
+    initialOrbitPhaseDeg: 198,
 
     ringInnerRadiusKm: 66900,
     ringOuterRadiusKm: 140180,
@@ -203,7 +203,7 @@ export const uranusRawData: AstronomicalRawData = {
     periapsisKm: 2741300000,
     apoapsisKm: 3003630000,
 
-    initialOrbitPhaseDeg: 0,
+    initialOrbitPhaseDeg: 71,
 
     ringInnerRadiusKm: 38000,
     ringOuterRadiusKm: 51000,
@@ -229,7 +229,7 @@ export const neptuneRawData: AstronomicalRawData = {
     periapsisKm: 4444450000,
     apoapsisKm: 4546700000,
 
-    initialOrbitPhaseDeg: 0,
+    initialOrbitPhaseDeg: 329,
 
     ringInnerRadiusKm: 41900,
     ringOuterRadiusKm: 62930,
@@ -255,7 +255,7 @@ export const plutoRawData: AstronomicalRawData = {
     periapsisKm: 4436820000,
     apoapsisKm: 7375930000,
 
-    initialOrbitPhaseDeg: 0,
+    initialOrbitPhaseDeg: 45,
 };
 
 export const ioRawData: AstronomicalRawData = {
@@ -278,7 +278,7 @@ export const ioRawData: AstronomicalRawData = {
     periapsisKm: 419900,
     apoapsisKm: 423400,
 
-    initialOrbitPhaseDeg: 0,
+    initialOrbitPhaseDeg: 186,
 };
 
 export const europaRawData: AstronomicalRawData = {
@@ -301,7 +301,7 @@ export const europaRawData: AstronomicalRawData = {
     periapsisKm: 665100,
     apoapsisKm: 677100,
 
-    initialOrbitPhaseDeg: 0,
+    initialOrbitPhaseDeg: 54,
 };
 
 export const ganymedeRawData: AstronomicalRawData = {
@@ -324,7 +324,7 @@ export const ganymedeRawData: AstronomicalRawData = {
     periapsisKm: 1069000,
     apoapsisKm: 1071800,
 
-    initialOrbitPhaseDeg: 0,
+    initialOrbitPhaseDeg: 259,
 };
 
 export const callistoRawData: AstronomicalRawData = {
@@ -347,7 +347,7 @@ export const callistoRawData: AstronomicalRawData = {
     periapsisKm: 1868800,
     apoapsisKm: 1896600,
 
-    initialOrbitPhaseDeg: 0,
+    initialOrbitPhaseDeg: 9,
 };
 
 export const enceladusRawData: AstronomicalRawData = {
@@ -370,7 +370,7 @@ export const enceladusRawData: AstronomicalRawData = {
     periapsisKm: 236900,
     apoapsisKm: 239200,
 
-    initialOrbitPhaseDeg: 0,
+    initialOrbitPhaseDeg: 301,
 };
 
 export const iapetusRawData: AstronomicalRawData = {
@@ -393,7 +393,7 @@ export const iapetusRawData: AstronomicalRawData = {
     periapsisKm: 3459100,
     apoapsisKm: 3662500,
 
-    initialOrbitPhaseDeg: 0,
+    initialOrbitPhaseDeg: 120,
 };
 
 export const rheaRawData: AstronomicalRawData = {
@@ -416,7 +416,7 @@ export const rheaRawData: AstronomicalRawData = {
     periapsisKm: 526600,
     apoapsisKm: 527600,
 
-    initialOrbitPhaseDeg: 0,
+    initialOrbitPhaseDeg: 342,
 };
 
 export const titanRawData: AstronomicalRawData = {
@@ -439,7 +439,7 @@ export const titanRawData: AstronomicalRawData = {
     periapsisKm: 1186700,
     apoapsisKm: 1257000,
 
-    initialOrbitPhaseDeg: 0,
+    initialOrbitPhaseDeg: 216,
 };
 
 export const tritonRawData: AstronomicalRawData = {
@@ -462,7 +462,7 @@ export const tritonRawData: AstronomicalRawData = {
     periapsisKm: 354753,
     apoapsisKm: 354765,
 
-    initialOrbitPhaseDeg: 0,
+    initialOrbitPhaseDeg: 88,
 };
 
 export const titaniaRawData: AstronomicalRawData = {
@@ -485,7 +485,7 @@ export const titaniaRawData: AstronomicalRawData = {
     periapsisKm: 435430,
     apoapsisKm: 436390,
 
-    initialOrbitPhaseDeg: 0,
+    initialOrbitPhaseDeg: 302,
 };
 
 export const phobosRawData: AstronomicalRawData = {
@@ -508,7 +508,7 @@ export const phobosRawData: AstronomicalRawData = {
     periapsisKm: 9235,
     apoapsisKm: 9517,
 
-    initialOrbitPhaseDeg: 0,
+    initialOrbitPhaseDeg: 27,
 };
 
 export const deimosRawData: AstronomicalRawData = {
@@ -531,7 +531,7 @@ export const deimosRawData: AstronomicalRawData = {
     periapsisKm: 23455,
     apoapsisKm: 23471,
 
-    initialOrbitPhaseDeg: 0,
+    initialOrbitPhaseDeg: 177,
 };
 
 export const oberonRawData: AstronomicalRawData = {
@@ -554,7 +554,7 @@ export const oberonRawData: AstronomicalRawData = {
     periapsisKm: 582703,
     apoapsisKm: 584337,
 
-    initialOrbitPhaseDeg: 0,
+    initialOrbitPhaseDeg: 64,
 };
 
 export const mimasRawData: AstronomicalRawData = {
@@ -577,7 +577,7 @@ export const mimasRawData: AstronomicalRawData = {
     periapsisKm: 181902,
     apoapsisKm: 189176,
 
-    initialOrbitPhaseDeg: 0,
+    initialOrbitPhaseDeg: 231,
 };
 
 export const dioneRawData: AstronomicalRawData = {
@@ -600,7 +600,7 @@ export const dioneRawData: AstronomicalRawData = {
     periapsisKm: 376566,
     apoapsisKm: 378226,
 
-    initialOrbitPhaseDeg: 0,
+    initialOrbitPhaseDeg: 5,
 };
 
 export const tethysRawData: AstronomicalRawData = {
@@ -623,7 +623,7 @@ export const tethysRawData: AstronomicalRawData = {
     periapsisKm: 294590,
     apoapsisKm: 294648,
 
-    initialOrbitPhaseDeg: 0,
+    initialOrbitPhaseDeg: 155,
 };
 
 export const ceresRawData: AstronomicalRawData = {
@@ -646,7 +646,7 @@ export const ceresRawData: AstronomicalRawData = {
     periapsisKm: 382620000,
     apoapsisKm: 445410000,
 
-    initialOrbitPhaseDeg: 0,
+    initialOrbitPhaseDeg: 290,
 };
 
 export const charonRawData: AstronomicalRawData = {
@@ -669,7 +669,7 @@ export const charonRawData: AstronomicalRawData = {
     periapsisKm: 17536,
     apoapsisKm: 17536,
 
-    initialOrbitPhaseDeg: 0,
+    initialOrbitPhaseDeg: 11,
 };
 
 export const erisRawData: AstronomicalRawData = {
@@ -692,7 +692,7 @@ export const erisRawData: AstronomicalRawData = {
     periapsisKm: 5766000000,
     apoapsisKm: 14594000000,
 
-    initialOrbitPhaseDeg: 0,
+    initialOrbitPhaseDeg: 67,
 };
 
 export const haumeaRawData: AstronomicalRawData = {
@@ -715,7 +715,7 @@ export const haumeaRawData: AstronomicalRawData = {
     periapsisKm: 5170000000,
     apoapsisKm: 7710000000,
 
-    initialOrbitPhaseDeg: 0,
+    initialOrbitPhaseDeg: 240,
 
     ringInnerRadiusKm: 2250,
     ringOuterRadiusKm: 2300,
@@ -741,7 +741,7 @@ export const makemakeRawData: AstronomicalRawData = {
     periapsisKm: 5727300000,
     apoapsisKm: 7919600000,
 
-    initialOrbitPhaseDeg: 0,
+    initialOrbitPhaseDeg: 314,
 };
 
 export const umbrielRawData: AstronomicalRawData = {
@@ -764,7 +764,7 @@ export const umbrielRawData: AstronomicalRawData = {
     periapsisKm: 264963,
     apoapsisKm: 267037,
 
-    initialOrbitPhaseDeg: 0,
+    initialOrbitPhaseDeg: 101,
 };
 
 export const arielRawData: AstronomicalRawData = {
@@ -787,7 +787,7 @@ export const arielRawData: AstronomicalRawData = {
     periapsisKm: 190671,
     apoapsisKm: 191129,
 
-    initialOrbitPhaseDeg: 0,
+    initialOrbitPhaseDeg: 196,
 };
 
 export const mirandaRawData: AstronomicalRawData = {
@@ -810,7 +810,7 @@ export const mirandaRawData: AstronomicalRawData = {
     periapsisKm: 129222,
     apoapsisKm: 129558,
 
-    initialOrbitPhaseDeg: 0,
+    initialOrbitPhaseDeg: 285,
 };
 
 export const proteusRawData: AstronomicalRawData = {
@@ -833,7 +833,7 @@ export const proteusRawData: AstronomicalRawData = {
     periapsisKm: 117588,
     apoapsisKm: 117706,
 
-    initialOrbitPhaseDeg: 0,
+    initialOrbitPhaseDeg: 49,
 };
 
 export const nereidRawData: AstronomicalRawData = {
@@ -856,5 +856,5 @@ export const nereidRawData: AstronomicalRawData = {
     periapsisKm: 1372300,
     apoapsisKm: 9655300,
 
-    initialOrbitPhaseDeg: 0,
+    initialOrbitPhaseDeg: 170,
 };

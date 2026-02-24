@@ -282,7 +282,7 @@ export class Astronomical implements AstronomicalObject {
 
       this.control = new SimpleControl(
         this.data.size * 6,
-        this.data.size * 12,
+        this.data.size * 64,
         this.camera,
       );
       this.control.initEventListener();
@@ -526,7 +526,7 @@ export class Astronomical implements AstronomicalObject {
       });
     }
 
-    if (this.data.distanceToOrbiting > 0) {
+    if (this.data.isOrbiting) {
       const deltaAngle =
         this.data.orbitalSpeed * delta * 60 * APP.simulationSpeed;
 

@@ -26,8 +26,8 @@ export class Saturn extends Astronomical {
     init() {
         super.init();
 
-        const ringInnerRadius = 1.2 * this.data.size; // Innere Radius der Ringe, angepasst an die Größe des Saturns
-        const ringOuterRadius = 2.5 * this.data.size; // Äußere Radius der Ringe
+        const ringInnerRadius = this.data.ringInnerRadius;
+        const ringOuterRadius = this.data.ringOuterRadius;
 
         const { vertexShader, fragmentShader } = ringShader
 
