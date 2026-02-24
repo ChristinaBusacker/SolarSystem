@@ -188,7 +188,7 @@ export class Astronomical implements AstronomicalObject {
 
     const route = router.getCurrent();
     const selectedBodyName = route.name === "planet" ? route.planet : route.name === "moon" ? route.moon : null;
-    const hideTrailForSelected = !!selectedBodyName && (selectedBodyName === this.data.name || selectedBodyName === this.data.title);
+    const hideTrailForSelected = !!selectedBodyName && (selectedBodyName === this.data.slug || selectedBodyName === this.data.name);
 
     if (hideTrailForSelected) {
       for (let seg = 0; seg < pointCount - 1; seg++) {
@@ -277,7 +277,7 @@ export class Astronomical implements AstronomicalObject {
         50,
         window.innerWidth / window.innerHeight,
         0.1,
-        9000000,
+        90000000,
       );
 
       this.control = new SimpleControl(
@@ -288,7 +288,7 @@ export class Astronomical implements AstronomicalObject {
       this.control.initEventListener();
       this.group.add(this.control.group);
 
-      APP.cameraManager.addCamera(this.data.name, this.camera, this.control);
+      APP.cameraManager.addCamera(this.data.slug, this.camera, this.control);
     }
   }
 
@@ -328,7 +328,7 @@ export class Astronomical implements AstronomicalObject {
     });
 
     const atmosphereGeometry = new THREE.SphereGeometry(
-      size + 0.0001,
+      size / 2 + 0.0001,
       128,
       128,
     ); // Atmosphäre leicht größer als die Oberfläche
@@ -359,8 +359,8 @@ export class Astronomical implements AstronomicalObject {
     div.classList.add(
       "object",
       this.isMoon ? "moon" : "planet",
-      this.isMoon ? this.orbitingParent.data.name : this.data.name,
-      this.data.name,
+      this.isMoon ? this.orbitingParent.data.slug : this.data.slug,
+      this.data.slug,
     );
 
     let p = document.createElement("p");
@@ -373,7 +373,7 @@ export class Astronomical implements AstronomicalObject {
       window.dispatchEvent(
         new CustomEvent("ui:select-body", {
           detail: {
-            name: this.data.name,
+            name: this.data.slug,
             kind: this.isMoon ? "moon" : "planet",
           },
         }),
@@ -463,13 +463,14 @@ export class Astronomical implements AstronomicalObject {
   }
 
   public init() {
-    const geometry = new THREE.SphereGeometry(this.data.size, 64, 32);
+
+    const geometry = new THREE.SphereGeometry(this.data.size / 2, 64, 32);
 
     this.mesh = new THREE.Mesh(geometry);
-    this.mesh.name = this.data.name;
-    this.group.name = this.data.name + " Gruppe";
-    this.planetaryGroup.name = this.data.name + " planetaryGroup";
-    this.orbitalGroup.name = this.data.name + " orbitalGroup";
+    this.mesh.name = this.data.slug;
+    this.group.name = this.data.slug + " Gruppe";
+    this.planetaryGroup.name = this.data.slug + " planetaryGroup";
+    this.orbitalGroup.name = this.data.slug + " orbitalGroup";
 
     this.planetaryGroup.add(this.mesh);
     this.planetaryGroup.rotateX(

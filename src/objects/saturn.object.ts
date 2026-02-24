@@ -38,7 +38,7 @@ export class Saturn extends Astronomical {
             uniforms: {
                 planetWorldPosition: { value: planetWorldPosition },
                 sunWorldPosition: { value: new THREE.Vector3(0, 0, 0) },
-                planetRadius: { value: this.data.size },
+                planetRadius: { value: this.data.size / 2 },
                 ringTexture: { value: new THREE.TextureLoader().load('/assets/textures/2k_saturn_ring_alpha.png') }
             },
             vertexShader: vertexShader,
@@ -49,26 +49,21 @@ export class Saturn extends Astronomical {
 
         const ringGeometry = new THREE.RingGeometry(ringInnerRadius, ringOuterRadius, 256);
 
-        // Aktualisierung der UV-Koordinaten
-        const phiSegments = 256; // Anzahl der Segmente um den Ring herum
-        const thetaSegments = 1; // Anzahl der Segmente zwischen den Ringen, normalerweise 1 für einen einfachen Ring
+        const phiSegments = 256;
+        const thetaSegments = 1;
 
         const uv = ringGeometry.attributes.uv;
         for (let i = 0; i < phiSegments + 1; i++) {
-            // Die innere Seite des Rings
             uv.setXY(i, i / phiSegments, 0);
-            // Die äußere Seite des Rings
             uv.setXY(i + phiSegments + 1, i / phiSegments, 1);
         }
 
-        ringGeometry.attributes.uv.needsUpdate = true; // Sehr wichtig, um zu sagen, dass die UVs aktualisiert wurden
+        ringGeometry.attributes.uv.needsUpdate = true;
 
         this.ringMesh = new THREE.Mesh(ringGeometry, this.ringMaterial);
-
         this.ringMesh.rotation.x = -Math.PI / 2;
 
         this.planetaryGroup.add(this.ringMesh);
-
 
         this.planetaryGroup.rotateX(MathUtils.DEG2RAD * this.data.planetaryTilt)
 
@@ -82,6 +77,7 @@ export class Saturn extends Astronomical {
 
             this.group.add(moonGrp);
         })
+
 
 
         this.generateMaterials()

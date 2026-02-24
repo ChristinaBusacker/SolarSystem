@@ -1,9 +1,9 @@
 .stage-controls {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
   width: 100%;
+  position: relative;
 }
 
 .stage-toggle {
@@ -19,12 +19,27 @@
   display: grid;
   place-items: center;
 
+  position: absolute;
+  top: 0;
+
   cursor: pointer;
   user-select: none;
   transition:
     transform 160ms ease,
     background 160ms ease,
     border-color 160ms ease;
+
+  &.is-active {
+    display: none;
+  }
+
+  &--right {
+    right: 0;
+  }
+
+  &--left {
+    left: 0;
+  }
 }
 
 .stage-toggle:hover {
@@ -59,10 +74,10 @@
 
 // Info toggle
 .stage-toggle__icon--info {
-  background-image: url("../assets/svgs/Planetinfo_0.svg");
+  background-image: url("../assets/svgs/Planetinfo_1.svg");
 }
 .stage-toggle.is-active .stage-toggle__icon--info {
-  background-image: url("../assets/svgs/Planetinfo_1.svg");
+  display: none;
 }
 
 .stage-toggle:focus-visible {

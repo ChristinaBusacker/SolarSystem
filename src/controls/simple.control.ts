@@ -2,23 +2,17 @@ import * as THREE from "three";
 import { APP } from "..";
 
 export class SimpleControl {
-  public distanceMin: number;
-  public distanceMax: number;
   public zoom: number = 0.01;
-  public camera: THREE.PerspectiveCamera;
   public horizontal = new THREE.Group()
   public vertical = new THREE.Group()
   public group = new THREE.Group();
-  public velocity = new THREE.Vector2(0.2, 0)
+  public velocity = new THREE.Vector2(0.1, 0)
   private isRotating = false
   public previousMousePosition = new THREE.Vector2(0, 0)
   public dragspeed = 0.90;
   public verticleRotationLimit = 60;
 
-  constructor(distanceMin: number, distanceMax: number, camera: THREE.PerspectiveCamera) {
-    this.distanceMin = distanceMin
-    this.distanceMax = distanceMax
-    this.camera = camera;
+  constructor(private distanceMin: number, private distanceMax: number, private camera: THREE.PerspectiveCamera) {
     this.vertical.add(camera);
     this.horizontal.add(this.vertical);
     this.group.add(this.horizontal);
@@ -74,8 +68,8 @@ export class SimpleControl {
   private onMouseMove = (event: MouseEvent) => {
     if (this.isRotating) {
       const deltaMove = new THREE.Vector2(
-        event.clientX - this.previousMousePosition.x,
-        event.clientY - this.previousMousePosition.y
+        (event.clientX - this.previousMousePosition.x) * 0.8,
+        (event.clientY - this.previousMousePosition.y) * 0.8
       );
 
       this.rotateCamera(deltaMove);

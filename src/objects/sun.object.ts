@@ -6,7 +6,7 @@ import { sunShader } from "../shader/sun.shader";
 import { Astronomical } from "./astronomical.object";
 
 export class Sun extends Astronomical {
-  public cameraPosition = new THREE.Vector3(20, 20, 20);
+  public cameraPosition = new THREE.Vector3(10, 10, 10);
   private coronaShaderMaterial: THREE.ShaderMaterial;
 
   constructor() {
@@ -17,8 +17,6 @@ export class Sun extends Astronomical {
     super.init()
 
     const { vertexShader, fragmentShader } = sunShader
-
-    console.log('cameraPosition', APP.cameraManager.getActiveEntry().camera.position)
 
     this.mesh.material = new THREE.ShaderMaterial({
       uniforms: {
@@ -35,7 +33,7 @@ export class Sun extends Astronomical {
 
     // Adding Corona to sun
     this.coronaShaderMaterial = new THREE.ShaderMaterial(coronaShader);
-    const coronaGeometry = new THREE.SphereGeometry(92, 64, 64); // Adjust the radius to fit around your sun
+    const coronaGeometry = new THREE.SphereGeometry(this.data.size / 2, 64, 64); // Adjust the radius to fit around your sun
     const coronaMesh = new THREE.Mesh(
       coronaGeometry,
       this.coronaShaderMaterial

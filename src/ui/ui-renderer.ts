@@ -101,7 +101,6 @@ export class UiRenderer {
     const cssOverlay = document.querySelector<HTMLElement>(".css-renderer");
     if (cssOverlay) {
       cssOverlay.classList.toggle("hidePlanets", this.state.hidePlanets);
-      cssOverlay.classList.toggle("hideMoons", this.state.hideMoons);
     }
   }
 }

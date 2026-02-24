@@ -1,6 +1,8 @@
 import * as THREE from "three";
 import { APP } from "..";
 import { asteroidBeltImpostorShader } from "../shader/asteroid-belt-impostor.shader";
+import { AstronomicalDataParser } from "../parser/astronomical-data.parser";
+import { asteroidBeltZone } from "../../data/raw-object.data";
 
 type Rng = () => number;
 type BeltProfile = "main" | "kuiperCold" | "kuiperHot" | "ambient";
@@ -56,15 +58,16 @@ export class AsteroidBelt {
   private readonly sunWorldPosition = new THREE.Vector3(0, 0, 0);
 
   public constructor(opts?: Partial<AsteroidBeltOptions>) {
+
     this.opts = {
       // Main belt defaults (Mars–Jupiter) tuned for readability.
-      count: 1256,
-      innerRadius: 2250,
-      outerRadius: 3150,
+      count: 2056,
+      innerRadius: asteroidBeltZone.innerRadiusKm / AstronomicalDataParser.FINN_TO_KM,
+      outerRadius: asteroidBeltZone.outerRadiusKm / AstronomicalDataParser.FINN_TO_KM,
       maxEccentricity: 0.075,
       inclinationStdDeg: 3.0,
-      minSpriteSize: 6,
-      maxSpriteSize: 28,
+      minSpriteSize: 12,
+      maxSpriteSize: 36,
       seed: 1337,
       profile: "main",
       groupName: "MainAsteroidBelt",

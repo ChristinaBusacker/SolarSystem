@@ -168,7 +168,7 @@ export const saturnRawData: AstronomicalRawData = {
 
     diameterKm: 116460,
 
-    axialTiltDeg: 26.73,
+    axialTiltDeg: 5.51, // was 26.73, before, im unsere about it
     orbitalInclinationDeg: 2.485,
 
     orbitalPeriodDays: 10759.22,
@@ -857,4 +857,25 @@ export const nereidRawData: AstronomicalRawData = {
     apoapsisKm: 9655300,
 
     initialOrbitPhaseDeg: 170,
+};
+
+export const asteroidBeltZone = {
+    name: "Asteroid Belt",
+    slug: "asteroid-belt",
+    innerRadiusKm: 329115316, // ~2.2 AU
+    outerRadiusKm: 478713186, // ~3.2 AU
+};
+
+export const kuiperBeltInnerZone = {
+    name: "Kuiper Belt-Inner",
+    slug: "kuiper-belt-inner",
+    innerRadiusKm: 4487936121, // ~30 AU
+    outerRadiusKm: 6487936121, // ~55 AU
+};
+
+export const kuiperBeltOuterZone = {
+    name: "Kuiper Belt-Outer",
+    slug: "kuiper-belt-outer",
+    innerRadiusKm: 6227882889, // ~30 AU
+    outerRadiusKm: 8227882889, // ~55 AU
 };

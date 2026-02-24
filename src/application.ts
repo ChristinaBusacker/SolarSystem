@@ -288,6 +288,7 @@ export class Application {
 
     this.cssRenderer.domElement.classList.add("css-renderer");
     this.cssRenderer.domElement.classList.add("markers-on");
+    this.cssRenderer.domElement.classList.add('hideMoons')
     document.getElementById("app").appendChild(this.cssRenderer.domElement);
   }
 

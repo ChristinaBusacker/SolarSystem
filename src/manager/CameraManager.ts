@@ -16,7 +16,7 @@ export class CameraManager {
     );
 
     defaultCamera.position.set(0, 0, 50);
-    const defaultControl = new SimpleControl(1000, 950000, defaultCamera);
+    const defaultControl = new SimpleControl(500, 950000, defaultCamera);
 
     scene.add(defaultControl.group);
 
@@ -41,11 +41,7 @@ export class CameraManager {
     return this;
   }
 
-  public switchCamera(selector: string): CameraManager {
-    APP.cssRenderer.domElement.querySelectorAll(`.object`).forEach((elem) => {
-      elem.classList.remove("hide");
-    });
-
+  private toggleClasses(selector: string) {
     if (selector !== "Default") {
       APP.cssRenderer.domElement.classList.remove("hideMoons");
       const marker = APP.cssRenderer.domElement.querySelector(
@@ -55,6 +51,13 @@ export class CameraManager {
     } else {
       APP.cssRenderer.domElement.classList.add("hideMoons");
     }
+  }
+
+  public switchCamera(selector: string): CameraManager {
+
+    APP.cssRenderer.domElement.querySelectorAll(`.object`).forEach((elem) => {
+      elem.classList.remove("hide");
+    });
 
     const entry = this.collection.find((entry) => entry.selector === selector);
 
@@ -74,6 +77,8 @@ export class CameraManager {
       this.activeCamera.camera.aspect = w / h;
       this.activeCamera.camera.updateProjectionMatrix();
     }
+
+    this.toggleClasses(selector)
 
     return this;
   }
