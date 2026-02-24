@@ -1,16 +1,15 @@
 import * as THREE from "three";
 import { MathUtils } from "three";
-import { arielRawData, mirandaRawData, oberonRawData, umbrielRawData, uranusRawData } from "../../data/raw-object.data";
+import { arielRawData, mirandaRawData, oberonRawData, titaniaRawData, umbrielRawData, uranusRawData } from "../../data/raw-object.data";
 import { Astronomical } from "./astronomical.object";
 import { SimpleAstronomicalBody } from "./simple-astronomical.object";
-import { Titania } from "./titania.object";
 
 export class Uranus extends Astronomical {
     public moons = [
         new SimpleAstronomicalBody("assets/textures/1k_miranda-0.png", "assets/normals/2k_moon.png", mirandaRawData, { isMoon: true }),
         new SimpleAstronomicalBody("assets/textures/1k_ariel.png", "assets/normals/2k_moon.png", arielRawData, { isMoon: true }),
         new SimpleAstronomicalBody("assets/textures/1k_umbriel.png", "assets/normals/2k_moon.png", umbrielRawData, { isMoon: true }),
-        new Titania(),
+        new SimpleAstronomicalBody("assets/textures/titania.jpg", "assets/normals/2k_moon.png", titaniaRawData, { isMoon: true }),
         new SimpleAstronomicalBody("assets/textures/1k_oberonmap1.png", "assets/normals/2k_moon.png", oberonRawData, { isMoon: true }),
     ]
 

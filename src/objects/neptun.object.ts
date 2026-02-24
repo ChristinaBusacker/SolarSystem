@@ -1,15 +1,14 @@
 import * as THREE from "three";
 import { MathUtils } from "three";
-import { neptuneRawData, nereidRawData, proteusRawData } from "../../data/raw-object.data";
+import { neptuneRawData, nereidRawData, proteusRawData, tritonRawData } from "../../data/raw-object.data";
 import { Astronomical } from "./astronomical.object";
 import { SimpleAstronomicalBody } from "./simple-astronomical.object";
-import { Triton } from "./triton";
 
 export class Neptun extends Astronomical {
 
     public moons = [
         new SimpleAstronomicalBody("assets/textures/1k_proteus.png", "assets/normals/2k_moon.png", proteusRawData, { isMoon: true }),
-        new Triton(),
+        new SimpleAstronomicalBody("assets/textures/2k_triton.jpg", "assets/normals/2k_mars.png", tritonRawData, { isMoon: true }),
         new SimpleAstronomicalBody("assets/textures/1k_nereid.png", "assets/normals/2k_moon.png", nereidRawData, { isMoon: true }),
     ]
 

@@ -1,14 +1,10 @@
 import * as THREE from 'three';
 import { MathUtils } from "three";
-import { dioneRawData, mimasRawData, saturnRawData, tethysRawData } from "../../data/raw-object.data";
+import { dioneRawData, enceladusRawData, iapetusRawData, mimasRawData, rheaRawData, saturnRawData, tethysRawData, titanRawData } from "../../data/raw-object.data";
 import { PURE_BLACK_MATERIAL } from "../constant/pureBlackMaterial.constant";
 import { ringShader } from "../shader/ring.shader";
 import { Astronomical } from "./astronomical.object";
-import { Enceladus } from "./enceladus.object";
-import { Iapetus } from "./iapetus.object";
-import { Rhea } from "./rhea.object";
 import { SimpleAstronomicalBody } from "./simple-astronomical.object";
-import { Titan } from "./titan.object";
 
 export class Saturn extends Astronomical {
     public cameraPosition = new THREE.Vector3(1, 1, 1);
@@ -18,12 +14,12 @@ export class Saturn extends Astronomical {
 
     public moons = [
         new SimpleAstronomicalBody("assets/textures/1k_mimas.png", "assets/normals/2k_moon.png", mimasRawData, { isMoon: true }),
-        new Enceladus(),
+        new SimpleAstronomicalBody("assets/textures/2k_enceladus.jpg", "assets/normals/2k_mars.png", enceladusRawData, { isMoon: true }),
         new SimpleAstronomicalBody("assets/textures/1k_tethys.png", "assets/normals/2k_moon.png", tethysRawData, { isMoon: true }),
         new SimpleAstronomicalBody("assets/textures/1k_dione.png", "assets/normals/2k_moon.png", dioneRawData, { isMoon: true }),
-        new Rhea(),
-        new Titan(),
-        new Iapetus(),
+        new SimpleAstronomicalBody("assets/textures/2k_rhea.jpg", "assets/normals/2k_mars.png", rheaRawData, { isMoon: true }),
+        new SimpleAstronomicalBody("assets/textures/2k_titan.jpg", "assets/normals/2k_mars.png", titanRawData, { isMoon: true }),
+        new SimpleAstronomicalBody("assets/textures/2k_iapetus.jpg", "assets/normals/2k_mars.png", iapetusRawData, { isMoon: true }),
     ]
 
     constructor() {

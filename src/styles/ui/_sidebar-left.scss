@@ -162,7 +162,12 @@
 }
 
 .ui-planet__icon--pluto {
-  background-image: url("../assets/svgs/iconP_pluto.svg");
+  border-radius: 999px;
+  background-image: url("../assets/textures/2k_pluto.jpg");
+  background-size: cover;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.18),
+    0 0 0 1px rgba(0, 0, 0, 0.2);
 }
 
 .ui-planet__icon--moon-generic {

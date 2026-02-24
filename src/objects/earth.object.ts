@@ -1,13 +1,13 @@
 import * as THREE from "three";
 import { Astronomical } from "./astronomical.object";
-import { Moon } from "./moon.object";
+import { SimpleAstronomicalBody } from "./simple-astronomical.object";
 
 import { MathUtils } from "three";
 import { APP } from "..";
-import { earthRawData } from "../../data/raw-object.data";
+import { earthRawData, moonRawData } from "../../data/raw-object.data";
 
 export class Earth extends Astronomical {
-  public moon = new Moon();
+  public moon = new SimpleAstronomicalBody("assets/textures/2k_moon.jpg", "assets/normals/2k_moon.png", moonRawData, { isMoon: true, rotateTextureHalfTurn: true });
   public moons = [this.moon]
   public cameraPosition = new THREE.Vector3(-4, 4, 4);
 

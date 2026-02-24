@@ -2,7 +2,6 @@ import { AstronomicalEntry } from "../interfaces/entry.interfaces";
 import { Earth } from "../objects/earth.object";
 import { Jupiter } from "../objects/jupiter.object";
 import { Mars } from "../objects/mars.object";
-import { Mercury } from "../objects/mercury.object";
 import { Neptun } from "../objects/neptun.object";
 import { Pluto } from "../objects/pluto.object";
 import { Saturn } from "../objects/saturn.object";
@@ -11,13 +10,13 @@ import { Uranus } from "../objects/uranus.object";
 import { Venus } from "../objects/venus.object";
 import type * as THREE from "three";
 import { LineMaterial } from "three/examples/jsm/lines/LineMaterial";
-import { ceresRawData, erisRawData, haumeaRawData, makemakeRawData } from "../../data/raw-object.data";
+import { ceresRawData, erisRawData, haumeaRawData, makemakeRawData, mercuryRawData } from "../../data/raw-object.data";
 import { SimpleAstronomicalBody } from "../objects/simple-astronomical.object";
 
 export class AstronomicalManager {
   private entrys: Array<AstronomicalEntry> = [
     { selector: "Sun", object: new Sun() },
-    { selector: "Mercury", object: new Mercury() },
+    { selector: "Mercury", object: new SimpleAstronomicalBody("assets/textures/2k_mercury.jpg", "assets/normals/2k_mercury.png", mercuryRawData) },
     { selector: "Venus", object: new Venus() },
     { selector: "Earth", object: new Earth() },
     { selector: "Mars", object: new Mars() },
