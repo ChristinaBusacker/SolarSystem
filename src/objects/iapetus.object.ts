@@ -1,12 +1,12 @@
-import { iapetusData, marsData } from "../../data/objects.data";
-import { Astronomical } from "./astronomical.object";
 import * as THREE from "three";
+import { iapetusRawData } from "../../data/raw-object.data";
+import { Astronomical } from "./astronomical.object";
 
 export class Iapetus extends Astronomical {
     public isMoon = true;
 
     constructor() {
-        super(["assets/textures/2k_iapetus.jpg"], "assets/normals/2k_mars.png", iapetusData, false);
+        super(["assets/textures/2k_iapetus.jpg"], "assets/normals/2k_mars.png", iapetusRawData, false);
     }
 
     public init() {

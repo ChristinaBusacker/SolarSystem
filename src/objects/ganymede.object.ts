@@ -1,11 +1,11 @@
-import { callistoData, ganymedData } from "../../data/objects.data";
-import { Astronomical } from "./astronomical.object";
 import * as THREE from "three";
+import { ganymedeRawData } from "../../data/raw-object.data";
+import { Astronomical } from "./astronomical.object";
 
 export class Ganymede extends Astronomical {
     public isMoon = true;
     constructor() {
-        super(["assets/textures/2k_ganymede.jpg"], "assets/normals/2k_moon.png", ganymedData, false);
+        super(["assets/textures/2k_ganymede.jpg"], "assets/normals/2k_moon.png", ganymedeRawData, false);
     }
 
     public init() {

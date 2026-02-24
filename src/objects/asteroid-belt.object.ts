@@ -1,6 +1,5 @@
 import * as THREE from "three";
 import { APP } from "..";
-import { earthData } from "../../data/objects.data";
 import { asteroidBeltImpostorShader } from "../shader/asteroid-belt-impostor.shader";
 
 type Rng = () => number;
@@ -103,7 +102,7 @@ export class AsteroidBelt {
       aInclination[i] = randNormal(rng) * incStd;
       aPhase0[i] = rng() * Math.PI * 2;
       aAngularSpeed[i] =
-        earthData.orbitalSpeed * Math.pow(earthData.distanceToOrbiting / a, 1.5);
+        0.0000027397 * Math.pow(1000 / a, 1.5);
 
       aSize[i] = this.sampleSpriteSize(rng);
       aShapeSeed[i] = rng();

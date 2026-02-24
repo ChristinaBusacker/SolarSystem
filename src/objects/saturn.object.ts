@@ -1,26 +1,16 @@
-import { MathUtils } from "three";
-import { saturnData } from "../../data/objects.data";
-import { simulationSpeed } from "../../data/settings.data";
-import { coronaShader } from "../shader/corona";
-import { Astronomical } from "./astronomical.object";
 import * as THREE from 'three';
-import { TextureLoader } from 'three';
-import { ringShader } from "../shader/ring.shader";
+import { MathUtils } from "three";
+import { saturnRawData } from "../../data/raw-object.data";
 import { PURE_BLACK_MATERIAL } from "../constant/pureBlackMaterial.constant";
-import { Titan } from "./titan.object";
+import { ringShader } from "../shader/ring.shader";
+import { Astronomical } from "./astronomical.object";
 import { Enceladus } from "./enceladus.object";
 import { Iapetus } from "./iapetus.object";
 import { Rhea } from "./rhea.object";
+import { Titan } from "./titan.object";
 
 export class Saturn extends Astronomical {
-    public name = saturnData.title
-    public orbitalSpeed = saturnData.orbitalSpeed;
     public cameraPosition = new THREE.Vector3(1, 1, 1);
-    public distance = saturnData.distanceToOrbiting;
-    public rotationSpeed = saturnData.rotationSpeed;
-
-    public semiMajorAxis = saturnData.semiMajorAxis;
-    public semiMinorAxis = saturnData.semiMinorAxis;
 
     public ringMaterial?: THREE.ShaderMaterial
     public ringMesh?: THREE.Mesh
@@ -30,14 +20,14 @@ export class Saturn extends Astronomical {
     ]
 
     constructor() {
-        super(["assets/textures/2k_saturn.jpg"], "assets/normals/2k_saturn.png", saturnData, false);
+        super(["assets/textures/2k_saturn.jpg"], "assets/normals/2k_saturn.png", saturnRawData, false);
     }
 
     init() {
         super.init();
 
-        const ringInnerRadius = 1.2 * saturnData.size; // Innere Radius der Ringe, angepasst an die Größe des Saturns
-        const ringOuterRadius = 2.5 * saturnData.size; // Äußere Radius der Ringe
+        const ringInnerRadius = 1.2 * this.data.size; // Innere Radius der Ringe, angepasst an die Größe des Saturns
+        const ringOuterRadius = 2.5 * this.data.size; // Äußere Radius der Ringe
 
         const { vertexShader, fragmentShader } = ringShader
 
@@ -48,7 +38,7 @@ export class Saturn extends Astronomical {
             uniforms: {
                 planetWorldPosition: { value: planetWorldPosition },
                 sunWorldPosition: { value: new THREE.Vector3(0, 0, 0) },
-                planetRadius: { value: saturnData.size },
+                planetRadius: { value: this.data.size },
                 ringTexture: { value: new THREE.TextureLoader().load('/assets/textures/2k_saturn_ring_alpha.png') }
             },
             vertexShader: vertexShader,
@@ -80,7 +70,7 @@ export class Saturn extends Astronomical {
         this.planetaryGroup.add(this.ringMesh);
 
 
-        this.planetaryGroup.rotateX(MathUtils.DEG2RAD * saturnData.planetaryTilt)
+        this.planetaryGroup.rotateX(MathUtils.DEG2RAD * this.data.planetaryTilt)
 
         this.moons.forEach(moon => {
             moon.orbitingParent = this;

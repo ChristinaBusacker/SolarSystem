@@ -1,11 +1,11 @@
-import { callistoData, europaData } from "../../data/objects.data";
-import { Astronomical } from "./astronomical.object";
 import * as THREE from "three";
+import { europaRawData } from "../../data/raw-object.data";
+import { Astronomical } from "./astronomical.object";
 
 export class Europa extends Astronomical {
     public isMoon = true;
     constructor() {
-        super(["assets/textures/2k_europa.jpg"], "assets/normals/2k_moon.png", europaData, false);
+        super(["assets/textures/2k_europa.jpg"], "assets/normals/2k_moon.png", europaRawData, false);
     }
 
     public init() {

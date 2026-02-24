@@ -1,13 +1,11 @@
-import { MathUtils } from "three";
-import { jupiterData } from "../../data/objects.data";
-import { simulationSpeed } from "../../data/settings.data";
-import { coronaShader } from "../shader/corona";
-import { Astronomical } from "./astronomical.object";
 import * as THREE from "three";
-import { Io } from "./io.object";
+import { MathUtils } from "three";
+import { jupiterRawData } from "../../data/raw-object.data";
+import { Astronomical } from "./astronomical.object";
+import { Callisto } from "./callisto.object";
 import { Europa } from "./europa.object";
 import { Ganymede } from "./ganymede.object";
-import { Callisto } from "./callisto.object";
+import { Io } from "./io.object";
 
 export class Jupiter extends Astronomical {
 
@@ -21,7 +19,7 @@ export class Jupiter extends Astronomical {
   public callisto = new Callisto();
 
   constructor() {
-    super(["assets/textures/2k_jupiter.jpg"], "assets/normals/2k_jupiter.png", jupiterData, false);
+    super(["assets/textures/2k_jupiter.jpg"], "assets/normals/2k_jupiter.png", jupiterRawData, false);
   }
 
   public init() {

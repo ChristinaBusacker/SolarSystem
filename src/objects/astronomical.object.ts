@@ -6,7 +6,7 @@ import {
 } from "three/examples/jsm/renderers/CSS3DRenderer";
 import { simulationSpeed } from "../../data/settings.data";
 import { SimpleControl } from "../controls/simple.control";
-import { AstronomicalDataset } from "../interfaces/dataset.interface";
+import { AstronomicalDataset, AstronomicalRawData } from "../interfaces/dataset.interface";
 import { APP } from "..";
 import { astronomicalShader } from "../shader/astronomical.shader";
 import { earthShader } from "../shader/earth.shader";
@@ -15,6 +15,8 @@ import { CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer";
 import { Line2 } from "three/examples/jsm/lines/Line2";
 import { LineGeometry } from "three/examples/jsm/lines/LineGeometry";
 import { LineMaterial } from "three/examples/jsm/lines/LineMaterial";
+import { router } from "../router/router";
+import { AstronomicalDataParser } from "../parser/astronomical-data.parser";
 
 export class Astronomical implements AstronomicalObject {
   public data?: AstronomicalDataset;
@@ -55,10 +57,10 @@ export class Astronomical implements AstronomicalObject {
   public constructor(
     texturePath: Array<string>,
     normalPath: string,
-    data: AstronomicalDataset,
+    data: AstronomicalRawData,
     emissive = false,
   ) {
-    this.data = data;
+    this.data = AstronomicalDataParser.parse(data);
     const textureLoader = new THREE.TextureLoader();
     this.texturePath = texturePath;
     this.texture = textureLoader.load(texturePath[0]);
@@ -183,6 +185,21 @@ export class Astronomical implements AstronomicalObject {
     if (!cStart || !cEnd) return;
 
     const pointCount = this.orbitTrailPointCount;
+
+    const route = router.getCurrent();
+    const selectedBodyName = route.name === "planet" ? route.planet : route.name === "moon" ? route.moon : null;
+    const hideTrailForSelected = !!selectedBodyName && (selectedBodyName === this.data.name || selectedBodyName === this.data.title);
+
+    if (hideTrailForSelected) {
+      for (let seg = 0; seg < pointCount - 1; seg++) {
+        cStart.setXYZW(seg, 0, 0, 0, 0);
+        cEnd.setXYZW(seg, 0, 0, 0, 0);
+      }
+      cStart.data.needsUpdate = true;
+      cEnd.data.needsUpdate = true;
+      return;
+    }
+
     const current = THREE.MathUtils.euclideanModulo(this.angle, Math.PI * 2) / (Math.PI * 2);
 
     const visibleArc = 0.5;

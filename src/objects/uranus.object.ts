@@ -1,9 +1,7 @@
-import { MathUtils } from "three";
-import { uranusData } from "../../data/objects.data";
-import { simulationSpeed } from "../../data/settings.data";
-import { coronaShader } from "../shader/corona";
-import { Astronomical } from "./astronomical.object";
 import * as THREE from "three";
+import { MathUtils } from "three";
+import { uranusRawData } from "../../data/raw-object.data";
+import { Astronomical } from "./astronomical.object";
 import { Titania } from "./titania.object";
 
 export class Uranus extends Astronomical {
@@ -12,7 +10,7 @@ export class Uranus extends Astronomical {
     ]
 
     constructor() {
-        super(["assets/textures/2k_uranus.jpg"], "assets/normals/2k_uranus.png", uranusData, false);
+        super(["assets/textures/2k_uranus.jpg"], "assets/normals/2k_uranus.png", uranusRawData, false);
     }
 
     public init() {

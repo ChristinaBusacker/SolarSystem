@@ -1,17 +1,16 @@
+import * as THREE from "three";
 import { APP } from "..";
-import { sunData } from "../../data/objects.data";
-import { simulationSpeed } from "../../data/settings.data";
+import { sunRawData } from "../../data/raw-object.data";
 import { coronaShader } from "../shader/corona";
 import { sunShader } from "../shader/sun.shader";
 import { Astronomical } from "./astronomical.object";
-import * as THREE from "three";
 
 export class Sun extends Astronomical {
   public cameraPosition = new THREE.Vector3(20, 20, 20);
   private coronaShaderMaterial: THREE.ShaderMaterial;
 
   constructor() {
-    super(["assets/textures/2k_sun.jpg"], "assets/normals/2k_jupiter.png", sunData, true);
+    super(["assets/textures/2k_sun.jpg"], "assets/normals/2k_jupiter.png", sunRawData, true);
   }
 
   public init() {

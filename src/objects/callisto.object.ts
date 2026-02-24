@@ -1,11 +1,12 @@
-import { callistoData } from "../../data/objects.data";
+
 import { Astronomical } from "./astronomical.object";
 import * as THREE from "three";
+import { callistoRawData } from '../../data/raw-object.data'
 
 export class Callisto extends Astronomical {
     public isMoon = true;
     constructor() {
-        super(["assets/textures/2k_callisto.jpg"], "assets/normals/2k_moon.png", callistoData, false);
+        super(["assets/textures/2k_callisto.jpg"], "assets/normals/2k_moon.png", callistoRawData, false);
     }
 
     public init() {

@@ -1,9 +1,7 @@
-import { MathUtils } from "three";
-import { neptuneData } from "../../data/objects.data";
-import { simulationSpeed } from "../../data/settings.data";
-import { coronaShader } from "../shader/corona";
-import { Astronomical } from "./astronomical.object";
 import * as THREE from "three";
+import { MathUtils } from "three";
+import { neptuneRawData } from "../../data/raw-object.data";
+import { Astronomical } from "./astronomical.object";
 import { Triton } from "./triton";
 
 export class Neptun extends Astronomical {
@@ -13,7 +11,7 @@ export class Neptun extends Astronomical {
     ]
 
     constructor() {
-        super(["assets/textures/2k_neptune.jpg"], "assets/normals/2k_neptune.png", neptuneData, false);
+        super(["assets/textures/2k_neptune.jpg"], "assets/normals/2k_neptune.png", neptuneRawData, false);
     }
 
     public init() {

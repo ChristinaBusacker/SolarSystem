@@ -1,18 +1,10 @@
-import {
-  earthData,
-  mercuryData,
-  moonData,
-  venusData,
-} from "../../data/objects.data";
-import { simulationSpeed } from "../../data/settings.data";
-import { Astronomical } from "./astronomical.object";
 import * as THREE from "three";
+import { Astronomical } from "./astronomical.object";
 import { Moon } from "./moon.object";
 
 import { MathUtils } from "three";
-import { PURE_BLACK_MATERIAL } from "../constant/pureBlackMaterial.constant";
 import { APP } from "..";
-
+import { earthRawData } from "../../data/raw-object.data";
 
 export class Earth extends Astronomical {
   public moon = new Moon();
@@ -20,13 +12,13 @@ export class Earth extends Astronomical {
   public cameraPosition = new THREE.Vector3(-4, 4, 4);
 
   constructor() {
-    super(["assets/textures/2k_earth_daymap.jpg", "assets/textures/2k_earth_nightmap.jpg"], "assets/normals/2k_earth.png", earthData, false);
+    super(["assets/textures/2k_earth_daymap.jpg", "assets/textures/2k_earth_nightmap.jpg"], "assets/normals/2k_earth.png", earthRawData, false);
   }
 
   public init() {
     super.init();
 
-    this.addAtmosphere("assets/textures/2k_earth_clouds_alpha.png", earthData.size);
+    this.addAtmosphere("assets/textures/2k_earth_clouds_alpha.png", this.data.size);
 
     this.moon.orbitingParent = this;
     this.moon.init()
