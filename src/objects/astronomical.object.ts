@@ -118,47 +118,41 @@ export class Astronomical implements AstronomicalObject {
 
     const material = new LineMaterial({
       color: new THREE.Color(this.data.color),
-      linewidth: 1.5,
+      linewidth: 2,
       transparent: true,
       opacity: 1,
       depthTest: true,
       depthWrite: false,
       vertexColors: true,
       alphaToCoverage: false,
-      blendSrcAlpha: THREE.ZeroFactor,
-      blendDstAlpha: THREE.ZeroFactor
+      blending: THREE.NormalBlending,
     });
 
-    /*
     material.onBeforeCompile = (shader) => {
-      const alphaPatch = (varyingName: string) => `
-        float trailAlpha = clamp(max(${varyingName}.r, max(${varyingName}.g, ${varyingName}.b)), 0.0, 1.0);
-        diffuseColor.a *= trailAlpha;
-        // Keep RGB from the material color. Vertex colors only drive trail alpha.
-      `;
+      const target = "gl_FragColor = vec4( diffuseColor.rgb, alpha );";
 
-      const candidates: Array<{ needle: string; varyingName: string }> = [
-        { needle: 'diffuseColor.rgb *= vLineColor.rgb;', varyingName: 'vLineColor' },
-        { needle: 'diffuseColor.rgb *= vLineColor;', varyingName: 'vLineColor' },
-        { needle: 'diffuseColor.rgb *= vColor.rgb;', varyingName: 'vColor' },
-        { needle: 'diffuseColor.rgb *= vColor;', varyingName: 'vColor' },
-      ];
-
-      let patched = false;
-      for (const c of candidates) {
-        if (shader.fragmentShader.includes(c.needle)) {
-          shader.fragmentShader = shader.fragmentShader.replace(c.needle, alphaPatch(c.varyingName));
-          patched = true;
-          break;
-        }
+      if (!shader.fragmentShader.includes(target)) {
+        console.warn("[OrbitTrail] Shader patch not applied (gl_FragColor target not found)");
+        return;
       }
 
-      if (!patched) {
-        // Fallback warning only. The line still renders, just without alpha trail fade.
-        console.warn('[OrbitTrail] LineMaterial shader patch not applied');
-      }
+      shader.fragmentShader = shader.fragmentShader.replace(
+        target,
+        `
+    // diffuseColor.rgb wurde durch #include <color_fragment> bereits mit Vertex-Farbe multipliziert.
+    // Diese Vertex-Farbe ist bei uns die Trail-Maske (1 = sichtbar, 0 = unsichtbar).
+    float diffuseMax = max(diffuse.r, max(diffuse.g, diffuse.b));
+    float shadedMax = max(diffuseColor.r, max(diffuseColor.g, diffuseColor.b));
+
+    // Maske aus dem "abgedunkelten" RGB zurückgewinnen
+    float trailAlpha = (diffuseMax > 1e-5) ? clamp(shadedMax / diffuseMax, 0.0, 1.0) : 1.0;
+
+    // Orbit-Farbe behalten (nicht schwarz werden lassen)
+    gl_FragColor = vec4(diffuse, alpha * trailAlpha);
+    `
+      );
     };
-*/
+
     const viewport = document.getElementById("scene-root");
     const rect = viewport?.getBoundingClientRect();
     const w = Math.max(1, Math.floor(rect?.width ?? window.innerWidth));
@@ -191,14 +185,12 @@ export class Astronomical implements AstronomicalObject {
     const pointCount = this.orbitTrailPointCount;
     const current = THREE.MathUtils.euclideanModulo(this.angle, Math.PI * 2) / (Math.PI * 2);
 
-    // Visible trail spans ~3/4 of the orbit, starts inside the planet silhouette,
-    // then fades towards the tail.
     const visibleArc = 0.5;
     const headGap = 0;
     const headSolidArc = 0.2;
 
     const fadeForBehind = (d: number): number => {
-
+      // außerhalb des Trail-Bereichs komplett unsichtbar
       const fadeStart = headGap + headSolidArc;
       const x = THREE.MathUtils.clamp((d - fadeStart) / (visibleArc - fadeStart), 0, 1);
       // 1 -> 0 smooth fade (tail only)

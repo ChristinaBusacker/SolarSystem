@@ -307,7 +307,7 @@ export class Application {
     const loader = new THREE.TextureLoader();
 
     const backgroundImage = await loader.loadAsync(
-      "assets/backgrounds/background9.jpg",
+      "assets/backgrounds/background.jpg",
     );
 
 
