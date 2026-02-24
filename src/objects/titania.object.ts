@@ -1,12 +1,12 @@
 import * as THREE from "three";
-import { titanRawData } from "../../data/raw-object.data";
+import { titaniaRawData } from "../../data/raw-object.data";
 import { Astronomical } from "./astronomical.object";
 
 export class Titania extends Astronomical {
     public isMoon = true;
 
     constructor() {
-        super(["assets/textures/titania.jpg"], "assets/normals/2k_mars.png", titanRawData, false);
+        super(["assets/textures/titania.jpg"], "assets/normals/2k_mars.png", titaniaRawData, false);
     }
 
     public init() {

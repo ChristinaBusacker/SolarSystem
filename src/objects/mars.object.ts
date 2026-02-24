@@ -1,9 +1,26 @@
 import * as THREE from "three";
-import { marsRawData } from "../../data/raw-object.data";
+import { MathUtils } from "three";
+import { deimosRawData, marsRawData, phobosRawData } from "../../data/raw-object.data";
 import { Astronomical } from "./astronomical.object";
+import { SimpleAstronomicalBody } from "./simple-astronomical.object";
 
 export class Mars extends Astronomical {
   public cameraPosition = new THREE.Vector3(1, 1, 1);
+
+  public moons = [
+    new SimpleAstronomicalBody(
+      "assets/textures/1k_phobos.jpg",
+      "assets/normals/2k_moon.png",
+      phobosRawData,
+      { isMoon: true },
+    ),
+    new SimpleAstronomicalBody(
+      "assets/textures/1k_deimos.png",
+      "assets/normals/2k_moon.png",
+      deimosRawData,
+      { isMoon: true },
+    ),
+  ];
 
   constructor() {
     super(["assets/textures/2k_mars.jpg"], "assets/normals/2k_mars.png", marsRawData, false);
@@ -11,12 +28,27 @@ export class Mars extends Astronomical {
 
   public init() {
     super.init();
-    this.generateMaterials()
+
+    this.moons.forEach((moon) => {
+      moon.orbitingParent = this;
+      moon.init();
+
+      const moonGrp = new THREE.Group();
+      moonGrp.add(moon.orbitalGroup);
+      moonGrp.rotateX(MathUtils.DEG2RAD * moon.data.orbitalTilt);
+
+      this.group.add(moonGrp);
+    });
+
+    this.generateMaterials();
     this.isInit = true;
   }
 
-
   public render(delta: number, camera?: THREE.PerspectiveCamera) {
     super.render(delta);
+
+    this.moons.forEach((moon) => {
+      moon.render(delta, camera);
+    });
   }
 }

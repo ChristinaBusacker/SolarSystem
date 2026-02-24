@@ -11,6 +11,8 @@ import { Uranus } from "../objects/uranus.object";
 import { Venus } from "../objects/venus.object";
 import type * as THREE from "three";
 import { LineMaterial } from "three/examples/jsm/lines/LineMaterial";
+import { ceresRawData, erisRawData, haumeaRawData, makemakeRawData } from "../../data/raw-object.data";
+import { SimpleAstronomicalBody } from "../objects/simple-astronomical.object";
 
 export class AstronomicalManager {
   private entrys: Array<AstronomicalEntry> = [
@@ -19,11 +21,15 @@ export class AstronomicalManager {
     { selector: "Venus", object: new Venus() },
     { selector: "Earth", object: new Earth() },
     { selector: "Mars", object: new Mars() },
+    { selector: "Ceres", object: new SimpleAstronomicalBody("assets/textures/1k_ceres.png", "assets/normals/2k_moon.png", ceresRawData) },
     { selector: "Jupiter", object: new Jupiter() },
     { selector: "Saturn", object: new Saturn() },
     { selector: "Uranus", object: new Uranus() },
     { selector: "Neptune", object: new Neptun() },
     { selector: "Pluto", object: new Pluto() },
+    { selector: "Haumea", object: new SimpleAstronomicalBody("assets/textures/1k_haumea.png", "assets/normals/2k_moon.png", haumeaRawData) },
+    { selector: "Makemake", object: new SimpleAstronomicalBody("assets/textures/2k_pluto.jpg", "assets/normals/2k_moon.png", makemakeRawData) },
+    { selector: "Eris", object: new SimpleAstronomicalBody("assets/textures/2k_eris.png", "assets/normals/2k_moon.png", erisRawData) },
   ];
 
   constructor() {}
