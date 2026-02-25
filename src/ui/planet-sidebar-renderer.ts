@@ -5,6 +5,7 @@ import { router } from "../router/router";
 export class PlanetSidebarRenderer {
   private root: HTMLElement;
   private mounted = false;
+  private leakGuardMounted = false;
 
   constructor(root: HTMLElement) {
     this.root = root;
@@ -17,6 +18,29 @@ export class PlanetSidebarRenderer {
       this.bind();
       this.mounted = true;
     }
+
+    if (!this.leakGuardMounted) {
+      this.bindPointerLeakGuard();
+      this.leakGuardMounted = true;
+    }
+  }
+
+
+  private bindPointerLeakGuard(): void {
+    const stop = (event: Event) => {
+      event.stopPropagation();
+    };
+
+    this.root.addEventListener("wheel", stop, { passive: true });
+    this.root.addEventListener("mousedown", stop);
+    this.root.addEventListener("mouseup", stop);
+    this.root.addEventListener("mousemove", stop);
+    this.root.addEventListener("pointerdown", stop);
+    this.root.addEventListener("pointerup", stop);
+    this.root.addEventListener("pointermove", stop);
+    this.root.addEventListener("touchstart", stop, { passive: true });
+    this.root.addEventListener("touchmove", stop, { passive: true });
+    this.root.addEventListener("touchend", stop, { passive: true });
   }
 
   private bind(): void {

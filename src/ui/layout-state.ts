@@ -7,7 +7,7 @@ export interface LayoutState {
 
 let state: LayoutState = {
   leftOpen: false,
-  rightOpen: true,
+  rightOpen: false,
 };
 
 const listeners = new Set<(s: LayoutState) => void>();
@@ -24,7 +24,15 @@ export function subscribeLayoutState(listener: (s: LayoutState) => void): () => 
 }
 
 function commit(next: LayoutState): void {
-  // Avoid noisy re-renders when nothing changed.
+  console.log(next)
+  if (next.leftOpen || next.rightOpen) {
+    document.body.classList.add('sidebar-open')
+  }
+
+  else if ((!next.leftOpen && !next.rightOpen)) {
+    document.body.classList.remove('sidebar-open')
+  }
+
   if (next.leftOpen === state.leftOpen && next.rightOpen === state.rightOpen) return;
 
   state = next;
@@ -34,10 +42,8 @@ function commit(next: LayoutState): void {
 
 export function openSidebar(side: SidebarSide): void {
   if (side === "left") {
-    // Opening left closes right.
     commit({ leftOpen: true, rightOpen: false });
   } else {
-    // Opening right closes left.
     commit({ leftOpen: false, rightOpen: true });
   }
 }

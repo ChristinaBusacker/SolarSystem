@@ -24,9 +24,28 @@
   pointer-events: none;
 }
 
+#ui-root [data-slot="mobile-toggles"] {
+  position: absolute;
+  right: 14px;
+  bottom: 88px;
+  pointer-events: none;
+  transition: left 0.3s ease;
+  display: none;
+}
+
 #ui-root [data-slot="scene-toggles"] {
   position: absolute;
   left: 14px;
   bottom: 88px;
   pointer-events: none;
+  transition: left 0.3s ease;
+}
+
+@media (max-width: 768px) {
+  .sidebar-open #ui-root [data-slot="scene-toggles"] {
+    left: -200px;
+  }
+  .sidebar-open #ui-root [data-slot="mobile-toggles"] {
+    right: -200px;
+  }
 }

@@ -1,86 +1,179 @@
-.stage-controls {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  position: relative;
-}
-
-.stage-toggle {
-  pointer-events: auto;
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(10, 12, 18, 0.55);
-  backdrop-filter: blur(10px);
-
-  display: grid;
-  place-items: center;
-
+.ui-stage-controls {
   position: absolute;
-  top: 0;
+  inset: 0;
+  pointer-events: none;
+  z-index: 12;
+}
 
-  cursor: pointer;
-  user-select: none;
+.ui-stage-controls__top-left,
+.ui-stage-controls__top-right,
+.ui-stage-controls__top-center,
+.ui-stage-controls__right-middle {
+  position: absolute;
+  pointer-events: auto;
+}
+
+.ui-stage-controls__top-left {
+  top: 12px;
+  left: 12px;
+}
+
+.ui-stage-controls__top-right {
+  top: 12px;
+  right: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ui-stage-controls__top-center {
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: min(60vw, 520px);
   transition:
-    transform 160ms ease,
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.ui-stage-controls__top-center.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(-6px);
+}
+
+.ui-stage-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  color: #fff;
+  cursor: pointer;
+  transition:
     background 160ms ease,
-    border-color 160ms ease;
+    border-color 160ms ease,
+    transform 160ms ease;
 
-  &.is-active {
-    display: none;
+  &.planets {
+    &.is-active {
+      display: none;
+    }
   }
 
-  &--right {
-    right: 0;
-  }
-
-  &--left {
-    left: 0;
+  @media (max-width: 768px) {
+    &.info {
+      display: none;
+    }
   }
 }
 
-.stage-toggle:hover {
-  transform: scale(1.03);
-  border-color: rgba(255, 255, 255, 0.32);
+.ui-stage-btn:hover {
+  background: rgba(22, 26, 36, 0.92);
+  border-color: rgba(255, 255, 255, 0.42);
 }
 
-.stage-toggle:active {
+.ui-stage-btn:active {
   transform: scale(0.98);
 }
 
-.stage-toggle.is-active {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.35);
+.ui-stage-btn.is-active {
+  border-color: rgba(255, 255, 255, 0.52);
+  background: rgba(22, 26, 36, 0.94);
 }
 
-.stage-toggle__icon {
-  width: 22px;
-  height: 22px;
-  background-position: center;
+.ui-stage-btn__icon {
+  width: 100%;
+  height: 100%;
   background-repeat: no-repeat;
+  background-position: center center;
   background-size: contain;
+
+  opacity: 0.95;
 }
 
-// Planet navigation toggle
-.stage-toggle__icon--planets {
+.ui-stage-btn__icon--planets {
   background-image: url("../assets/svgs/icon_planets_0.svg");
 }
-.stage-toggle.is-active .stage-toggle__icon--planets {
-  background-image: url("../assets/svgs/icon_planets_1.svg");
-}
 
-// Info toggle
-.stage-toggle__icon--info {
+.ui-stage-btn__icon--info {
   background-image: url("../assets/svgs/Planetinfo_1.svg");
 }
-.stage-toggle.is-active .stage-toggle__icon--info {
-  display: none;
+
+.ui-stage-btn__icon--fullscreen {
+  background-image: url("../assets/svgs/icon_fullscreen.svg");
 }
 
-.stage-toggle:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.55);
-  outline-offset: 2px;
+.ui-stage-btn__icon--fullscreen-exit {
+  background-image: url("../assets/svgs/icon_fullscreenExit.svg");
+}
+
+.ui-stage-focus__back,
+.ui-stage-focus__title {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  color: #fff;
+}
+
+.ui-stage-focus__back {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  line-height: 1;
+  padding: 0;
+}
+
+.ui-stage-focus__back:hover {
+  border-color: rgba(255, 255, 255, 0.34);
+  background: rgba(18, 22, 30, 0.9);
+}
+
+.ui-stage-focus__back span {
+  transform: translateY(-1px);
+}
+
+.ui-stage-focus__title {
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+  border-radius: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: min(52vw, 460px);
+}
+
+@media (max-width: 900px) {
+  .ui-stage-controls__top-center {
+    max-width: calc(100vw - 128px);
+    top: 10px;
+  }
+
+  .ui-stage-focus__title {
+    max-width: calc(100vw - 180px);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+  }
+
+  .ui-stage-controls__right-middle {
+    right: 10px;
+    gap: 6px;
+  }
 }

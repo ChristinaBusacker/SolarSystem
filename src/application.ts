@@ -25,6 +25,8 @@ import { PlanetSidebarRenderer } from "./ui/planet-sidebar-renderer";
 import { openSidebar, subscribeLayoutState } from "./ui/layout-state";
 import { subscribeSceneVisibilityState } from "./ui/scene-visibility-state";
 import { AppRoute, router } from "./router/router";
+import { ZoomControlsRenderer } from "./ui/zoom-controls.-renderer";
+import { MobileTogglesRenderer } from "./ui/mobile-toggles-renderer";
 
 export class Application {
   private static instance: Application | null = null;
@@ -75,6 +77,8 @@ export class Application {
       if (ce.detail?.speed != null) this.simulationSpeed = ce.detail.speed;
     });
 
+    window.addEventListener("ui:zoom-step", this.handleUiZoomStep as EventListener);
+
     window.addEventListener("ui:select-body", (e: Event) => {
       const ce = e as CustomEvent<{ name: string; kind: "planet" | "moon" }>;
       const name = ce.detail?.name;
@@ -84,6 +88,20 @@ export class Application {
       else router.goPlanet(name);
     });
   }
+
+  private readonly handleUiZoomStep = (e: Event): void => {
+    const ce = e as CustomEvent<{ direction?: "in" | "out" }>;
+    const direction = ce.detail?.direction;
+    if (direction !== "in" && direction !== "out") return;
+
+    const activeEntry = this.cameraManager.getActiveEntry();
+    const control = activeEntry?.control;
+    if (!control) return;
+
+    const step = 0.075;
+    const signedStep = direction === "in" ? -step : step;
+    control.zoom = THREE.MathUtils.clamp(control.zoom + signedStep, 0, 1);
+  };
 
   public init() {
     this.cameraManager.switchCamera("Default").initEventControls();
@@ -176,6 +194,14 @@ export class Application {
       new SceneTogglesRenderer(sceneTogglesSlot).init();
     }
 
+    const mobileToggleSlot = document.querySelector<HTMLElement>(
+      '#ui-root [data-slot="mobile-toggles"]',
+    );
+
+    if (mobileToggleSlot) {
+      new MobileTogglesRenderer(mobileToggleSlot).init();
+    }
+
     const uiSlotHud = document.querySelector<HTMLElement>(
       '#ui-root [data-slot="hud"]',
     );
@@ -209,6 +235,11 @@ export class Application {
       document.querySelector<HTMLElement>("#sidebar-left-slot");
     if (uiLeftSidebarSlot) {
       new PlanetSidebarRenderer(uiLeftSidebarSlot).init();
+    }
+
+    const uiZoomControls = document.querySelector<HTMLElement>('#ui-root [data-slot="zoom-controls"]');
+    if (uiZoomControls) {
+      new ZoomControlsRenderer(uiZoomControls).init();
     }
 
     // Apply open/close state to both sidebars and resize smoothly during transitions.

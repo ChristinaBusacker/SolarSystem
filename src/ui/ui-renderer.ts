@@ -16,6 +16,7 @@ export class UiRenderer {
   private root: HTMLElement;
   private state: UiState;
   private mounted = false;
+  private leakGuardMounted = false;
 
   constructor(root: HTMLElement, initial: UiState) {
     this.root = root;
@@ -28,6 +29,11 @@ export class UiRenderer {
     if (!this.mounted) {
       this.bindActions();
       this.mounted = true;
+    }
+
+    if (!this.leakGuardMounted) {
+      this.bindPointerLeakGuard();
+      this.leakGuardMounted = true;
     }
 
     this.applyState();
@@ -50,6 +56,30 @@ export class UiRenderer {
     });
 
     this.root.innerHTML = html;
+  }
+
+
+  private bindPointerLeakGuard(): void {
+    const stop = (event: Event) => {
+      event.stopPropagation();
+    };
+
+    const events: Array<keyof HTMLElementEventMap> = [
+      "wheel",
+      "mousedown",
+      "mouseup",
+      "mousemove",
+      "pointerdown",
+      "pointerup",
+      "pointermove",
+      "touchstart",
+      "touchmove",
+      "touchend",
+    ];
+
+    for (const eventName of events) {
+      this.root.addEventListener(eventName, stop, { passive: true });
+    }
   }
 
   private bindActions(): void {

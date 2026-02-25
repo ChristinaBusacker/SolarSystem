@@ -169,12 +169,16 @@
   border-left: 12px solid rgba(255, 255, 255, 0.9);
 }
 
-@media (max-width: 720px) {
+@media (max-width: 768px) {
   .hud {
     bottom: 12px;
   }
 
   .hud-speed__row {
     gap: 10px;
+  }
+
+  .hud-speed__pause {
+    display: none;
   }
 }

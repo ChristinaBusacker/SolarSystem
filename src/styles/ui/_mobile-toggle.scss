@@ -1,12 +1,13 @@
-.scene-toggles {
+.mobile-toggles {
   display: flex;
   flex-direction: column;
   gap: 10px;
   align-items: flex-end;
   pointer-events: none;
+  z-index: 9;
 }
 
-.scene-toggle {
+.mobile-toggle {
   pointer-events: auto;
   display: inline-flex;
   align-items: center;
@@ -29,16 +30,39 @@
   min-width: 150px;
 }
 
-.scene-toggle:hover {
+.mobile-toggle__text {
+  font-family: system-ui;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.92);
+  white-space: nowrap;
+}
+
+.ui-mobile-btn__icon--info {
+  background-image: url("../assets/svgs/Planetinfo_1.svg");
+}
+
+.ui-mobile-btn__icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 70% 70%;
+}
+
+.mobile-toggle:hover {
   transform: scale(1.02);
   border-color: rgba(255, 255, 255, 0.32);
 }
 
-.scene-toggle:active {
+.mobile-toggle:active {
   transform: scale(0.99);
 }
 
-.scene-toggle__icon {
+.mobile-toggle__icon {
   width: 34px;
   height: 34px;
   border-radius: 999px;
@@ -51,7 +75,7 @@
   background-size: 70% 70%;
 }
 
-.scene-toggle__text {
+.mobile-toggle__text {
   font-family: system-ui;
   font-size: 12px;
   letter-spacing: 0.08em;
@@ -60,29 +84,10 @@
   white-space: nowrap;
 }
 
-.scene-toggle--marker .scene-toggle__icon {
-  background-image: url("../assets/svgs/icon_markerCLOSE.svg");
-}
-
-.scene-toggle--marker.is-off .scene-toggle__icon {
-  background-image: url("../assets/svgs/icon_markerOFF.svg");
-}
-
-.scene-toggle--orbit .scene-toggle__icon {
-  background-image: url("../assets/svgs/icon_orbitON.svg");
-}
-
-.scene-toggle--orbit.is-off .scene-toggle__icon {
-  background-image: url("../assets/svgs/icon_orbitOFF.svg");
-}
-
-.scene-toggle:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.55);
-  outline-offset: 2px;
-}
-
 @media (max-width: 768px) {
-  #ui-root [data-slot="scene-toggles"] {
+  // On mobile keep the toggles a bit higher so they don't fight with the bottom HUD.
+  #ui-root [data-slot="mobile-toggles"] {
     bottom: 120px;
+    display: block;
   }
 }

@@ -1,27 +1,59 @@
-<div class="stage-controls" data-ui="stage-controls">
-  <button
-    class="stage-toggle stage-toggle--left {{leftActiveClass}}"
-    type="button"
-    aria-label="Open planets"
-    data-action="sidebar-toggle"
-    data-side="left"
-  >
-    <span
-      class="stage-toggle__icon stage-toggle__icon--planets"
-      aria-hidden="true"
-    ></span>
-  </button>
+<div class="ui-stage-controls">
+  <div class="ui-stage-controls__top-left">
+    <button
+      type="button"
+      class="ui-stage-btn planets {{leftStateClass}}"
+      data-stage-action="toggle-left"
+      aria-label="Toggle planets panel"
+      title="Planets"
+    >
+      <span
+        class="ui-stage-btn__icon ui-stage-btn__icon--planets"
+        aria-hidden="true"
+      ></span>
+    </button>
+  </div>
 
-  <button
-    class="stage-toggle stage-toggle--right {{rightActiveClass}}"
-    type="button"
-    aria-label="Open information"
-    data-action="sidebar-toggle"
-    data-side="right"
-  >
-    <span
-      class="stage-toggle__icon stage-toggle__icon--info"
-      aria-hidden="true"
-    ></span>
-  </button>
+  <div class="ui-stage-controls__top-center {{focusHiddenClass}}">
+    <button
+      type="button"
+      class="ui-stage-focus__back"
+      data-stage-action="go-home"
+      aria-label="Reset camera"
+      title="Back to default view"
+    >
+      <span aria-hidden="true">‹</span>
+    </button>
+    <div class="ui-stage-focus__title" title="{{focusTitle}}">
+      {{focusTitle}}
+    </div>
+  </div>
+
+  <div class="ui-stage-controls__top-right">
+    <button
+      type="button"
+      class="ui-stage-btn info {{rightStateClass}}"
+      data-stage-action="toggle-right"
+      aria-label="Toggle info panel"
+      title="Info"
+    >
+      <span
+        class="ui-stage-btn__icon ui-stage-btn__icon--info"
+        aria-hidden="true"
+      ></span>
+    </button>
+
+    <button
+      type="button"
+      class="ui-stage-btn"
+      data-stage-action="toggle-fullscreen"
+      aria-label="{{fullscreenAriaLabel}}"
+      title="{{fullscreenAriaLabel}}"
+    >
+      <span
+        class="ui-stage-btn__icon {{fullscreenIconClass}}"
+        aria-hidden="true"
+      ></span>
+    </button>
+  </div>
 </div>

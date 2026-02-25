@@ -1,68 +1,156 @@
 import stageControlsTpl from "./templates/stage-controls.tpl.html";
 import { renderTemplate } from "./template";
 import { getLayoutState, subscribeLayoutState, toggleSidebar } from "./layout-state";
+import { router } from "../router/router";
+
+interface StageControlsRenderState {
+  leftSidebarOpen: boolean;
+  rightSidebarOpen: boolean;
+  focusTitle: string;
+  hasFocusedBody: boolean;
+  isFullscreen: boolean;
+}
 
 export class StageControlsRenderer {
-  private root: HTMLElement;
-  private mounted = false;
-  private unsubscribe?: () => void;
+  private readonly root: HTMLElement;
+  private state: StageControlsRenderState = {
+    leftSidebarOpen: false,
+    rightSidebarOpen: true,
+    focusTitle: "",
+    hasFocusedBody: false,
+    isFullscreen: false,
+  };
 
-  constructor(root: HTMLElement) {
+  public constructor(root: HTMLElement) {
     this.root = root;
-  }
 
-  public init(): void {
-    if (this.unsubscribe) this.unsubscribe();
+    const layout = getLayoutState();
+    this.state.leftSidebarOpen = layout.leftOpen;
+    this.state.rightSidebarOpen = layout.rightOpen;
 
-    this.unsubscribe = subscribeLayoutState(() => {
+    subscribeLayoutState((snapshot) => {
+      this.state.leftSidebarOpen = snapshot.leftOpen;
+      this.state.rightSidebarOpen = snapshot.rightOpen;
       this.render();
     });
 
-    if (!this.mounted) {
-      this.bind();
-      this.mounted = true;
-    }
+    router.subscribe((route) => {
+      if (route.name === "planet") {
+        this.state.hasFocusedBody = true;
+        this.state.focusTitle = this.slugToLabel(route.planet);
+      } else if (route.name === "moon") {
+        this.state.hasFocusedBody = true;
+        this.state.focusTitle = this.slugToLabel(route.moon);
+      } else {
+        this.state.hasFocusedBody = false;
+        this.state.focusTitle = "";
+      }
+
+      this.render();
+    });
+
+    document.addEventListener("fullscreenchange", this.handleFullscreenChange);
 
     this.render();
+    this.bindActions();
   }
 
   private render(): void {
-    const s = getLayoutState();
-
     this.root.innerHTML = renderTemplate(stageControlsTpl, {
-      leftActiveClass: s.leftOpen ? "is-active" : "",
-      rightActiveClass: s.rightOpen ? "is-active" : "",
+      leftStateClass: this.state.leftSidebarOpen ? "is-active" : "",
+      rightStateClass: this.state.rightSidebarOpen ? "is-active" : "",
+      focusHiddenClass: this.state.hasFocusedBody ? "" : "is-hidden",
+      focusTitle: this.state.focusTitle,
+      fullscreenIconClass: this.state.isFullscreen
+        ? "ui-stage-btn__icon--fullscreen-exit"
+        : "ui-stage-btn__icon--fullscreen",
+      fullscreenAriaLabel: this.state.isFullscreen
+        ? "Exit fullscreen"
+        : "Enter fullscreen",
     });
   }
 
-  private bind(): void {
-    // Delegated click handler.
-    this.root.addEventListener("click", (e) => {
-      const target = e.target as HTMLElement | null;
-      const btn = target?.closest<HTMLElement>("[data-action='sidebar-toggle']");
-      if (!btn) return;
+  public init(): void {
+    // Constructor wired everything already in this version.
+    // Keeping init() for compatibility with existing app bootstrap.
+  }
 
-      const side = btn.getAttribute("data-side") as "left" | "right" | null;
-      if (!side) return;
+  private bindActions(): void {
+    this.root.addEventListener("click", (event) => {
+      const target = event.target as HTMLElement | null;
+      const actionNode = target?.closest<HTMLElement>("[data-stage-action]");
+      if (!actionNode) return;
 
-      // Keep camera controls working when clicking outside actual buttons.
-      e.stopPropagation();
+      const action = actionNode.dataset.stageAction;
+      if (!action) return;
 
-      toggleSidebar(side);
+      if (action === "toggle-left") {
+        toggleSidebar('left')
+        window.dispatchEvent(new CustomEvent("ui:request-toggle-sidebar-left"));
+        return;
+      }
+
+      if (action === "toggle-right") {
+        toggleSidebar('right')
+        window.dispatchEvent(new CustomEvent("ui:request-toggle-sidebar"));
+        return;
+      }
+
+      if (action === "go-home") {
+        router.goHome();
+        return;
+      }
+
+      if (action === "zoom-in") {
+        window.dispatchEvent(
+          new CustomEvent("ui:zoom-step", {
+            detail: { direction: "in" as const },
+          }),
+        );
+        return;
+      }
+
+      if (action === "zoom-out") {
+        window.dispatchEvent(
+          new CustomEvent("ui:zoom-step", {
+            detail: { direction: "out" as const },
+          }),
+        );
+        return;
+      }
+
+      if (action === "toggle-fullscreen") {
+        void this.toggleFullscreen();
+      }
     });
+  }
 
-    // ESC closes any open sidebar.
-    window.addEventListener("keydown", (e) => {
-      if (e.key !== "Escape") return;
-      // Let sidebars decide; we simply dispatch via DOM classes through state.
-      // Close both so the stage becomes fully interactive.
-      // (This is harmless if none are open.)
-      //
-      // Importing closeAllSidebars here would create another module dependency,
-      // so we keep it minimal by toggling known open states.
-      const s = getLayoutState();
-      if (s.leftOpen) toggleSidebar("left");
-      if (s.rightOpen) toggleSidebar("right");
-    });
+  private async toggleFullscreen(): Promise<void> {
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      } else {
+        await document.documentElement.requestFullscreen();
+      }
+    } catch {
+      // Ignore fullscreen API failures (browser permissions / unsupported context).
+    }
+  }
+
+  private readonly handleFullscreenChange = (): void => {
+    this.syncFullscreenState();
+    this.render();
+  };
+
+  private syncFullscreenState(): void {
+    this.state.isFullscreen = Boolean(document.fullscreenElement);
+  }
+
+  private slugToLabel(slug: string): string {
+    return slug
+      .split("-")
+      .filter(Boolean)
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(" ");
   }
 }
