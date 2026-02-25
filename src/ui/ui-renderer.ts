@@ -1,6 +1,8 @@
 import sidebarTpl from "./templates/sidebar.tpl.html";
 import { renderTemplate } from "./template";
+import { renderSelectedBodyDetails } from "./body-detail-content";
 import { closeSidebar } from "./layout-state";
+import { router } from "../router/router";
 
 export interface UiState {
   hidePlanets: boolean;
@@ -48,14 +50,30 @@ export class UiRenderer {
   public render(): void {
     const html = renderTemplate(sidebarTpl, {
       title: "Solar System",
-      subtitle: "Frameworkless UI",
+      subtitle: "Explore our universe",
       hint: "Click a marker (or a planet) to see details.",
-      selectedBodyName: this.state.selectedBodyName ?? "None",
+      selectedBodyName: this.state.selectedBodyName?.toUpperCase() ?? "None",
+      selectedBodyDetailsHtml: renderSelectedBodyDetails(this.state.selectedBodyName),
       checkedHidePlanets: this.state.hidePlanets ? "checked" : "",
       checkedHideMoons: this.state.hideMoons ? "checked" : "",
     });
 
+
+
     this.root.innerHTML = html;
+
+    this.root.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement | null;
+      if (!target) return;
+
+      const el = target.closest<HTMLElement>('[data-action="select-body"]');
+      if (!el || !this.root.contains(el)) return;
+
+      const { kind, name } = el.dataset;
+
+      if (kind === "moon") router.goMoon(name);
+      else router.goPlanet(name);
+    });
   }
 
 

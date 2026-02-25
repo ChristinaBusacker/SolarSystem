@@ -119,7 +119,8 @@ export class Application {
     this.initSunLight();
     this.initPostProcessing();
     this.initUi();
-    this.initRouter();
+    setTimeout(() => { this.initRouter(); }, 1000)
+
   }
 
   public initPostProcessing() {
@@ -346,7 +347,7 @@ export class Application {
     const loader = new THREE.TextureLoader();
 
     const backgroundImage = await loader.loadAsync(
-      "assets/backgrounds/background.jpg",
+      "/assets/backgrounds/background.jpg",
     );
 
 
@@ -366,15 +367,13 @@ export class Application {
   }
 
   private initSunLight() {
-    // Your planets use custom shaders (sunPosition uniforms), so they don't rely on Three lights.
-    // Minor bodies (asteroids) use StandardMaterial for cheap specular highlights.
     const sunLight = new THREE.PointLight(0xffffff, 6, 0, 2);
     sunLight.position.set(0, 0, 0);
     sunLight.castShadow = false;
     this.scene.add(sunLight);
 
     // Slight ambient so the "night side" isn't pure black.
-    this.scene.add(new THREE.AmbientLight(0xffffff, 0.06));
+    this.scene.add(new THREE.AmbientLight(0xffffff, 2.06));
   }
 
   public onResize() {

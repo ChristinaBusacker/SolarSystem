@@ -141,27 +141,57 @@ export const asteroidBeltImpostorShader: ShaderDefinition = {
       vec3 v = normalize(-vViewPos);
       vec3 h = normalize(l + v);
 
-      float diff = max(dot(n, l), 0.0);
-      float spec = pow(max(dot(n, h), 0.0), 18.0) * 0.16;
-      float rim = pow(1.0 - max(dot(n, v), 0.0), 2.4) * 0.08;
+// Keep crevices and edges darker, but not visibility-killing.
+float crevice = smoothstep(0.45, 0.95, n2) * 0.28;
+float edgeDark = smoothstep(0.55, 1.0, edgeNorm) * 0.35;
 
-      // Darken crevices and broken surface areas.
-      float crevice = smoothstep(0.45, 0.95, n2) * 0.28;
-      float edgeDark = smoothstep(0.55, 1.0, edgeNorm) * 0.35;
+// Impostor shading cheat:
+// Billboard normals are view-facing, so single-sided diffuse often goes black.
+// Use two-sided wrapped diffuse to preserve shape readability.
+float ndl = dot(n, l);
+float ndl2 = abs(ndl);
 
-      // Mild cinematic distance attenuation relative to sun (not inverse-square harsh).
-      float sunAtten = 1.0 - smoothstep(1200.0, 4200.0, vSunDistance) * 0.15;
+// Wrapped diffuse (soft terminator).
+float wrap = 0.45;
+float diff = clamp((ndl2 + wrap) / (1.0 + wrap), 0.0, 1.0);
 
-      vec3 albedo = vColor;
-      vec3 lit = albedo * (0.12 + diff * 0.95) * sunAtten;
-      lit *= (1.0 - crevice) * (1.0 - edgeDark);
-      lit += vec3(spec);
-      lit += albedo * rim;
+// Spec and rim for readability (still subtle).
+float spec = pow(max(dot(n, h), 0.0), 16.0) * 0.18;
+float rim = pow(1.0 - max(dot(n, v), 0.0), 1.8) * 0.14;
 
-      // Subtle color breakup so they don't read as identical dots.
-      lit *= 0.94 + (n1 - 0.5) * 0.12;
+// Camera-side fill (fake bounce, not emissive).
+float viewFill = pow(max(dot(n, v), 0.0), 1.1) * 0.24;
+
+// Distance attenuation should affect direct light mostly, not ambient/fill.
+float directSunAtten = 1.0 - smoothstep(2200.0, 7000.0, vSunDistance) * 0.08;
+
+vec3 albedo = vColor;
+
+// Stronger baseline visibility without self-glow.
+float ambient = 0.30;
+
+// Blend darkening instead of multiplying into oblivion.
+float surfaceShadow = 1.0 - (crevice * 0.40 + edgeDark * 0.28);
+
+// Split lighting into components so ambient/fill remain stable.
+vec3 ambientTerm = albedo * ambient;
+vec3 directTerm = albedo * (diff * 0.70) * directSunAtten;
+vec3 fillTerm = albedo * viewFill;
+
+vec3 lit = (ambientTerm + directTerm + fillTerm);
+lit *= surfaceShadow;
+lit += vec3(spec);
+lit += albedo * rim;
+
+// Subtle breakup so they don't look cloned.
+lit *= 0.98 + (n1 - 0.5) * 0.08;
+
+// Safety floor so distant/backlit asteroids don't disappear.
+lit = max(lit, albedo * 0.10);
 
       float alpha = smoothstep(edge + 0.03, edge - 0.02, rr);
+
+      
       gl_FragColor = vec4(lit, alpha);
     }
   `,

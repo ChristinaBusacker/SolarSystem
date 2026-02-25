@@ -63,6 +63,11 @@
     border-color 160ms ease,
     transform 160ms ease;
 
+  &:hover {
+    transform: scale(1.02);
+    border-color: rgba(255, 255, 255, 0.32);
+  }
+
   &.planets {
     &.is-active {
       display: none;
@@ -76,18 +81,8 @@
   }
 }
 
-.ui-stage-btn:hover {
-  background: rgba(22, 26, 36, 0.92);
-  border-color: rgba(255, 255, 255, 0.42);
-}
-
 .ui-stage-btn:active {
   transform: scale(0.98);
-}
-
-.ui-stage-btn.is-active {
-  border-color: rgba(255, 255, 255, 0.52);
-  background: rgba(22, 26, 36, 0.94);
 }
 
 .ui-stage-btn__icon {
@@ -125,7 +120,7 @@
 }
 
 .ui-stage-focus__back {
-  width: 42px;
+  width: 25px;
   height: 42px;
   border-radius: 12px;
   cursor: pointer;

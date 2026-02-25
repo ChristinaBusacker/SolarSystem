@@ -27,6 +27,11 @@
       transform 160ms ease;
 
     pointer-events: auto;
+
+    &:hover {
+      transform: scale(1.02);
+      border-color: rgba(255, 255, 255, 0.32);
+    }
   }
 
   & span.ui-zoom-btn__icon--zoom-in {

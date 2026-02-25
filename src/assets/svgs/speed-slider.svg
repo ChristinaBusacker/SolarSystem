@@ -11,7 +11,7 @@
 		
 			<linearGradient id="Pfeil_00000128460203212474558710000002554717607399259288_" gradientUnits="userSpaceOnUse" x1="15" y1="5" x2="15" y2="27" gradientTransform="matrix(1 0 0 -1 0 32)">
 			<stop  offset="0.2085" style="stop-color:#000000"/>
-			<stop  offset="0.6792" style="stop-color:#000000;stop-opacity:0"/>
+			<stop  offset="0.6792" style="stop-color:#000000;stop-opacity:0.5"/>
 		</linearGradient>
 		
 			<path id="Pfeil_00000160913588119025712270000006559121710832608941_" style="fill:url(#Pfeil_00000128460203212474558710000002554717607399259288_);" d="

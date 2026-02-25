@@ -16,19 +16,19 @@ import { SimpleAstronomicalBody } from "../objects/simple-astronomical.object";
 export class AstronomicalManager {
   private entrys: Array<AstronomicalEntry> = [
     { selector: "Sun", object: new Sun() },
-    { selector: "Mercury", object: new SimpleAstronomicalBody("assets/textures/2k_mercury.jpg", "assets/normals/2k_mercury.png", mercuryRawData) },
+    { selector: "Mercury", object: new SimpleAstronomicalBody("/assets/textures/2k_mercury.jpg", "/assets/normals/2k_mercury.png", mercuryRawData) },
     { selector: "Venus", object: new Venus() },
     { selector: "Earth", object: new Earth() },
     { selector: "Mars", object: new Mars() },
-    { selector: "Ceres", object: new SimpleAstronomicalBody("assets/textures/1k_ceres.png", "assets/normals/2k_moon.png", ceresRawData) },
+    { selector: "Ceres", object: new SimpleAstronomicalBody("/assets/textures/1k_ceres.png", "/assets/normals/2k_moon.png", ceresRawData) },
     { selector: "Jupiter", object: new Jupiter() },
     { selector: "Saturn", object: new Saturn() },
     { selector: "Uranus", object: new Uranus() },
     { selector: "Neptune", object: new Neptun() },
     { selector: "Pluto", object: new Pluto() },
-    { selector: "Haumea", object: new SimpleAstronomicalBody("assets/textures/1k_haumea.png", "assets/normals/2k_moon.png", haumeaRawData) },
-    { selector: "Makemake", object: new SimpleAstronomicalBody("assets/textures/3k_makemake.jpg", "assets/normals/2k_moon.png", makemakeRawData) },
-    { selector: "Eris", object: new SimpleAstronomicalBody("assets/textures/2k_eris.png", "assets/normals/2k_moon.png", erisRawData) },
+    { selector: "Haumea", object: new SimpleAstronomicalBody("/assets/textures/1k_haumea.png", "/assets/normals/2k_moon.png", haumeaRawData) },
+    { selector: "Makemake", object: new SimpleAstronomicalBody("/assets/textures/3k_makemake.jpg", "/assets/normals/2k_moon.png", makemakeRawData) },
+    { selector: "Eris", object: new SimpleAstronomicalBody("/assets/textures/2k_eris.png", "/assets/normals/2k_moon.png", erisRawData) },
   ];
 
   constructor() { }

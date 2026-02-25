@@ -10,7 +10,7 @@ export class Sun extends Astronomical {
   private coronaShaderMaterial: THREE.ShaderMaterial;
 
   constructor() {
-    super(["assets/textures/2k_sun.jpg"], "assets/normals/2k_jupiter.png", sunRawData, true);
+    super(["/assets/textures/2k_sun.jpg"], "/assets/normals/2k_jupiter.png", sunRawData, true);
   }
 
   public init() {

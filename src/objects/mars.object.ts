@@ -9,21 +9,21 @@ export class Mars extends Astronomical {
 
   public moons = [
     new SimpleAstronomicalBody(
-      "assets/textures/1k_phobos.jpg",
-      "assets/normals/2k_moon.png",
+      "/assets/textures/1k_phobos.jpg",
+      "/assets/normals/2k_moon.png",
       phobosRawData,
       { isMoon: true },
     ),
     new SimpleAstronomicalBody(
-      "assets/textures/1k_deimos.png",
-      "assets/normals/2k_moon.png",
+      "/assets/textures/1k_deimos.png",
+      "/assets/normals/2k_moon.png",
       deimosRawData,
       { isMoon: true },
     ),
   ];
 
   constructor() {
-    super(["assets/textures/2k_mars.jpg"], "assets/normals/2k_mars.png", marsRawData, false);
+    super(["/assets/textures/2k_mars.jpg"], "/assets/normals/2k_mars.png", marsRawData, false);
   }
 
   public init() {
@@ -33,11 +33,11 @@ export class Mars extends Astronomical {
       moon.orbitingParent = this;
 
       if (moon.data.slug === 'phobos') {
-        moon.initDisplacement('assets/displacement/phobos4.jpg', 0.0004)
+        moon.initDisplacement('/assets/displacement/phobos4.jpg', 0.0004)
       }
 
       if (moon.data.slug === 'deimos') {
-        moon.initDisplacement('assets/displacement/deimos3.jpg', 0.0002)
+        moon.initDisplacement('/assets/displacement/deimos3.jpg', 0.0002)
       }
 
 

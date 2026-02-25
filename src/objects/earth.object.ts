@@ -7,18 +7,18 @@ import { APP } from "..";
 import { earthRawData, moonRawData } from "../../data/raw-object.data";
 
 export class Earth extends Astronomical {
-  public moon = new SimpleAstronomicalBody("assets/textures/2k_moon.jpg", "assets/normals/2k_moon.png", moonRawData, { isMoon: true, rotateTextureHalfTurn: false });
+  public moon = new SimpleAstronomicalBody("/assets/textures/2k_moon.jpg", "/assets/normals/2k_moon.png", moonRawData, { isMoon: true, rotateTextureHalfTurn: false });
   public moons = [this.moon]
   public cameraPosition = new THREE.Vector3(-4, 4, 4);
 
   constructor() {
-    super(["assets/textures/2k_earth_daymap.jpg", "assets/textures/2k_earth_nightmap.jpg"], "assets/normals/2k_earth.png", earthRawData, false);
+    super(["/assets/textures/2k_earth_daymap.jpg", "/assets/textures/2k_earth_nightmap.jpg"], "/assets/normals/2k_earth.png", earthRawData, false);
   }
 
   public init() {
     super.init();
 
-    this.addAtmosphere("assets/textures/2k_earth_clouds_alpha.png", this.data.size);
+    this.addAtmosphere("/assets/textures/2k_earth_clouds_alpha.png", this.data.size);
 
     const textureLoader = new THREE.TextureLoader();
     this.specMap = textureLoader.load("/assets/spec/2k_earth_specular_map.png");

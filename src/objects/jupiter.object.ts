@@ -6,14 +6,14 @@ import { SimpleAstronomicalBody } from "./simple-astronomical.object";
 
 export class Jupiter extends Astronomical {
   public moons = [
-    new SimpleAstronomicalBody("assets/textures/2k_io.jpg", "assets/normals/2k_moon.png", ioRawData, { isMoon: true, rotateTextureHalfTurn: true }),
-    new SimpleAstronomicalBody("assets/textures/2k_europa.jpg", "assets/normals/2k_moon.png", europaRawData, { isMoon: true, rotateTextureHalfTurn: true }),
-    new SimpleAstronomicalBody("assets/textures/2k_ganymede.jpg", "assets/normals/2k_moon.png", ganymedeRawData, { isMoon: true, rotateTextureHalfTurn: true }),
-    new SimpleAstronomicalBody("assets/textures/2k_callisto.jpg", "assets/normals/2k_moon.png", callistoRawData, { isMoon: true, rotateTextureHalfTurn: true }),
+    new SimpleAstronomicalBody("/assets/textures/2k_io.jpg", "/assets/normals/2k_moon.png", ioRawData, { isMoon: true, rotateTextureHalfTurn: true }),
+    new SimpleAstronomicalBody("/assets/textures/2k_europa.jpg", "/assets/normals/2k_moon.png", europaRawData, { isMoon: true, rotateTextureHalfTurn: true }),
+    new SimpleAstronomicalBody("/assets/textures/2k_ganymede.jpg", "/assets/normals/2k_moon.png", ganymedeRawData, { isMoon: true, rotateTextureHalfTurn: true }),
+    new SimpleAstronomicalBody("/assets/textures/2k_callisto.jpg", "/assets/normals/2k_moon.png", callistoRawData, { isMoon: true, rotateTextureHalfTurn: true }),
   ];
 
   constructor() {
-    super(["assets/textures/2k_jupiter.jpg"], "assets/normals/2k_jupiter.png", jupiterRawData, false);
+    super(["/assets/textures/2k_jupiter.jpg"], "/assets/normals/2k_jupiter.png", jupiterRawData, false);
   }
 
   public init() {

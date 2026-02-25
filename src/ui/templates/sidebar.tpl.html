@@ -1,5 +1,9 @@
 <div class="ui-sidebar-shell" data-ui="sidebar-right">
-  <aside class="ui-sidebar ui-sidebar--right" role="complementary" aria-label="Body information">
+  <aside
+    class="ui-sidebar ui-sidebar--right"
+    role="complementary"
+    aria-label="Body information"
+  >
     <header class="ui-sidebar__header">
       <div class="ui-sidebar__title">
         <h2>{{title}}</h2>
@@ -19,34 +23,9 @@
 
     <div class="ui-sidebar__content">
       <section class="ui-section">
-        <h3>Visibility</h3>
-
-        <label class="ui-toggle">
-          <input type="checkbox" {{checkedHidePlanets}} data-action="toggle-planets" />
-          <span>Hide planets</span>
-        </label>
-
-        <label class="ui-toggle">
-          <input type="checkbox" {{checkedHideMoons}} data-action="toggle-moons" />
-          <span>Hide moons</span>
-        </label>
+        <h3>{{selectedBodyName}}</h3>
+        {{{selectedBodyDetailsHtml}}}
       </section>
-
-      <section class="ui-section">
-        <h3>Selected</h3>
-        <div class="ui-kv">
-          <div class="k">Body</div>
-          <div class="v">{{selectedBodyName}}</div>
-        </div>
-        <p class="ui-hint">{{hint}}</p>
-      </section>
-
-      <!--
-        TODO (educational app):
-        - description block
-        - orbital objects list
-        - quiz cards
-      -->
     </div>
   </aside>
 </div>

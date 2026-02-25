@@ -1,0 +1,175 @@
+/* Auto-generated from textures.zip */
+/* Shared icon styling for planets, moons, and related textures */
+
+@mixin planet-icon($file) {
+  border-radius: 50%;
+  background-image: url("../assets/textures/#{$file}");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.18),
+    0 0 0 1px rgba(0, 0, 0, 0.2);
+  min-width: 32px;
+  min-height: 32px;
+}
+
+.planet__icon--ariel {
+  @include planet-icon("1k_ariel.png");
+}
+
+.planet__icon--ceres {
+  @include planet-icon("1k_ceres.png");
+}
+
+.planet__icon--charon {
+  @include planet-icon("1k_charon.png");
+}
+
+.planet__icon--deimos {
+  @include planet-icon("1k_deimos.png");
+}
+
+.planet__icon--dione {
+  @include planet-icon("1k_dione.png");
+}
+
+.planet__icon--haumea {
+  @include planet-icon("1k_haumea.png");
+}
+
+.planet__icon--mimas {
+  @include planet-icon("1k_mimas.png");
+}
+
+.planet__icon--miranda-0 {
+  @include planet-icon("1k_miranda-0.png");
+}
+
+.planet__icon--nereid {
+  @include planet-icon("1k_nereid.png");
+}
+
+.planet__icon--oberonmap1 {
+  @include planet-icon("1k_oberonmap1.png");
+}
+
+.planet__icon--phobos {
+  @include planet-icon("1k_phobos.jpg");
+}
+
+.planet__icon--proteus {
+  @include planet-icon("1k_proteus.png");
+}
+
+.planet__icon--tethys {
+  @include planet-icon("1k_tethys.png");
+}
+
+.planet__icon--umbriel {
+  @include planet-icon("1k_umbriel.png");
+}
+
+.planet__icon--callisto {
+  @include planet-icon("2k_callisto.jpg");
+}
+
+.planet__icon--earth {
+  @include planet-icon("2k_earth_daymap.jpg");
+}
+
+.planet__icon--enceladus {
+  @include planet-icon("2k_enceladus.jpg");
+}
+
+.planet__icon--eris {
+  @include planet-icon("2k_eris.png");
+}
+
+.planet__icon--europa {
+  @include planet-icon("2k_europa.jpg");
+}
+
+.planet__icon--ganymede {
+  @include planet-icon("2k_ganymede.jpg");
+}
+
+.planet__icon--iapetus {
+  @include planet-icon("2k_iapetus.jpg");
+}
+
+.planet__icon--io {
+  @include planet-icon("2k_io.jpg");
+}
+
+.planet__icon--jupiter {
+  @include planet-icon("2k_jupiter.jpg");
+}
+
+.planet__icon--mars {
+  @include planet-icon("2k_mars.jpg");
+}
+
+.planet__icon--mercury {
+  @include planet-icon("2k_mercury.jpg");
+}
+
+.planet__icon--moon {
+  @include planet-icon("2k_moon.jpg");
+}
+
+.planet__icon--neptune {
+  @include planet-icon("2k_neptune.jpg");
+}
+
+.planet__icon--pluto {
+  @include planet-icon("2k_pluto.jpg");
+}
+
+.planet__icon--rhea {
+  @include planet-icon("2k_rhea.jpg");
+}
+
+.planet__icon--saturn {
+  @include planet-icon("2k_saturn.jpg");
+}
+
+.planet__icon--saturn-ring-alpha {
+  @include planet-icon("2k_saturn_ring_alpha.png");
+}
+
+.planet__icon--stars-milky-way {
+  @include planet-icon("2k_stars_milky_way.jpg");
+}
+
+.planet__icon--sun {
+  @include planet-icon("2k_sun.jpg");
+}
+
+.planet__icon--titan {
+  @include planet-icon("2k_titan.jpg");
+}
+
+.planet__icon--triton {
+  @include planet-icon("2k_triton.jpg");
+}
+
+.planet__icon--uranus {
+  @include planet-icon("2k_uranus.jpg");
+}
+
+.planet__icon--venus {
+  @include planet-icon("2k_venus_surface.jpg");
+}
+
+.planet__icon--makemake {
+  @include planet-icon("3k_makemake.jpg");
+}
+
+.planet__icon--test {
+  @include planet-icon("test.png");
+}
+
+.planet__icon--titania {
+  @include planet-icon("titania.jpg");
+}

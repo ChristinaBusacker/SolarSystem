@@ -1,0 +1,225 @@
+/* typography.scss */
+/* Central typography tokens so you can tweak values in one place */
+
+$font-path: "../assets/fonts" !default;
+
+/* Font family stacks */
+$font-family-heading:
+  "Outfit",
+  system-ui,
+  -apple-system,
+  "Segoe UI",
+  Roboto,
+  sans-serif !default;
+$font-family-body: "Roboto Slab", Georgia, "Times New Roman", serif !default;
+
+/* Weights */
+$font-weight-regular: 400 !default;
+$font-weight-medium: 500 !default;
+$font-weight-semibold: 600 !default;
+$font-weight-bold: 700 !default;
+
+/* Base sizes */
+$font-size-root: 16px !default;
+$font-size-body: 1rem !default;
+$line-height-body: 1.8 !default;
+$line-height-heading: 1.15 !default;
+
+/* Heading scale */
+$h1-size: clamp(2rem, 1.2rem + 2.4vw, 3rem) !default;
+$h2-size: clamp(1.6rem, 1.1rem + 1.6vw, 2.25rem) !default;
+$h3-size: clamp(1.35rem, 1rem + 1vw, 1.75rem) !default;
+$h4-size: 1.25rem !default;
+$h5-size: 1.1rem !default;
+$h6-size: 1rem !default;
+
+/* Spacing */
+$heading-margin-bottom: 0.5em !default;
+$paragraph-margin-bottom: 1rem !default;
+
+/* Letter spacing */
+$heading-letter-spacing: -0.02em !default;
+$body-letter-spacing: 0 !default;
+
+/* -------------------- */
+/* Font face definitions */
+/* -------------------- */
+
+/* Outfit */
+@font-face {
+  font-family: "Outfit";
+  src: url("#{$font-path}/Outfit-Thin.ttf") format("truetype");
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Outfit";
+  src: url("#{$font-path}/Outfit-ExtraLight.ttf") format("truetype");
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Outfit";
+  src: url("#{$font-path}/Outfit-Light.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Outfit";
+  src: url("#{$font-path}/Outfit-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Outfit";
+  src: url("#{$font-path}/Outfit-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Outfit";
+  src: url("#{$font-path}/Outfit-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Outfit";
+  src: url("#{$font-path}/Outfit-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Outfit";
+  src: url("#{$font-path}/Outfit-ExtraBold.ttf") format("truetype");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Outfit";
+  src: url("#{$font-path}/Outfit-Black.ttf") format("truetype");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Roboto Slab (you currently only have Regular + Bold) */
+@font-face {
+  font-family: "Roboto Slab";
+  src:
+    url("#{$font-path}/Roboto-Slab-Regular.woff2") format("woff2"),
+    url("#{$font-path}/Roboto-Slab-Regular.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Roboto Slab";
+  src:
+    url("#{$font-path}/Roboto-Slab-Bold.woff2") format("woff2"),
+    url("#{$font-path}/Roboto-Slab-Bold.woff") format("woff");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* -------------------- */
+/* Global typography */
+/* -------------------- */
+
+html {
+  font-size: $font-size-root;
+}
+
+body {
+  margin: 0;
+  font-family: $font-family-body;
+  font-size: $font-size-body;
+  font-weight: $font-weight-regular;
+  line-height: $line-height-body;
+  letter-spacing: $body-letter-spacing;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0 0 $heading-margin-bottom;
+  font-family: $font-family-heading;
+  font-weight: $font-weight-bold;
+  line-height: $line-height-heading;
+  letter-spacing: $heading-letter-spacing;
+}
+
+h1 {
+  font-size: $h1-size;
+}
+h2 {
+  font-size: $h2-size;
+}
+h3 {
+  font-size: $h3-size;
+}
+h4 {
+  font-size: $h4-size;
+  font-weight: $font-weight-semibold;
+}
+h5 {
+  font-size: $h5-size;
+  font-weight: $font-weight-semibold;
+}
+h6 {
+  font-size: $h6-size;
+  font-weight: $font-weight-medium;
+}
+
+p {
+  margin: 0 0 $paragraph-margin-bottom;
+}
+
+small {
+  font-size: 0.875em;
+}
+
+strong,
+b {
+  font-weight: $font-weight-bold;
+}
+
+/* Let form controls inherit the global typography */
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+/* Optional utility classes */
+.text-heading {
+  font-family: $font-family-heading;
+}
+
+.text-body {
+  font-family: $font-family-body;
+}

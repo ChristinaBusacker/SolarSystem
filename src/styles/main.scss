@@ -1,6 +1,7 @@
 @use "./base";
 @use "./layout";
 @use "./css2d";
+@use "./planet-icons.scss";
 
 @use "./ui/root";
 @use "./ui/stage-controls";
@@ -11,3 +12,4 @@
 @use "./ui/sidebar-left";
 @use "./ui/mobile-toggle";
 @use "./ui/hud";
+@use "./typography";

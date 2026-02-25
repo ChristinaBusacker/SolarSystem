@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Generator: Adobe Illustrator 27.9.3, SVG Export Plug-In . SVG Version: 9.03 Build 53313)  -->
-<svg version="1.1" id="EXITfullscreen" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px"
-	 y="0px" viewBox="0 0 50 50" style="enable-background:new 0 0 50 50;" xml:space="preserve">
+<svg version="1.1" id="EXITfullscreen" xmlns="http://www.w3.org/2000/svg"
+	 x="0px" y="0px" viewBox="0 0 50 50" xml:space="preserve">
 <style type="text/css">
-	.st0{opacity:0.75;enable-background:new    ;}
+	.st0{opacity:0.75;}
 	.st1{fill:#FFFFFF;}
 </style>
-<rect x="2" y="14" class="st0" width="39" height="23"/>
-<polygon class="st1" points="39,23 32,23 32,16 34,16 34,21 39,21 "/>
-<polygon class="st1" points="11,35 9,35 9,30 4,30 4,28 11,28 "/>
-<polygon class="st1" points="11,23 4,23 4,21 9,21 9,16 11,16 "/>
-<polygon class="st1" points="34,35 32,35 32,28 39,28 39,30 34,30 "/>
+
+<g transform="translate(3.5 0)">
+	<rect x="2" y="14" class="st0" width="39" height="23"/>
+	<polygon class="st1" points="39,23 32,23 32,16 34,16 34,21 39,21 "/>
+	<polygon class="st1" points="11,35 9,35 9,30 4,30 4,28 11,28 "/>
+	<polygon class="st1" points="11,23 4,23 4,21 9,21 9,16 11,16 "/>
+	<polygon class="st1" points="34,35 32,35 32,28 39,28 39,30 34,30 "/>
+</g>
 </svg>

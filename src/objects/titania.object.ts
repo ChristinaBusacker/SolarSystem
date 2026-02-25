@@ -6,7 +6,7 @@ export class Titania extends Astronomical {
     public isMoon = true;
 
     constructor() {
-        super(["assets/textures/titania.jpg"], "assets/normals/2k_mars.png", titaniaRawData, false);
+        super(["/assets/textures/titania.jpg"], "/assets/normals/2k_mars.png", titaniaRawData, false);
     }
 
     public init() {

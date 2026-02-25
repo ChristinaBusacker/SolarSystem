@@ -34,6 +34,13 @@ module.exports = {
         type: "asset/source",
       },
       {
+        test: /\.(woff2?|ttf|otf|eot)$/i,
+        type: "asset/resource",
+        generator: {
+          filename: "assets/fonts/[name][ext]",
+        },
+      },
+      {
         test: /\.tpl\.html$/i,
         type: "asset/source",
       },

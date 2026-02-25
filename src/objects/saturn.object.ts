@@ -13,17 +13,17 @@ export class Saturn extends Astronomical {
     public ringMesh?: THREE.Mesh
 
     public moons = [
-        new SimpleAstronomicalBody("assets/textures/1k_mimas.png", "assets/normals/2k_moon.png", mimasRawData, { isMoon: true }),
-        new SimpleAstronomicalBody("assets/textures/2k_enceladus.jpg", "assets/normals/2k_mars.png", enceladusRawData, { isMoon: true }),
-        new SimpleAstronomicalBody("assets/textures/1k_tethys.png", "assets/normals/2k_moon.png", tethysRawData, { isMoon: true }),
-        new SimpleAstronomicalBody("assets/textures/1k_dione.png", "assets/normals/2k_moon.png", dioneRawData, { isMoon: true }),
-        new SimpleAstronomicalBody("assets/textures/2k_rhea.jpg", "assets/normals/2k_mars.png", rheaRawData, { isMoon: true }),
-        new SimpleAstronomicalBody("assets/textures/2k_titan.jpg", "assets/normals/2k_mars.png", titanRawData, { isMoon: true }),
-        new SimpleAstronomicalBody("assets/textures/2k_iapetus.jpg", "assets/normals/2k_mars.png", iapetusRawData, { isMoon: true }),
+        new SimpleAstronomicalBody("/assets/textures/1k_mimas.png", "/assets/normals/2k_moon.png", mimasRawData, { isMoon: true }),
+        new SimpleAstronomicalBody("/assets/textures/2k_enceladus.jpg", "/assets/normals/2k_mars.png", enceladusRawData, { isMoon: true }),
+        new SimpleAstronomicalBody("/assets/textures/1k_tethys.png", "/assets/normals/2k_moon.png", tethysRawData, { isMoon: true }),
+        new SimpleAstronomicalBody("/assets/textures/1k_dione.png", "/assets/normals/2k_moon.png", dioneRawData, { isMoon: true }),
+        new SimpleAstronomicalBody("/assets/textures/2k_rhea.jpg", "/assets/normals/2k_mars.png", rheaRawData, { isMoon: true }),
+        new SimpleAstronomicalBody("/assets/textures/2k_titan.jpg", "/assets/normals/2k_mars.png", titanRawData, { isMoon: true }),
+        new SimpleAstronomicalBody("/assets/textures/2k_iapetus.jpg", "/assets/normals/2k_mars.png", iapetusRawData, { isMoon: true }),
     ]
 
     constructor() {
-        super(["assets/textures/2k_saturn.jpg"], "assets/normals/2k_saturn.png", saturnRawData, false);
+        super(["/assets/textures/2k_saturn.jpg"], "/assets/normals/2k_saturn.png", saturnRawData, false);
     }
 
     init() {

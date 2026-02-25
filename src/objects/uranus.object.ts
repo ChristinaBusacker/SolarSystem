@@ -6,15 +6,15 @@ import { SimpleAstronomicalBody } from "./simple-astronomical.object";
 
 export class Uranus extends Astronomical {
     public moons = [
-        new SimpleAstronomicalBody("assets/textures/1k_miranda-0.png", "assets/normals/2k_moon.png", mirandaRawData, { isMoon: true }),
-        new SimpleAstronomicalBody("assets/textures/1k_ariel.png", "assets/normals/2k_moon.png", arielRawData, { isMoon: true }),
-        new SimpleAstronomicalBody("assets/textures/1k_umbriel.png", "assets/normals/2k_moon.png", umbrielRawData, { isMoon: true }),
-        new SimpleAstronomicalBody("assets/textures/titania.jpg", "assets/normals/2k_moon.png", titaniaRawData, { isMoon: true }),
-        new SimpleAstronomicalBody("assets/textures/1k_oberonmap1.png", "assets/normals/2k_moon.png", oberonRawData, { isMoon: true }),
+        new SimpleAstronomicalBody("/assets/textures/1k_miranda-0.png", "/assets/normals/2k_moon.png", mirandaRawData, { isMoon: true }),
+        new SimpleAstronomicalBody("/assets/textures/1k_ariel.png", "/assets/normals/2k_moon.png", arielRawData, { isMoon: true }),
+        new SimpleAstronomicalBody("/assets/textures/1k_umbriel.png", "/assets/normals/2k_moon.png", umbrielRawData, { isMoon: true }),
+        new SimpleAstronomicalBody("/assets/textures/titania.jpg", "/assets/normals/2k_moon.png", titaniaRawData, { isMoon: true }),
+        new SimpleAstronomicalBody("/assets/textures/1k_oberonmap1.png", "/assets/normals/2k_moon.png", oberonRawData, { isMoon: true }),
     ]
 
     constructor() {
-        super(["assets/textures/2k_uranus.jpg"], "assets/normals/2k_uranus.png", uranusRawData, false);
+        super(["/assets/textures/2k_uranus.jpg"], "/assets/normals/2k_uranus.png", uranusRawData, false);
     }
 
     public init() {

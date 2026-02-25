@@ -7,13 +7,13 @@ import { SimpleAstronomicalBody } from "./simple-astronomical.object";
 export class Neptun extends Astronomical {
 
     public moons = [
-        new SimpleAstronomicalBody("assets/textures/1k_proteus.png", "assets/normals/2k_moon.png", proteusRawData, { isMoon: true }),
-        new SimpleAstronomicalBody("assets/textures/2k_triton.jpg", "assets/normals/2k_mars.png", tritonRawData, { isMoon: true }),
-        new SimpleAstronomicalBody("assets/textures/1k_nereid.png", "assets/normals/2k_moon.png", nereidRawData, { isMoon: true }),
+        new SimpleAstronomicalBody("/assets/textures/1k_proteus.png", "/assets/normals/2k_moon.png", proteusRawData, { isMoon: true }),
+        new SimpleAstronomicalBody("/assets/textures/2k_triton.jpg", "/assets/normals/2k_mars.png", tritonRawData, { isMoon: true }),
+        new SimpleAstronomicalBody("/assets/textures/1k_nereid.png", "/assets/normals/2k_moon.png", nereidRawData, { isMoon: true }),
     ]
 
     constructor() {
-        super(["assets/textures/2k_neptune.jpg"], "assets/normals/2k_mars.png", neptuneRawData, false);
+        super(["/assets/textures/2k_neptune.jpg"], "/assets/normals/2k_mars.png", neptuneRawData, false);
     }
 
     public init() {
