@@ -6,6 +6,9 @@
 
   // Global click-through so camera controls keep working.
   pointer-events: none;
+
+  max-height: 100vh;
+  overflow: hidden;
 }
 
 #ui-root [data-slot="hud"] {
