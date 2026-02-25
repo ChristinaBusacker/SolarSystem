@@ -276,8 +276,8 @@ export class Application {
     // Prevent "white flash" if rendering stalls during resizes/transitions.
     this.webglRenderer.setClearColor(0x000000, 1);
 
-    this.webglRenderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.webglRenderer.outputColorSpace = THREE.SRGBColorSpace;
+    this.webglRenderer.toneMapping = THREE.ReinhardToneMapping;
+    this.webglRenderer.outputColorSpace = THREE.LinearSRGBColorSpace;
     this.webglRenderer.toneMappingExposure = 1;
     document.getElementById("app").appendChild(this.webglRenderer.domElement);
 

@@ -31,6 +31,17 @@ export class Mars extends Astronomical {
 
     this.moons.forEach((moon) => {
       moon.orbitingParent = this;
+
+      if (moon.data.slug === 'phobos') {
+        moon.initDisplacement('assets/displacement/phobos4.jpg', 0.0004)
+      }
+
+      if (moon.data.slug === 'deimos') {
+        moon.initDisplacement('assets/displacement/deimos3.jpg', 0.0002)
+      }
+
+
+
       moon.init();
 
       const moonGrp = new THREE.Group();

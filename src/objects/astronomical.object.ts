@@ -1,22 +1,18 @@
-import { AstronomicalObject } from "../interfaces/astronomicalObject.interface";
 import * as THREE from "three";
-import {
-  CSS3DRenderer,
-  CSS3DObject,
-} from "three/examples/jsm/renderers/CSS3DRenderer";
-import { simulationSpeed } from "../../data/settings.data";
-import { SimpleControl } from "../controls/simple.control";
-import { AstronomicalDataset, AstronomicalRawData } from "../interfaces/dataset.interface";
-import { APP } from "..";
-import { astronomicalShader } from "../shader/astronomical.shader";
-import { earthShader } from "../shader/earth.shader";
-import { PURE_BLACK_MATERIAL } from "../constant/pureBlackMaterial.constant";
-import { CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer";
 import { Line2 } from "three/examples/jsm/lines/Line2";
 import { LineGeometry } from "three/examples/jsm/lines/LineGeometry";
 import { LineMaterial } from "three/examples/jsm/lines/LineMaterial";
-import { router } from "../router/router";
+import { CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer";
+import { APP } from "..";
+import { PURE_BLACK_MATERIAL } from "../constant/pureBlackMaterial.constant";
+import { SimpleControl } from "../controls/simple.control";
+import { AstronomicalObject } from "../interfaces/astronomicalObject.interface";
+import { AstronomicalDataset, AstronomicalRawData } from "../interfaces/dataset.interface";
 import { AstronomicalDataParser } from "../parser/astronomical-data.parser";
+import { router } from "../router/router";
+import { astronomicalShader } from "../shader/astronomical.shader";
+import { earthShader } from "../shader/earth.shader";
+import { astronomicalDisplacementShader } from "../shader/astronomical-displacement.shader";
 
 export class Astronomical implements AstronomicalObject {
   public data?: AstronomicalDataset;
@@ -41,6 +37,8 @@ export class Astronomical implements AstronomicalObject {
   public moons: Array<AstronomicalObject> = [];
   public orbitingParent?: AstronomicalObject;
   public isMoon = false;
+  public displacementMap?: THREE.Texture;
+  public displacementHeight?: number;
 
   public materials: Array<THREE.ShaderMaterial> = [];
 
@@ -64,12 +62,30 @@ export class Astronomical implements AstronomicalObject {
     const textureLoader = new THREE.TextureLoader();
     this.texturePath = texturePath;
     this.texture = textureLoader.load(texturePath[0]);
-    this.specMap = textureLoader.load("/assets/spec/2k_earth_specular_map.png");
+
     this.emissive = emissive;
 
     this.angle = this.data.isOrbiting
       ? this.getInitialOrbitAngle()
       : 0;
+  }
+
+  public initDisplacement(displacmentPath: string, height: number) {
+
+    this.displacementHeight = height
+
+    const textureLoader = new THREE.TextureLoader();
+    this.displacementMap = textureLoader.load(displacmentPath)
+    this.displacementMap.wrapS = THREE.RepeatWrapping;
+    this.displacementMap.wrapT = THREE.ClampToEdgeWrapping;
+
+    // Heightmap sollte nicht als Farbtextur behandelt werden
+    this.displacementMap.colorSpace = THREE.NoColorSpace;
+
+    // Optional sinnvoll
+    this.displacementMap.minFilter = THREE.LinearMipmapLinearFilter;
+    this.displacementMap.magFilter = THREE.LinearFilter;
+
   }
 
   private getInitialOrbitAngle(): number {
@@ -288,15 +304,22 @@ export class Astronomical implements AstronomicalObject {
       this.camera = new THREE.PerspectiveCamera(
         50,
         window.innerWidth / window.innerHeight,
-        0.1,
+        0.01,
         90000000,
       );
 
       this.control = new SimpleControl(
-        this.data.size * 6,
-        this.data.size * 64,
+        Math.max(this.data.size * 5, 0.012),
+        Math.max(this.data.size * 64, 0.15),
         this.camera,
       );
+
+
+      if (this.data.slug === 'phobos') {
+        console.log(this.data.size * 5, this.control)
+
+      }
+
       this.control.initEventListener();
       this.group.add(this.control.group);
 
@@ -420,7 +443,7 @@ export class Astronomical implements AstronomicalObject {
 
   public generateMaterials() {
     const { vertexShader, fragmentShader } =
-      this.texturePath.length < 2 ? astronomicalShader : earthShader;
+      this.texturePath.length < 2 ? (this.displacementMap ? astronomicalDisplacementShader : astronomicalShader) : earthShader;
 
     const casterOptions: any = {
       casterPosition1: { value: new THREE.Vector3(0, 0, 0) },
@@ -432,6 +455,11 @@ export class Astronomical implements AstronomicalObject {
       casterPosition4: { value: new THREE.Vector3(0, 0, 0) },
       casterRadius4: { value: 0.0 },
     };
+
+    if (this.data.slug === "phobos") {
+      console.log(this.data.size)
+    }
+
 
     const options = {
       dayTexture: { value: this.texturePath[0] ? this.texture : null },
@@ -445,6 +473,8 @@ export class Astronomical implements AstronomicalObject {
       sunPosition: { value: new THREE.Vector3(0, 0, 0) },
       lightIntensity: { value: 1.0 },
       specMap: { value: this.specMap },
+      displacementMap: this.displacementMap ? { value: this.displacementMap } : undefined,
+      displacementHeight: this.displacementMap ? { value: this.displacementHeight } : undefined,
       shininess: { value: 16 },
       ...casterOptions,
     };

@@ -27,11 +27,11 @@ export class AstronomicalManager {
     { selector: "Neptune", object: new Neptun() },
     { selector: "Pluto", object: new Pluto() },
     { selector: "Haumea", object: new SimpleAstronomicalBody("assets/textures/1k_haumea.png", "assets/normals/2k_moon.png", haumeaRawData) },
-    { selector: "Makemake", object: new SimpleAstronomicalBody("assets/textures/2k_pluto.jpg", "assets/normals/2k_moon.png", makemakeRawData) },
+    { selector: "Makemake", object: new SimpleAstronomicalBody("assets/textures/3k_makemake.jpg", "assets/normals/2k_moon.png", makemakeRawData) },
     { selector: "Eris", object: new SimpleAstronomicalBody("assets/textures/2k_eris.png", "assets/normals/2k_moon.png", erisRawData) },
   ];
 
-  constructor() {}
+  constructor() { }
 
   public initObjects(scene: THREE.Scene) {
     this.entrys.forEach((entry) => {

@@ -7,7 +7,7 @@ import { APP } from "..";
 import { earthRawData, moonRawData } from "../../data/raw-object.data";
 
 export class Earth extends Astronomical {
-  public moon = new SimpleAstronomicalBody("assets/textures/2k_moon.jpg", "assets/normals/2k_moon.png", moonRawData, { isMoon: true, rotateTextureHalfTurn: true });
+  public moon = new SimpleAstronomicalBody("assets/textures/2k_moon.jpg", "assets/normals/2k_moon.png", moonRawData, { isMoon: true, rotateTextureHalfTurn: false });
   public moons = [this.moon]
   public cameraPosition = new THREE.Vector3(-4, 4, 4);
 
@@ -20,12 +20,15 @@ export class Earth extends Astronomical {
 
     this.addAtmosphere("assets/textures/2k_earth_clouds_alpha.png", this.data.size);
 
+    const textureLoader = new THREE.TextureLoader();
+    this.specMap = textureLoader.load("/assets/spec/2k_earth_specular_map.png");
+
     this.moon.orbitingParent = this;
     this.moon.init()
 
     const moonGrp = new THREE.Group();
     moonGrp.add(this.moon.orbitalGroup);
-    moonGrp.rotateX(MathUtils.DEG2RAD * -5.145);
+    moonGrp.rotateX(MathUtils.DEG2RAD * this.moon.data.orbitalTilt);
 
     this.group.add(moonGrp);
 
@@ -78,10 +81,6 @@ export class Earth extends Astronomical {
 
     super.render(delta, camera);
     this.moon.render(delta, camera);
-
-    let wp = new THREE.Vector3();
-    this.group.getWorldPosition(wp)
-    this.moon?.group?.lookAt(wp);
 
   }
 }

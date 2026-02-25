@@ -97,7 +97,7 @@ export const moonRawData: AstronomicalRawData = {
     diameterKm: 3474.8,
 
     axialTiltDeg: 6.68,
-    orbitalInclinationDeg: 5.145,
+    orbitalInclinationDeg: -5.145,
 
     orbitalPeriodDays: 27.3217,
     rotationPeriodHours: 655.72,
