@@ -61,6 +61,8 @@ export class Application {
     height: 0,
   };
 
+  private lastDevicePixelRatio = 1;
+
   private isLayoutTransitioning = false;
   private resizeScheduled = false;
   private transitionResizeTimer: number | null = null;
@@ -163,13 +165,21 @@ export class Application {
 
     // SMAA helps smooth thin lines (orbits) when rendering through EffectComposer
     const { width, height } = this.getViewportSize();
+    const dpr = this.getRenderPixelRatio();
     this.smaaPass = new SMAAPass();
-    this.smaaPass.setSize(width, height);
+    // SMAA expects pixel sizes.
+    this.smaaPass.setSize(Math.floor(width * dpr), Math.floor(height * dpr));
 
     this.finalComposer.addPass(renderScene);
     this.finalComposer.addPass(mixPass);
     this.finalComposer.addPass(this.smaaPass);
     this.finalComposer.addPass(outputPass);
+
+    // Ensure the composers start with correct DPI-scaled buffers.
+    this.bloomComposer.setPixelRatio?.(dpr);
+    this.finalComposer.setPixelRatio?.(dpr);
+    this.bloomComposer.setSize(width, height);
+    this.finalComposer.setSize(width, height);
   }
   public static getInstance(): Application {
     if (!Application.instance) {
@@ -301,6 +311,13 @@ export class Application {
   private initWebGLRenderer() {
     const { width, height } = this.getViewportSize();
 
+    // On HiDPI displays (almost all phones), a missing pixel ratio makes the whole scene
+    // look "mushy" because the canvas gets upscaled by CSS.
+    this.lastDevicePixelRatio = this.getRenderPixelRatio();
+    this.webglRenderer.setPixelRatio(this.lastDevicePixelRatio);
+    this.bloomComposer.setPixelRatio?.(this.lastDevicePixelRatio);
+    this.finalComposer.setPixelRatio?.(this.lastDevicePixelRatio);
+
     // Keep the canvas styled by CSS (100% size) and only update the render buffer size here.
     this.webglRenderer.setSize(width, height, false);
     this.lastRenderSize = { width, height };
@@ -318,6 +335,12 @@ export class Application {
     // Blending aktivieren
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+  }
+
+  private getRenderPixelRatio(): number {
+    // Favor sharpness while staying within a sensible mobile budget.
+    // You can bump this to 3 on high-end devices, but 2 is a good default.
+    return Math.min(window.devicePixelRatio || 1, 2);
   }
 
   private initCSS2DRenderer() {
@@ -347,7 +370,7 @@ export class Application {
     const loader = new THREE.TextureLoader();
 
     const backgroundImage = await loader.loadAsync(
-      "/assets/backgrounds/background.jpg",
+      "/assets/backgrounds/4k_background2.jpg",
     );
 
 
@@ -390,6 +413,17 @@ export class Application {
 
     const activeCamera = this.cameraManager.getActiveEntry().camera;
 
+    // Keep pixel ratio in sync (e.g. browser zoom or OS setting changes).
+    const dpr = this.getRenderPixelRatio();
+    if (dpr !== this.lastDevicePixelRatio) {
+      this.lastDevicePixelRatio = dpr;
+      this.webglRenderer.setPixelRatio(dpr);
+      this.bloomComposer.setPixelRatio?.(dpr);
+      this.finalComposer.setPixelRatio?.(dpr);
+      // Force a buffer resize at the next opportunity.
+      this.lastRenderSize = { width: 0, height: 0 };
+    }
+
     // Always keep camera + CSS2D in sync with the *container* size.
     this.cssRenderer.setSize(width, height);
     this.astronomicalManager.setOrbitLineResolution(width, height);
@@ -411,7 +445,8 @@ export class Application {
     this.webglRenderer.setSize(width, height, false);
     this.bloomComposer.setSize(width, height);
     this.finalComposer.setSize(width, height);
-    this.smaaPass?.setSize(width, height);
+    // SMAA expects pixel sizes, not CSS sizes.
+    this.smaaPass?.setSize(Math.floor(width * dpr), Math.floor(height * dpr));
   }
 
   private getViewportSize(): { width: number; height: number } {
@@ -466,11 +501,18 @@ export class Application {
           this.scheduleResize();
           // Then resize heavy WebGL buffers once.
           const { width, height } = this.getViewportSize();
+          const dpr = this.getRenderPixelRatio();
+          if (dpr !== this.lastDevicePixelRatio) {
+            this.lastDevicePixelRatio = dpr;
+            this.webglRenderer.setPixelRatio(dpr);
+            this.bloomComposer.setPixelRatio?.(dpr);
+            this.finalComposer.setPixelRatio?.(dpr);
+          }
           this.lastRenderSize = { width: 0, height: 0 };
           this.webglRenderer.setSize(width, height, false);
           this.bloomComposer.setSize(width, height);
           this.finalComposer.setSize(width, height);
-          this.smaaPass?.setSize(width, height);
+          this.smaaPass?.setSize(Math.floor(width * dpr), Math.floor(height * dpr));
           this.lastRenderSize = { width, height };
         }, 60);
       }

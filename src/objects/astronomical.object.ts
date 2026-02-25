@@ -187,7 +187,8 @@ export class Astronomical implements AstronomicalObject {
     const rect = viewport?.getBoundingClientRect();
     const w = Math.max(1, Math.floor(rect?.width ?? window.innerWidth));
     const h = Math.max(1, Math.floor(rect?.height ?? window.innerHeight));
-    material.resolution.set(w, h);
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    material.resolution.set(Math.floor(w * dpr), Math.floor(h * dpr));
 
     const line = new Line2(geometry, material);
     line.computeLineDistances();

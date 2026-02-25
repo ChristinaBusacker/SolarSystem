@@ -69,18 +69,21 @@ export class AstronomicalManager {
   }
 
   public setOrbitLineResolution(width: number, height: number): void {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const w = Math.floor(width * dpr);
+    const h = Math.floor(height * dpr);
     this.entrys.forEach((entry) => {
       const obj: any = entry.object as any;
       if (obj.marker && obj.marker.material) {
         const m = obj.marker.material as LineMaterial;
-        if (m.resolution) m.resolution.set(width, height);
+        if (m.resolution) m.resolution.set(w, h);
       }
 
       entry.object.moons.forEach((moon) => {
         const mo: any = moon as any;
         if (mo.marker && mo.marker.material) {
           const mm = mo.marker.material as LineMaterial;
-          if (mm.resolution) mm.resolution.set(width, height);
+          if (mm.resolution) mm.resolution.set(w, h);
         }
       });
     });
