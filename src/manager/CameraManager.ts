@@ -7,6 +7,13 @@ export class CameraManager {
   public collection: Array<CameraEntry> = [];
   private activeCamera: CameraEntry;
 
+  // Single, shared input bindings (no listener hell).
+  private inputBound = false;
+  private isPointerDown = false;
+  private touchMode: "none" | "rotate" | "pinch" = "none";
+  private pinchStartDistance = 0;
+  private pinchStartZoom = 0;
+
   constructor(scene: THREE.Scene) {
     let defaultCamera = new THREE.PerspectiveCamera(
       75,
@@ -21,6 +28,145 @@ export class CameraManager {
     scene.add(defaultControl.group);
 
     this.addCamera("Default", defaultCamera, defaultControl);
+  }
+
+  private getInteractiveTarget(target: EventTarget | null): HTMLElement | null {
+    if (!target) return null;
+    const el = target as HTMLElement;
+    if (!el || typeof el.closest !== "function") return null;
+
+    // CSS2D labels
+    const label = el.closest(".object");
+    if (label) return label as HTMLElement;
+
+    // UI overlay + sidebars
+    const ui = el.closest("#ui-root, .sidebar-root");
+    if (ui) return ui as HTMLElement;
+
+    // Native interactive elements
+    const native = el.closest("a, button, input, textarea, select");
+    if (native) return native as HTMLElement;
+
+    return null;
+  }
+
+  private bindInputOnce(): void {
+    if (this.inputBound) return;
+    const app = document.getElementById("app");
+    if (!app) return;
+
+    // Mouse
+    app.addEventListener("mousedown", (e: MouseEvent) => {
+      if (this.getInteractiveTarget(e.target)) return;
+      this.isPointerDown = true;
+      this.activeCamera?.control?.startRotate(e.clientX, e.clientY);
+    });
+
+    app.addEventListener("mousemove", (e: MouseEvent) => {
+      if (!this.isPointerDown) return;
+      this.activeCamera?.control?.moveRotate(e.clientX, e.clientY, 0.8);
+    });
+
+    const endMouse = () => {
+      this.isPointerDown = false;
+      this.activeCamera?.control?.endRotate();
+    };
+    app.addEventListener("mouseup", endMouse);
+    app.addEventListener("mouseleave", endMouse);
+
+    // Wheel zoom (single listener!)
+    app.addEventListener(
+      "wheel",
+      (e: WheelEvent) => {
+        if (this.getInteractiveTarget(e.target)) return;
+        // Prevent the browser page from scrolling on trackpads.
+        e.preventDefault();
+        this.activeCamera?.control?.applyWheel(e.deltaY);
+      },
+      { passive: false },
+    );
+
+    // Touch (Mode 1: 1 finger rotate, 2 finger pinch zoom)
+    app.addEventListener(
+      "touchstart",
+      (e: TouchEvent) => {
+        if (this.getInteractiveTarget(e.target)) return;
+
+        if (e.touches.length === 1) {
+          this.touchMode = "rotate";
+          this.activeCamera?.control?.startRotate(e.touches[0].clientX, e.touches[0].clientY);
+          e.preventDefault();
+          return;
+        }
+
+        if (e.touches.length === 2) {
+          this.touchMode = "pinch";
+          const dx = e.touches[0].clientX - e.touches[1].clientX;
+          const dy = e.touches[0].clientY - e.touches[1].clientY;
+          this.pinchStartDistance = Math.max(1, Math.hypot(dx, dy));
+          this.pinchStartZoom = this.activeCamera?.control?.zoom ?? 0;
+          e.preventDefault();
+        }
+      },
+      { passive: false },
+    );
+
+    app.addEventListener(
+      "touchmove",
+      (e: TouchEvent) => {
+        if (this.getInteractiveTarget(e.target)) return;
+
+        if (this.touchMode === "rotate" && e.touches.length === 1) {
+          this.activeCamera?.control?.moveRotate(e.touches[0].clientX, e.touches[0].clientY, 1.0);
+          e.preventDefault();
+          return;
+        }
+
+        if (this.touchMode === "pinch" && e.touches.length === 2) {
+          const dx = e.touches[0].clientX - e.touches[1].clientX;
+          const dy = e.touches[0].clientY - e.touches[1].clientY;
+          const dist = Math.max(1, Math.hypot(dx, dy));
+          const ratio = dist / this.pinchStartDistance;
+
+          // Spread fingers (ratio>1) => zoom in (zoom decreases).
+          // Pinch fingers (ratio<1) => zoom out (zoom increases).
+          const sensitivity = 0.85;
+          const targetZoom = THREE.MathUtils.clamp(
+            this.pinchStartZoom + (1 / ratio - 1) * sensitivity,
+            0,
+            1,
+          );
+
+          const control = this.activeCamera?.control;
+          if (control) control.zoom = targetZoom;
+
+          e.preventDefault();
+          return;
+        }
+      },
+      { passive: false },
+    );
+
+    const endTouch = (e: TouchEvent) => {
+      const control = this.activeCamera?.control;
+
+      if (e.touches.length === 0) {
+        this.touchMode = "none";
+        control?.endRotate();
+        return;
+      }
+
+      // If we ended a pinch and one finger remains, continue with rotate.
+      if (e.touches.length === 1) {
+        this.touchMode = "rotate";
+        control?.startRotate(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    };
+
+    app.addEventListener("touchend", endTouch, { passive: false });
+    app.addEventListener("touchcancel", endTouch, { passive: false });
+
+    this.inputBound = true;
   }
 
   public addCamera(
@@ -64,6 +210,8 @@ export class CameraManager {
     if (!entry) {
       console.error(`Cant find camera with selector ${selector}`);
     } else {
+      // Stop any drag state before switching.
+      this.activeCamera?.control?.endRotate();
       this.activeCamera = entry;
       APP.updateComposer(entry.camera);
     }
@@ -88,11 +236,12 @@ export class CameraManager {
   }
 
   public initEventControls(): CameraManager {
-    this.activeCamera.control.initEventListener();
+    this.bindInputOnce();
     return this;
   }
 
   public updateControls(delta: number) {
-    this.collection.forEach((entry) => entry.control.update(delta));
+    // Update only the active control to avoid drift and reduce work.
+    this.activeCamera?.control?.update(delta);
   }
 }

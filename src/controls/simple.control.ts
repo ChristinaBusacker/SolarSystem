@@ -1,12 +1,13 @@
 import * as THREE from "three";
-import { APP } from "..";
 
 export class SimpleControl {
   public zoom: number = 0.01;
   public horizontal = new THREE.Group()
   public vertical = new THREE.Group()
   public group = new THREE.Group();
-  public velocity = new THREE.Vector2(0.1, 0)
+  // Smoothed camera rotation velocity.
+  // IMPORTANT: start at 0 to avoid cameras drifting when not active.
+  public velocity = new THREE.Vector2(0, 0)
   private isRotating = false
   public previousMousePosition = new THREE.Vector2(0, 0)
   public dragspeed = 0.90;
@@ -16,80 +17,43 @@ export class SimpleControl {
     this.vertical.add(camera);
     this.horizontal.add(this.vertical);
     this.group.add(this.horizontal);
-
-    window.addEventListener("wheel", this.onWheel)
   }
 
-  public initEventListener() {
-    document.getElementById('app').addEventListener("mousedown", this.onMouseDown);
-    document.getElementById('app').addEventListener("mousemove", this.onMouseMove);
-    document.getElementById('app').addEventListener("mouseup", this.onMouseUp);
-
-    document.getElementById('app').addEventListener("touchstart", this.onTouchStart);
-    document.getElementById('app').addEventListener("touchmove", this.onTouchMove);
-    document.getElementById('app').addEventListener("touchend", this.onTouchEnd);
-  }
-
-  private onTouchStart = (event: TouchEvent) => {
-    event.preventDefault();
-    if (event.touches.length === 1) {
-      this.isRotating = true;
-      this.previousMousePosition.x = event.touches[0].clientX;
-      this.previousMousePosition.y = event.touches[0].clientY;
-    }
-  };
-
-  private onTouchMove = (event: TouchEvent) => {
-    event.preventDefault();
-    if (this.isRotating && event.touches.length === 1) {
-      const deltaMove = new THREE.Vector2(
-        event.touches[0].clientX - this.previousMousePosition.x,
-        event.touches[0].clientY - this.previousMousePosition.y
-      );
-
-      this.rotateCamera(deltaMove);
-
-      this.previousMousePosition.x = event.touches[0].clientX;
-      this.previousMousePosition.y = event.touches[0].clientY;
-    }
-  };
-
-  private onTouchEnd = (event: TouchEvent) => {
-    event.preventDefault();
-    this.isRotating = false;
-  };
-
-  private onMouseDown = (event: MouseEvent) => {
+  /** Begin a rotate gesture (mouse down / touch start). */
+  public startRotate(clientX: number, clientY: number): void {
     this.isRotating = true;
-    this.previousMousePosition.x = event.clientX;
-    this.previousMousePosition.y = event.clientY;
-  };
+    this.previousMousePosition.set(clientX, clientY);
+  }
 
-  private onMouseMove = (event: MouseEvent) => {
-    if (this.isRotating) {
-      const deltaMove = new THREE.Vector2(
-        (event.clientX - this.previousMousePosition.x) * 0.8,
-        (event.clientY - this.previousMousePosition.y) * 0.8
-      );
+  /** Continue rotate gesture. */
+  public moveRotate(clientX: number, clientY: number, scale: number = 0.8): void {
+    if (!this.isRotating) return;
 
-      this.rotateCamera(deltaMove);
+    const deltaMove = new THREE.Vector2(
+      (clientX - this.previousMousePosition.x) * scale,
+      (clientY - this.previousMousePosition.y) * scale,
+    );
 
-      this.previousMousePosition.x = event.clientX;
-      this.previousMousePosition.y = event.clientY;
-    }
-  };
+    this.rotateCamera(deltaMove);
+    this.previousMousePosition.set(clientX, clientY);
+  }
 
-  private onMouseUp = () => {
+  /** End a rotate gesture. */
+  public endRotate(): void {
     this.isRotating = false;
-
-  };
+  }
 
   private rotateCamera(deltaMove: THREE.Vector2) {
     this.velocity = deltaMove
   }
 
-  private onWheel = (event: WheelEvent) => {
-    this.zoom = Math.min(1, Math.max(0, this.zoom + event.deltaY * 0.002 * Math.max(this.zoom, 0.0005)))
+  public applyWheel(deltaY: number): void {
+    // Positive deltaY usually means "scroll down" => zoom out.
+    this.applyZoomDelta(deltaY * 0.002 * Math.max(this.zoom, 0.0005));
+  }
+
+  public applyZoomDelta(delta: number): void {
+    this.zoom = THREE.MathUtils.clamp(this.zoom + delta, 0, 1);
   }
 
   private lerp = (start: number, end: number, t: number) => {

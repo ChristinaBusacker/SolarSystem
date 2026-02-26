@@ -321,7 +321,6 @@ export class Astronomical implements AstronomicalObject {
 
       }
 
-      this.control.initEventListener();
       this.group.add(this.control.group);
 
       APP.cameraManager.addCamera(this.data.slug, this.camera, this.control);
