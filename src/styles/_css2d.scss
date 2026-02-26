@@ -27,3 +27,21 @@
 .object.hide {
   display: none;
 }
+
+.object.hide-collide {
+  display: none;
+}
+
+// Hide only the label text but keep the clickable marker dot.
+.object.hide-label {
+  p {
+    display: none;
+  }
+}
+
+// Optional cluster count shown next to the primary label.
+.object .cluster-count {
+  margin-left: 6px;
+  opacity: 0.75;
+  font-size: 0.85em;
+}

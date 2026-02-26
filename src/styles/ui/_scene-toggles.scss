@@ -72,6 +72,14 @@
   background-image: url("../assets/svgs/icon_orbitOFF.svg");
 }
 
+.scene-toggle--declutter .scene-toggle__icon {
+  background-image: url("../assets/svgs/icon_declutterON.svg");
+}
+
+.scene-toggle--declutter.is-off .scene-toggle__icon {
+  background-image: url("../assets/svgs/icon_declutterOFF.svg");
+}
+
 .scene-toggle:focus-visible {
   outline: 2px solid rgba(255, 255, 255, 0.55);
   outline-offset: 2px;

@@ -5,6 +5,7 @@ import {
   subscribeSceneVisibilityState,
   toggleMarkers,
   toggleOrbits,
+  toggleDeclutterAuto,
 } from "./scene-visibility-state";
 
 export class SceneTogglesRenderer {
@@ -34,8 +35,10 @@ export class SceneTogglesRenderer {
     this.root.innerHTML = renderTemplate(sceneTogglesTpl, {
       markerOffClass: s.markersVisible ? "" : "is-off",
       orbitOffClass: s.orbitsVisible ? "" : "is-off",
+      declutterOffClass: s.declutterAuto ? "" : "is-off",
       markerLabel: s.markersVisible ? "MARKER ON" : "MARKER OFF",
       orbitLabel: s.orbitsVisible ? "ORBITS ON" : "ORBITS OFF",
+      declutterLabel: s.declutterAuto ? "AUTO ON" : "AUTO OFF",
     });
   }
 
@@ -55,6 +58,8 @@ export class SceneTogglesRenderer {
         toggleMarkers();
       } else if (action === "toggle-orbits") {
         toggleOrbits();
+      } else if (action === "toggle-declutter") {
+        toggleDeclutterAuto();
       }
     });
 

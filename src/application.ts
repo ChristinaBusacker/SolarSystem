@@ -71,6 +71,15 @@ export class Application {
 
   private lastDevicePixelRatio = 1;
 
+  // Scene visibility state (mirrors ui/scene-visibility-state).
+  private markersVisible = true;
+  private orbitsVisible = true;
+  private declutterAuto = true;
+
+  // Cheap DOM overlap handling for moon labels.
+  private lastDeclutterLayoutMs = 0;
+  private lastPlanetClusterLayoutMs = 0;
+
   private isLayoutTransitioning = false;
   private resizeScheduled = false;
   private transitionResizeTimer: number | null = null;
@@ -290,7 +299,10 @@ export class Application {
         overlay.classList.toggle("markers-on", v.markersVisible);
       }
 
-      this.astronomicalManager.setOrbitsVisible(v.orbitsVisible);
+      // Mirror state for per-frame declutter rules.
+      this.markersVisible = v.markersVisible;
+      this.orbitsVisible = v.orbitsVisible;
+      this.declutterAuto = v.declutterAuto;
     });
   }
 
@@ -303,6 +315,14 @@ export class Application {
     if (route.name === "home") {
       this.cameraManager.switchCamera("Default");
       this.uiRight?.setSelectedBodyName(undefined);
+
+      // Apply declutter immediately to avoid a one-frame flash of labels.
+      this.astronomicalManager.applyDeclutterVisibility({
+        camera: this.cameraManager.getActiveEntry().camera,
+        markersVisible: this.markersVisible,
+        orbitsVisible: this.orbitsVisible,
+        declutterAuto: this.declutterAuto,
+      });
       return;
     }
 
@@ -311,6 +331,14 @@ export class Application {
 
     this.cameraManager.switchCamera(bodyName);
     this.uiRight?.setSelectedBodyName(bodyName);
+
+    // Apply declutter immediately to avoid a one-frame flash of labels.
+    this.astronomicalManager.applyDeclutterVisibility({
+      camera: this.cameraManager.getActiveEntry().camera,
+      markersVisible: this.markersVisible,
+      orbitsVisible: this.orbitsVisible,
+      declutterAuto: this.declutterAuto,
+    });
 
     // Show info panel when a body is selected.
     openSidebar("right");
@@ -343,6 +371,193 @@ export class Application {
     // Blending aktivieren
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+  }
+
+  /**
+   * DOM-based collision avoidance for CSS2D moon labels.
+   *
+   * This is intentionally lightweight (low frequency) and only kicks in when
+   * auto-declutter is enabled.
+   */
+  private applyMoonLabelCollisionAvoidance(): void {
+    if (!this.declutterAuto || !this.markersVisible) return;
+
+    const now = performance.now();
+    if (now - this.lastDeclutterLayoutMs < 250) return;
+    this.lastDeclutterLayoutMs = now;
+
+    const overlay = this.cssRenderer?.domElement as HTMLElement | undefined;
+    if (!overlay) return;
+
+    const toSlug = (v: string): string => (v || "").toLowerCase();
+    const route: AppRoute = router.getCurrent();
+
+    let focusSlug: string | null = null;
+    let selectedMoonSlug: string | null = null;
+
+    if (route.name === "planet") {
+      focusSlug = toSlug(route.planet);
+    } else if (route.name === "moon") {
+      selectedMoonSlug = toSlug(route.moon);
+      const moonEl = overlay.querySelector<HTMLElement>(`.object.moon.${selectedMoonSlug}`);
+      if (moonEl) {
+        const blacklist = new Set(["object", "moon", selectedMoonSlug]);
+        const parent = Array.from(moonEl.classList).find((c) => !blacklist.has(c));
+        if (parent) focusSlug = parent;
+      }
+    } else {
+      return;
+    }
+
+    if (!focusSlug) return;
+
+    const moonEls = Array.from(
+      overlay.querySelectorAll<HTMLElement>(`.object.moon.${focusSlug}:not(.hide)`),
+    );
+
+    if (moonEls.length < 2) return;
+
+    // Reset collision hides.
+    moonEls.forEach((el) => el.classList.remove("hide-collide"));
+
+    // Prefer to keep the currently selected moon visible.
+    if (selectedMoonSlug) {
+      moonEls.sort((a, b) => {
+        const aSel = a.classList.contains(selectedMoonSlug) ? -1 : 0;
+        const bSel = b.classList.contains(selectedMoonSlug) ? -1 : 0;
+        return aSel - bSel;
+      });
+    }
+
+    const kept: DOMRect[] = [];
+    const margin = 6;
+    const intersects = (a: DOMRect, b: DOMRect): boolean => {
+      return !(
+        a.right + margin < b.left ||
+        a.left - margin > b.right ||
+        a.bottom + margin < b.top ||
+        a.top - margin > b.bottom
+      );
+    };
+
+    for (const el of moonEls) {
+      const r = el.getBoundingClientRect();
+      if (r.width <= 0 || r.height <= 0) continue;
+
+      if (kept.some((k) => intersects(r, k))) {
+        el.classList.add("hide-collide");
+      } else {
+        kept.push(r);
+      }
+    }
+  }
+
+  /**
+   * Overview label clustering for planets + dwarf planets.
+   *
+   * In wide shots, inner planet labels pile up in the center. We keep the marker dots visible/clickable,
+   * but hide overlapping *text* labels and append a small "+N" indicator to the kept label.
+   */
+  private applyPlanetLabelClustering(activeCamera: THREE.PerspectiveCamera): void {
+    if (!this.declutterAuto || !this.markersVisible) return;
+
+    const route: AppRoute = router.getCurrent();
+    if (route.name !== "home") return;
+
+    const now = performance.now();
+    if (now - this.lastPlanetClusterLayoutMs < 250) return;
+    this.lastPlanetClusterLayoutMs = now;
+
+    const overlay = this.cssRenderer?.domElement as HTMLElement | undefined;
+    if (!overlay) return;
+
+    const { width, height } = this.getViewportSize();
+    if (width < 2 || height < 2) return;
+
+    const planetEls = Array.from(overlay.querySelectorAll<HTMLElement>(`.object.planet:not(.hide)`));
+    if (planetEls.length < 2) return;
+
+    // Reset previous clustering state.
+    for (const el of planetEls) {
+      el.classList.remove("hide-label");
+      const p = el.querySelector<HTMLParagraphElement>("p");
+      if (!p) continue;
+      const base = p.dataset.baseLabel || p.textContent || "";
+      p.textContent = base;
+    }
+
+    const priorityOrder = [
+      "sun",
+      "mercury",
+      "venus",
+      "earth",
+      "mars",
+      "jupiter",
+      "saturn",
+      "uranus",
+      "neptune",
+      // dwarfs (lower priority)
+      "ceres",
+      "pluto",
+      "haumea",
+      "makemake",
+      "eris",
+    ];
+    const prio = new Map(priorityOrder.map((s, idx) => [s, idx]));
+
+    // IMPORTANT: cluster based on the *actual text label* DOM rect, not the dot position.
+    // Otherwise the label can overlap even when the dots are slightly apart.
+    type Item = { el: HTMLElement; slug: string; prio: number; p: HTMLParagraphElement; rect: DOMRect };
+    const items: Item[] = [];
+
+    for (const el of planetEls) {
+      const p = el.querySelector<HTMLParagraphElement>("p");
+      if (!p) continue;
+      const slug = priorityOrder.find((s) => el.classList.contains(s));
+      if (!slug) continue;
+      const r = p.getBoundingClientRect();
+      if (r.width <= 0 || r.height <= 0) continue;
+      items.push({ el, slug, prio: prio.get(slug) ?? 999, p, rect: r });
+    }
+
+    if (items.length < 2) return;
+    items.sort((a, b) => a.prio - b.prio);
+
+    const margin = 10; // px padding around label rectangles
+    const intersects = (a: DOMRect, b: DOMRect): boolean => {
+      return !(
+        a.right + margin < b.left ||
+        a.left - margin > b.right ||
+        a.bottom + margin < b.top ||
+        a.top - margin > b.bottom
+      );
+    };
+
+    const clusters: Array<{ leader: Item; hiddenCount: number }> = [];
+
+    for (const it of items) {
+      // Find a cluster whose leader label overlaps with this label.
+      const hit = clusters.find((c) => intersects(it.rect, c.leader.rect));
+      if (!hit) {
+        clusters.push({ leader: it, hiddenCount: 0 });
+        continue;
+      }
+
+      // Hide only the text label for lower-priority items.
+      it.el.classList.add("hide-label");
+      hit.hiddenCount += 1;
+    }
+
+    for (const c of clusters) {
+      if (c.hiddenCount <= 0) continue;
+      const p = c.leader.p;
+      const base = p.dataset.baseLabel || p.textContent || "";
+      p.textContent = base;
+      const span = document.createElement("span");
+      span.className = "cluster-count";
+      span.textContent = `+${c.hiddenCount}`;
+      p.appendChild(span);
+    }
   }
 
   private getRenderPixelRatio(): number {
@@ -680,6 +895,14 @@ export class Application {
     this.astronomicalManager.render(deltaTime, camera, this.scene);
     this.minorBodyManager.render(deltaTime);
 
+    // Apply cinematic declutter rules before rendering (affects bloom + final passes).
+    this.astronomicalManager.applyDeclutterVisibility({
+      camera,
+      markersVisible: this.markersVisible,
+      orbitsVisible: this.orbitsVisible,
+      declutterAuto: this.declutterAuto,
+    });
+
     // Exclude sky from bloom pass for a clean, NASA-like look.
     if (this.starfield) this.starfield.visible = false;
 
@@ -694,6 +917,11 @@ export class Application {
     this.finalComposer.render(deltaTime);
 
     this.cssRenderer.render(this.scene, camera);
+
+    // Cheap overlap avoidance for moon labels (only when declutter is enabled).
+    // Runs at a low frequency to avoid layout thrash.
+    this.applyMoonLabelCollisionAvoidance();
+    this.applyPlanetLabelClustering(camera);
 
     this.cameraManager.updateControls(deltaTime);
 

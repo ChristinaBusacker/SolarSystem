@@ -1,11 +1,15 @@
 export interface SceneVisibilityState {
   markersVisible: boolean;
   orbitsVisible: boolean;
+  /** Automatically reduce orbit/label clutter based on selection + zoom. */
+  declutterAuto: boolean;
 }
 
 let state: SceneVisibilityState = {
   markersVisible: true,
   orbitsVisible: true,
+  // Cinematic default.
+  declutterAuto: true,
 };
 
 const listeners = new Set<(s: SceneVisibilityState) => void>();
@@ -25,7 +29,8 @@ export function subscribeSceneVisibilityState(
 function commit(next: SceneVisibilityState): void {
   if (
     next.markersVisible === state.markersVisible &&
-    next.orbitsVisible === state.orbitsVisible
+    next.orbitsVisible === state.orbitsVisible &&
+    next.declutterAuto === state.declutterAuto
   ) {
     return;
   }
@@ -49,4 +54,12 @@ export function setOrbitsVisible(visible: boolean): void {
 
 export function toggleOrbits(): void {
   setOrbitsVisible(!state.orbitsVisible);
+}
+
+export function setDeclutterAuto(enabled: boolean): void {
+  commit({ ...state, declutterAuto: enabled });
+}
+
+export function toggleDeclutterAuto(): void {
+  setDeclutterAuto(!state.declutterAuto);
 }
