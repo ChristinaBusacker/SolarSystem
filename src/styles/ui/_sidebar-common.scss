@@ -26,6 +26,12 @@
     opacity 220ms ease,
     transform 220ms ease;
   will-change: opacity, transform;
+
+  // Custom scrollbar palette (progressive enhancement).
+  --sidebar-scrollbar-track: rgba(0, 0, 0, 0.32);
+  --sidebar-scrollbar-thumb: rgba(255, 255, 255, 0.16);
+  --sidebar-scrollbar-thumb-hover: rgba(255, 255, 255, 0.24);
+  --sidebar-scrollbar-thumb-active: rgba(255, 255, 255, 0.32);
 }
 
 // Left sidebar slides in from the left.
@@ -101,6 +107,41 @@
   overflow: auto;
   overscroll-behavior: contain;
   touch-action: pan-y;
+
+
+  // Scrollbar styling
+  // - Firefox: scrollbar-color/scrollbar-width
+  // - Chrome/Safari/Opera/Samsung Internet: ::-webkit-scrollbar
+  // Note: iOS uses overlay scrollbars that may ignore styling.
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--sidebar-scrollbar-thumb) var(--sidebar-scrollbar-track);
+
+  &::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--sidebar-scrollbar-track);
+    border-radius: 999px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--sidebar-scrollbar-thumb);
+    border-radius: 999px;
+    border: 2px solid var(--sidebar-scrollbar-track);
+    background-clip: padding-box;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: var(--sidebar-scrollbar-thumb-hover);
+  }
+
+  &::-webkit-scrollbar-thumb:active {
+    background-color: var(--sidebar-scrollbar-thumb-active);
+  }
+
 }
 
 .ui-section {
