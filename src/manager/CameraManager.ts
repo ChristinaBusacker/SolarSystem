@@ -219,8 +219,16 @@ export class CameraManager {
 
       // Home view should always come up fully zoomed out.
       if (selector === "Default") {
-        this.activeCamera.control.zoom = 1;
-        this.activeCamera.control.snapToZoom();
+        const control = this.activeCamera.control;
+        const cam = this.activeCamera.camera;
+
+        control.velocity.set(0, 0);
+
+        // Start mid-ish, then ease out to zoom=1 via update()
+        const mid = THREE.MathUtils.lerp(control.distanceMin, control.distanceMax, 0.55);
+        cam.position.set(0, 0, mid);
+
+        control.zoom = 1;
       }
 
       APP.updateComposer(entry.camera);

@@ -52,17 +52,17 @@ export class SimpleControl {
   }
 
   public applyWheel(deltaY: number): void {
-    // Positive deltaY usually means "scroll down" => zoom out.
-    this.applyZoomDelta(deltaY * 0.002 * Math.max(this.zoom, 0.0005));
+    // Never scale wheel delta so hard that it can't escape zoom=0.
+    const speed = 0.0012 * (0.15 + this.zoom); // still finer when zoomed-in, but never 0
+    this.applyZoomDelta(deltaY * speed);
   }
 
   public applyZoomDelta(delta: number): void {
     this.zoom = THREE.MathUtils.clamp(this.zoom + delta, 0, 1);
 
-    // Snap to endpoints to avoid long "easing" tails that can cause distant precision artifacts.
-    if (this.zoom > 0.995) this.zoom = 1;
-    if (this.zoom < 0.005) this.zoom = 0;
-    if (this.zoom === 0 || this.zoom === 1) this.snapToZoom();
+    // Optional endpoint snapping, but tiny epsilon so the wheel can move away from endpoints.
+    if (this.zoom > 0.9995) this.zoom = 1;
+    if (this.zoom < 0.0005) this.zoom = 0;
   }
 
   private lerp = (start: number, end: number, t: number) => {
