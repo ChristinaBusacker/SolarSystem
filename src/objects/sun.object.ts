@@ -25,6 +25,10 @@ export class Sun extends Astronomical {
     baseOpacity: number;
   }> = [];
 
+  // Number of flare elements that are anchored on the sun itself (distance=0).
+  // These should stay visible more often than the ghost chain.
+  private flareCoreCount = 0;
+
   private lensflareFinalVisible = true;
   private readonly tmpSunNdc = new THREE.Vector3();
 
@@ -161,28 +165,39 @@ export class Sun extends Astronomical {
       return el;
     };
 
-    // Core right on the sun (small corona, crisp rays)
-    add(texCore, 220, 0.0, 0xfff1d6, 1.0);
+    // Core right on the sun (tight and warm)
+    add(texCore, 240, 0.0, 0xfff2d0, 1.0);
 
-    // Smear/streak (we rotate it each frame toward screen center)
-    this.smearElement = add(texSmear, 760, 0.0, 0xfff1d6, 0.35);
+    // A faint halo ring around the sun itself (helps "there is something" even near center)
+    add(texRing, 420, 0.0, 0xffe6b8, 0.16);
 
-    // Ghost chain toward screen center (subtle!)
-    add(texGhost, 140, 0.18, 0xbfe7ff, 0.22);
-    add(texGhost, 220, 0.33, 0xffd7ff, 0.18);
-    add(texRing, 360, 0.48, 0xffe0b0, 0.16);
-    add(texGhost, 300, 0.68, 0xffffff, 0.11);
-    add(texGhost, 520, 0.92, 0xffffff, 0.07);
+    // Smear/streak (rotated each frame toward screen center)
+    this.smearElement = add(texSmear, 820, 0.0, 0xfff2d0, 0.28);
+
+    // Ghost chain toward screen center (warm + subtle, not milky overlays)
+    add(texGhost, 120, 0.18, 0xfff7ea, 0.10);
+    add(texRing, 220, 0.30, 0xffe9c6, 0.10);
+    add(texGhost, 210, 0.42, 0xffd9a6, 0.08);
+    add(texRing, 340, 0.58, 0xfff1d6, 0.07);
+    add(texGhost, 280, 0.72, 0xffffff, 0.05);
+    add(texGhost, 520, 0.92, 0xffffff, 0.03);
+
+    // Remember how many elements belong to the "core" group (core + halo + smear).
+    // Everything after that is considered part of the ghost chain.
+    this.flareCoreCount = 3;
 
     this.group.add(this.lensflare);
   }
 
   public override preBloom(): void {
     if (this.lensflare) this.lensflare.visible = false;
+    // The additive "always visible" glow can massively boost bloom and make the sun look like a flashbang.
+    if (this.minVisibleSprite) this.minVisibleSprite.visible = false;
   }
 
   public override postBloom(): void {
     if (this.lensflare) this.lensflare.visible = this.lensflareFinalVisible;
+    if (this.minVisibleSprite) this.minVisibleSprite.visible = true;
   }
 
 
@@ -238,9 +253,17 @@ export class Sun extends Astronomical {
       const distFromCenter = Math.sqrt(this.tmpSunNdc.x * this.tmpSunNdc.x + this.tmpSunNdc.y * this.tmpSunNdc.y);
 
       // Fade out when near edges / off-screen
-      const onScreen = inFront && Math.abs(this.tmpSunNdc.x) < 1.25 && Math.abs(this.tmpSunNdc.y) < 1.25;
-      const edgeFade = THREE.MathUtils.smoothstep(1.05, 0.25, distFromCenter);
-      const intensity = onScreen ? edgeFade : 0;
+      const onScreen = inFront && Math.abs(this.tmpSunNdc.x) < 1.35 && Math.abs(this.tmpSunNdc.y) < 1.35;
+
+      // NOTE: MathUtils.smoothstep signature is smoothstep(x, min, max)
+      // We want:
+      // - a small but always-present core glint (even near screen center)
+      // - ghosts/rings become stronger toward the edges, but start earlier than before
+      const edgeFade = THREE.MathUtils.smoothstep(distFromCenter, 0.05, 1.10); // 0 center -> 1 edges
+      const ghostGate = THREE.MathUtils.smoothstep(distFromCenter, 0.03, 0.18); // allow ghosts closer to center
+
+      const coreIntensity = onScreen ? THREE.MathUtils.clamp(0.22 + 0.78 * edgeFade, 0, 1) : 0;
+      const ghostIntensity = onScreen ? edgeFade * ghostGate : 0;
 
       // Rotate smear to align with "sun -> screen center"
       if (this.smearElement) {
@@ -248,18 +271,25 @@ export class Sun extends Astronomical {
         (this.smearElement as any).rotation = ang;
       }
 
-      const globalStrength = 0.85; // master knob
+      const globalStrength = 0.65; // master knob (cinematic, not a supernova)
 
-      for (const p of this.flareParts) {
-        p.el.size = p.baseSize * (0.75 + intensity * 0.25);
-        p.el.color.copy(p.baseColor).multiplyScalar(globalStrength * intensity);
+      for (let i = 0; i < this.flareParts.length; i++) {
+        const p = this.flareParts[i];
+
+        const isCore = i < this.flareCoreCount;
+        const t = isCore ? coreIntensity : ghostIntensity;
+        const sizeScale = isCore ? (0.85 + 0.15 * t) : (0.25 + 0.75 * t);
+
+        p.el.size = p.baseSize * sizeScale;
+        p.el.color.copy(p.baseColor).multiplyScalar(globalStrength * t);
 
         if ("opacity" in (p.el as any)) {
-          (p.el as any).opacity = p.baseOpacity * intensity;
+          (p.el as any).opacity = p.baseOpacity * t;
         }
       }
 
-      this.lensflareFinalVisible = intensity > 0.001;
+      // Keep lensflare alive as long as the core is visible.
+      this.lensflareFinalVisible = coreIntensity > 0.01;
       this.lensflare.visible = this.lensflareFinalVisible;
     }
 
