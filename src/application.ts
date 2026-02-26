@@ -371,7 +371,9 @@ export class Application {
       uniforms,
       vertexShader: starfieldPointsShader.vertexShader,
       fragmentShader: starfieldPointsShader.fragmentShader,
-      transparent: true,
+      // Important: keep the starfield out of the "transparent" render list.
+      // Otherwise it gets drawn *after* planets/orbits and can look like it shines through.
+      transparent: false,
       depthWrite: false,
       depthTest: false,
       blending: THREE.AdditiveBlending,
@@ -662,8 +664,10 @@ export class Application {
       camera.getWorldPosition(this.tmpWorldPos);
       this.starfield.position.copy(this.tmpWorldPos);
 
+      // Don't scale the starfield with huge far planes (some cameras go up to ~90M).
+      // Extremely large radii hurt precision and can cause artifacts.
       const far = (camera as any).far ?? 5000;
-      const desiredRadius = Math.max(200, far * 0.95);
+      const desiredRadius = Math.min(5000, Math.max(200, far * 0.95));
       this.starfield.scale.setScalar(desiredRadius);
     }
     if (this.starfieldMaterial?.uniforms?.uTime) {

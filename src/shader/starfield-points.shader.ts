@@ -36,7 +36,8 @@ export const starfieldPointsShader: ShaderDefinition = {
       // gl_PointSize is in pixels.
       // Keep stars crisp on high DPI by scaling with pixel ratio.
       float sizePx = aSize * uSizeMul * uPixelRatio;
-      gl_PointSize = sizePx;
+      // Avoid sub-pixel sizes (they shimmer heavily when the camera moves).
+      gl_PointSize = max(sizePx, 1.0);
     }
   `,
   fragmentShader: `
@@ -54,19 +55,15 @@ export const starfieldPointsShader: ShaderDefinition = {
       vec2 p = gl_PointCoord - 0.5;
       float r = length(p);
 
-      // Soft circular falloff.
-      // The 0.5 radius is the edge of the sprite.
-      float core = smoothstep(0.5, 0.0, r);
-      // Gentle halo for larger stars.
-      float halo = smoothstep(0.5, 0.0, r) * 0.35;
+      // Anti-aliased circular sprite.
+      // We fade the edge instead of hard-discarding at exactly 0.5 to reduce "sparkle" during camera motion.
+      float edge = smoothstep(0.55, 0.45, r);
+      float core = smoothstep(0.45, 0.0, r);
+      float halo = smoothstep(0.55, 0.0, r) * 0.22;
 
-      // Subtle twinkle (only affects brightness a bit).
-      float tw = 0.92 + 0.08 * sin(uTime * 0.7 + vAlpha * 6.2831853);
-
-      float a = clamp((core + halo) * vAlpha * tw, 0.0, 1.0);
-
-      // Hard discard outside the circle to avoid square sprites.
-      if (r > 0.5) discard;
+      // Stars in space don't twinkle. (Atmosphere is for planets, not your skybox.)
+      float a = clamp((core + halo) * vAlpha, 0.0, 1.0) * edge;
+      if (a < 0.002) discard;
 
       // With additive blending (SRC_ALPHA, ONE) the GPU will multiply the RGB by alpha.
       gl_FragColor = vec4(vColor, a);
