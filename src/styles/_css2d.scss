@@ -28,6 +28,14 @@
   display: none;
 }
 
+.object.is-cluster-hidden p {
+  display: none;
+}
+
+.object.is-cluster-anchor p {
+  font-weight: 700;
+}
+
 .object.hide-collide {
   display: none;
 }

@@ -88,6 +88,9 @@ export class Application {
 
   private uiRight?: UiRenderer;
 
+  // Current selection derived from the router (used for declutter logic).
+  private currentSelectedBodySlug?: string;
+
   private constructor() {
     window.addEventListener("resize", () => this.scheduleResize());
 
@@ -315,6 +318,7 @@ export class Application {
     if (route.name === "home") {
       this.cameraManager.switchCamera("Default");
       this.uiRight?.setSelectedBodyName(undefined);
+      this.currentSelectedBodySlug = undefined;
 
       // Apply declutter immediately to avoid a one-frame flash of labels.
       this.astronomicalManager.applyDeclutterVisibility({
@@ -331,6 +335,7 @@ export class Application {
 
     this.cameraManager.switchCamera(bodyName);
     this.uiRight?.setSelectedBodyName(bodyName);
+    this.currentSelectedBodySlug = undefined;
 
     // Apply declutter immediately to avoid a one-frame flash of labels.
     this.astronomicalManager.applyDeclutterVisibility({
@@ -864,6 +869,142 @@ export class Application {
     });
   }
 
+
+  private applyCss2dLabelClustering(): void {
+    // Only do aggressive clustering in the overview (no selected body).
+    if (this.currentSelectedBodySlug) return;
+
+    const overlay = this.cssRenderer?.domElement as HTMLElement | undefined;
+    if (!overlay) return;
+
+    const objs = Array.from(overlay.querySelectorAll<HTMLElement>(".object"));
+    if (!objs.length) return;
+
+    // Reset previous clustering.
+    for (const el of objs) {
+      el.classList.remove("is-cluster-hidden", "is-cluster-anchor");
+      const p = el.querySelector<HTMLParagraphElement>("p");
+      if (!p) continue;
+      const base = (p.dataset.baseLabel ?? p.textContent ?? "").trim();
+      if (!p.dataset.baseLabel) p.dataset.baseLabel = base;
+      p.textContent = base;
+    }
+
+    type Candidate = {
+      el: HTMLElement;
+      p: HTMLParagraphElement;
+      rect: DOMRect;
+      prio: number;
+    };
+
+    const alwaysKeep = new Set([
+      "Sun",
+      "Mercury",
+      "Venus",
+      "Earth",
+      "Mars",
+      "Jupiter",
+      "Saturn",
+      "Uranus",
+      "Neptune",
+      "Ceres",
+      "Pluto",
+      "Haumea",
+      "Makemake",
+      "Eris",
+    ]);
+
+    const getPrio = (el: HTMLElement): number => {
+      const body = el.dataset.body ?? "";
+      const kind = el.dataset.kind ?? "";
+
+      if (body === "Sun" || el.classList.contains("sun")) return 1000;
+
+      if (kind === "planet") {
+        if (
+          [
+            "Mercury",
+            "Venus",
+            "Earth",
+            "Mars",
+            "Jupiter",
+            "Saturn",
+            "Uranus",
+            "Neptune",
+          ].includes(body)
+        )
+          return 900;
+        if (["Ceres", "Pluto", "Haumea", "Makemake", "Eris"].includes(body)) return 850;
+        return 800;
+      }
+
+      if (kind === "moon") return 300;
+      return 0;
+    };
+
+    const candidates: Candidate[] = [];
+
+    for (const el of objs) {
+      const body = el.dataset.body ?? "";
+      if (!alwaysKeep.has(body)) continue;
+
+      const style = window.getComputedStyle(el);
+      if (style.display === "none" || style.visibility === "hidden") continue;
+
+      const p = el.querySelector<HTMLParagraphElement>("p");
+      if (!p) continue;
+
+      const r = p.getBoundingClientRect();
+      if (r.width < 2 || r.height < 2) continue;
+
+      candidates.push({ el, p, rect: r, prio: getPrio(el) });
+    }
+
+    // Sort by priority (higher first), so we keep important labels and hide the rest.
+    candidates.sort((a, b) => b.prio - a.prio);
+
+    const margin = 10; // px padding around text rects
+    const overlaps = (a: DOMRect, b: DOMRect): boolean => {
+      return !(
+        a.right + margin < b.left ||
+        a.left - margin > b.right ||
+        a.bottom + margin < b.top ||
+        a.top - margin > b.bottom
+      );
+    };
+
+    const kept: Candidate[] = [];
+    const counts = new Map<HTMLElement, number>();
+
+    for (const c of candidates) {
+      let anchor: Candidate | undefined;
+      for (const k of kept) {
+        if (overlaps(c.rect, k.rect)) {
+          anchor = k;
+          break;
+        }
+      }
+
+      if (!anchor) {
+        kept.push(c);
+        continue;
+      }
+
+      // Hide this label text but keep marker dot.
+      c.el.classList.add("is-cluster-hidden");
+      counts.set(anchor.el, (counts.get(anchor.el) ?? 0) + 1);
+    }
+
+    // Update anchor labels with +N.
+    for (const k of kept) {
+      const n = counts.get(k.el) ?? 0;
+      if (n <= 0) continue;
+      k.el.classList.add("is-cluster-anchor");
+      const base = (k.p.dataset.baseLabel ?? k.p.textContent ?? "").trim();
+      k.p.textContent = `${base}`;
+    }
+  }
+
   public animate() {
     const deltaTime = this.clock.getDelta();
     const camera = this.cameraManager.getActiveEntry().camera;
@@ -917,6 +1058,7 @@ export class Application {
     this.finalComposer.render(deltaTime);
 
     this.cssRenderer.render(this.scene, camera);
+    this.applyCss2dLabelClustering();
 
     // Cheap overlap avoidance for moon labels (only when declutter is enabled).
     // Runs at a low frequency to avoid layout thrash.

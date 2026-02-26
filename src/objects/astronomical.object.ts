@@ -401,7 +401,6 @@ export class Astronomical implements AstronomicalObject {
     let p = document.createElement("p");
     p.style.color = "white";
     p.innerText = this.data.name;
-    // Keep a stable base label for declutter/clustering adjustments.
     p.dataset.baseLabel = this.data.name;
     div.appendChild(p);
 
