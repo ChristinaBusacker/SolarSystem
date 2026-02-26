@@ -4,7 +4,7 @@ import { sunRawData } from "../../data/raw-object.data";
 import { coronaShader } from "../shader/corona";
 import { sunShader } from "../shader/sun.shader";
 import { Astronomical } from "./astronomical.object";
-
+import { Lensflare, LensflareElement } from "three/examples/jsm/objects/Lensflare";
 export class Sun extends Astronomical {
   public cameraPosition = new THREE.Vector3(10, 10, 10);
   private coronaShaderMaterial: THREE.ShaderMaterial;
@@ -14,6 +14,19 @@ export class Sun extends Astronomical {
   private readonly tmpCamPos = new THREE.Vector3();
   private readonly tmpSunPos = new THREE.Vector3();
   private readonly tmpViewport = new THREE.Vector2();
+
+  private lensflare?: Lensflare;
+  private smearElement?: LensflareElement;
+
+  private flareParts: Array<{
+    el: LensflareElement;
+    baseColor: THREE.Color;
+    baseSize: number;
+    baseOpacity: number;
+  }> = [];
+
+  private lensflareFinalVisible = true;
+  private readonly tmpSunNdc = new THREE.Vector3();
 
 
   private static createGlowTexture(): THREE.Texture {
@@ -83,6 +96,8 @@ export class Sun extends Astronomical {
     coronaMesh.renderOrder = 1;
     this.group.add(coronaMesh);
 
+    this.initLensflare();
+
 
     // Small additive glow sprite so the Sun stays visible in wide shots.
     const glowTex = Sun.createGlowTexture();
@@ -101,6 +116,73 @@ export class Sun extends Astronomical {
     // Render early so planets can still occlude it via depth.
     this.minVisibleSprite.renderOrder = -10;
     this.group.add(this.minVisibleSprite);
+  }
+
+  public initLensflare() {
+    const loader = new THREE.TextureLoader();
+
+    const loadFlare = (path: string): THREE.Texture => {
+      const t = loader.load(path);
+      t.colorSpace = THREE.SRGBColorSpace;
+      t.minFilter = THREE.LinearFilter;
+      t.magFilter = THREE.LinearFilter;
+      t.generateMipmaps = false;
+      return t;
+    };
+
+    const texCore = loadFlare("/assets/lensflare/flare_core_tight.png");
+    const texSmear = loadFlare("/assets/lensflare/flare_smear.png");
+    const texGhost = loadFlare("/assets/lensflare/flare_ghost.png");
+    const texRing = loadFlare("/assets/lensflare/flare_ring.png");
+
+    this.lensflare = new Lensflare();
+    this.lensflare.renderOrder = 999;
+    (this.lensflare as any).frustumCulled = false;
+
+    const add = (
+      tex: THREE.Texture,
+      size: number,
+      distance: number,
+      colorHex: number,
+      opacity: number,
+    ): LensflareElement => {
+      const el = new LensflareElement(tex, size, distance, new THREE.Color(colorHex));
+      // Some Three versions expose opacity/rotation, others don't. Safe-cast.
+      (el as any).opacity = opacity;
+      (el as any).rotation = 0;
+
+      this.lensflare!.addElement(el);
+      this.flareParts.push({
+        el,
+        baseColor: new THREE.Color(colorHex),
+        baseSize: size,
+        baseOpacity: opacity,
+      });
+      return el;
+    };
+
+    // Core right on the sun (small corona, crisp rays)
+    add(texCore, 220, 0.0, 0xfff1d6, 1.0);
+
+    // Smear/streak (we rotate it each frame toward screen center)
+    this.smearElement = add(texSmear, 760, 0.0, 0xfff1d6, 0.35);
+
+    // Ghost chain toward screen center (subtle!)
+    add(texGhost, 140, 0.18, 0xbfe7ff, 0.22);
+    add(texGhost, 220, 0.33, 0xffd7ff, 0.18);
+    add(texRing, 360, 0.48, 0xffe0b0, 0.16);
+    add(texGhost, 300, 0.68, 0xffffff, 0.11);
+    add(texGhost, 520, 0.92, 0xffffff, 0.07);
+
+    this.group.add(this.lensflare);
+  }
+
+  public override preBloom(): void {
+    if (this.lensflare) this.lensflare.visible = false;
+  }
+
+  public override postBloom(): void {
+    if (this.lensflare) this.lensflare.visible = this.lensflareFinalVisible;
   }
 
 
@@ -122,6 +204,7 @@ export class Sun extends Astronomical {
       mat.uniforms.cameraFar.value = activeCamera.far;
     }
 
+
     // Enforce a minimum on-screen size for the glow sprite.
     if (this.minVisibleSprite) {
       // tmpCamPos is already updated above (shader uniform sync), but keep this safe.
@@ -142,6 +225,42 @@ export class Sun extends Astronomical {
       // Only grow when the Sun becomes too small, and cap to avoid giant quads.
       const finalWorld = Math.min(dist * 0.06, Math.max(baseWorld, requiredWorld));
       this.minVisibleSprite.scale.set(finalWorld, finalWorld, 1);
+    }
+
+
+
+    if (this.lensflare) {
+      // Sun position in NDC (-1..1)
+      this.group.getWorldPosition(this.tmpSunPos);
+      this.tmpSunNdc.copy(this.tmpSunPos).project(activeCamera);
+
+      const inFront = this.tmpSunNdc.z > 0 && this.tmpSunNdc.z < 1;
+      const distFromCenter = Math.sqrt(this.tmpSunNdc.x * this.tmpSunNdc.x + this.tmpSunNdc.y * this.tmpSunNdc.y);
+
+      // Fade out when near edges / off-screen
+      const onScreen = inFront && Math.abs(this.tmpSunNdc.x) < 1.25 && Math.abs(this.tmpSunNdc.y) < 1.25;
+      const edgeFade = THREE.MathUtils.smoothstep(1.05, 0.25, distFromCenter);
+      const intensity = onScreen ? edgeFade : 0;
+
+      // Rotate smear to align with "sun -> screen center"
+      if (this.smearElement) {
+        const ang = Math.atan2(-this.tmpSunNdc.y, -this.tmpSunNdc.x);
+        (this.smearElement as any).rotation = ang;
+      }
+
+      const globalStrength = 0.85; // master knob
+
+      for (const p of this.flareParts) {
+        p.el.size = p.baseSize * (0.75 + intensity * 0.25);
+        p.el.color.copy(p.baseColor).multiplyScalar(globalStrength * intensity);
+
+        if ("opacity" in (p.el as any)) {
+          (p.el as any).opacity = p.baseOpacity * intensity;
+        }
+      }
+
+      this.lensflareFinalVisible = intensity > 0.001;
+      this.lensflare.visible = this.lensflareFinalVisible;
     }
 
     super.render(delta, activeCamera);
