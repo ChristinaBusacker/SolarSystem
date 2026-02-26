@@ -58,7 +58,8 @@ export class Sun extends Astronomical {
         time: { value: 0 },
         sunTexture: { value: this.texture },
         sunSpotsTexture: { value: this.texture },
-        myCameraPosition: { value: APP.cameraManager.getActiveEntry().camera.position }, // Initialisiere mit einem Vektor
+        // Keep this independent from the actual camera.position to avoid accidental mutation.
+        myCameraPosition: { value: new THREE.Vector3() },
         cameraFar: { value: APP.cameraManager.getActiveEntry().camera.far } // Verwende die Far-Plane der Kamera
       },
       vertexShader: vertexShader,
@@ -68,13 +69,18 @@ export class Sun extends Astronomical {
 
     // Adding Corona to sun
     this.coronaShaderMaterial = new THREE.ShaderMaterial(coronaShader);
-    const coronaGeometry = new THREE.SphereGeometry(this.data.size / 2, 64, 64); // Adjust the radius to fit around your sun
+    // Corona as a slightly larger shell to avoid z-fighting with the Sun surface at huge distances.
+    this.coronaShaderMaterial.depthWrite = false;
+    this.coronaShaderMaterial.depthTest = true;
+
+    const coronaGeometry = new THREE.SphereGeometry(this.data.size / 2 * 1.02, 64, 64);
     const coronaMesh = new THREE.Mesh(
       coronaGeometry,
       this.coronaShaderMaterial
     );
 
     coronaMesh.position.set(0, 0, 0);
+    coronaMesh.renderOrder = 1;
     this.group.add(coronaMesh);
 
 
@@ -107,12 +113,18 @@ export class Sun extends Astronomical {
     // Keep Sun shader uniforms in sync.
     const mat = this.mesh.material as THREE.ShaderMaterial;
 
+    if (mat?.uniforms?.myCameraPosition) {
+      activeCamera.getWorldPosition(this.tmpCamPos);
+      mat.uniforms.myCameraPosition.value.copy(this.tmpCamPos);
+    }
+
     if (mat?.uniforms?.cameraFar) {
       mat.uniforms.cameraFar.value = activeCamera.far;
     }
 
     // Enforce a minimum on-screen size for the glow sprite.
     if (this.minVisibleSprite) {
+      // tmpCamPos is already updated above (shader uniform sync), but keep this safe.
       activeCamera.getWorldPosition(this.tmpCamPos);
       this.group.getWorldPosition(this.tmpSunPos);
       const dist = Math.max(0.001, this.tmpCamPos.distanceTo(this.tmpSunPos));

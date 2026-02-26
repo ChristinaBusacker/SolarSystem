@@ -225,6 +225,9 @@ export class AstronomicalManager {
 
     // Auto declutter ON.
     const hasSelection = !!focusPlanetSlug;
+    // When we're inside a planet view, hiding that planet's own marker reduces visual clutter
+    // (the user already knows which planet they're on).
+    const hideFocusPlanetMarker = selectedKind === "planet";
 
     // Precompute camera world position for overview-range rules.
     const camPos = camWorld;
@@ -243,8 +246,8 @@ export class AstronomicalManager {
         // Home / overview: show major bodies + dwarf planets.
         setElementHidden(planet.cssObject?.element, !(isMajor || isDwarf));
       } else {
-        // Selected: show only focus planet.
-        setElementHidden(planet.cssObject?.element, !isFocusPlanet);
+        // Selected: show only focus planet, except in planet focus mode where we hide its own marker.
+        setElementHidden(planet.cssObject?.element, !(isFocusPlanet && !hideFocusPlanetMarker));
       }
 
       // ===== Planet orbit line =====

@@ -13,7 +13,11 @@ export class SimpleControl {
   public dragspeed = 0.90;
   public verticleRotationLimit = 60;
 
-  constructor(private distanceMin: number, private distanceMax: number, private camera: THREE.PerspectiveCamera) {
+  constructor(
+    public readonly distanceMin: number,
+    public readonly distanceMax: number,
+    private camera: THREE.PerspectiveCamera,
+  ) {
     this.vertical.add(camera);
     this.horizontal.add(this.vertical);
     this.group.add(this.horizontal);
@@ -54,10 +58,21 @@ export class SimpleControl {
 
   public applyZoomDelta(delta: number): void {
     this.zoom = THREE.MathUtils.clamp(this.zoom + delta, 0, 1);
+
+    // Snap to endpoints to avoid long "easing" tails that can cause distant precision artifacts.
+    if (this.zoom > 0.995) this.zoom = 1;
+    if (this.zoom < 0.005) this.zoom = 0;
+    if (this.zoom === 0 || this.zoom === 1) this.snapToZoom();
   }
 
   private lerp = (start: number, end: number, t: number) => {
     return (1 - t) * start + t * end;
+  }
+
+  /** Immediately place the camera at the distance implied by the current zoom. */
+  public snapToZoom(): void {
+    const dist = this.lerp(this.distanceMin, this.distanceMax, this.zoom);
+    this.camera.position.set(0, 0, dist);
   }
 
 

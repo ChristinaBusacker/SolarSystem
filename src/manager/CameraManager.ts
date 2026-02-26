@@ -18,12 +18,15 @@ export class CameraManager {
     let defaultCamera = new THREE.PerspectiveCamera(
       75,
       window.innerWidth / window.innerHeight,
-      0.1,
-      1000000,
+      10,
+      2000000,
     );
 
-    defaultCamera.position.set(0, 0, 50);
+    // Default (home) camera should start fully zoomed out.
+    defaultCamera.position.set(0, 0, 950000);
     const defaultControl = new SimpleControl(500, 950000, defaultCamera);
+    defaultControl.zoom = 1;
+    defaultControl.snapToZoom();
 
     scene.add(defaultControl.group);
 
@@ -213,6 +216,13 @@ export class CameraManager {
       // Stop any drag state before switching.
       this.activeCamera?.control?.endRotate();
       this.activeCamera = entry;
+
+      // Home view should always come up fully zoomed out.
+      if (selector === "Default") {
+        this.activeCamera.control.zoom = 1;
+        this.activeCamera.control.snapToZoom();
+      }
+
       APP.updateComposer(entry.camera);
     }
 
