@@ -24,32 +24,39 @@
   }
 }
 
-.object.hide {
-  display: none;
-}
-
-.object.is-cluster-hidden p {
-  display: none;
-}
-
-.object.is-cluster-anchor p {
-  font-weight: 700;
-}
-
-.object.hide-collide {
-  display: none;
-}
-
-// Hide only the label text but keep the clickable marker dot.
-.object.hide-label {
-  p {
+.object {
+  &.hide {
     display: none;
   }
-}
 
-// Optional cluster count shown next to the primary label.
-.object .cluster-count {
-  margin-left: 6px;
-  opacity: 0.75;
-  font-size: 0.85em;
+  &.is-cluster-hidden p {
+    display: none;
+  }
+
+  &.is-cluster-anchor p {
+    font-weight: 700;
+  }
+
+  &.hide-collide {
+    display: none;
+  }
+
+  // Hide only the label text but keep the clickable marker dot.
+  &.hide-label {
+    p {
+      display: none;
+    }
+  }
+
+  // Optional cluster count shown next to the primary label.
+  & .cluster-count {
+    margin-left: 6px;
+    opacity: 0.75;
+    font-size: 0.85em;
+  }
+
+  & p {
+    width: 30px;
+    margin: 0;
+  }
 }
