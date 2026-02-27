@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { APP } from "..";
+import type { UpdateContext } from "../core/update-context";
 
 import { venusRawData } from "../../data/raw-object.data";
 import { Astronomical } from "./astronomical.object";
@@ -21,9 +21,11 @@ export class Venus extends Astronomical {
     this.isInit = true;
   }
 
-  public render(delta: number, activeCamera?: THREE.PerspectiveCamera) {
-    this.atmosphereMesh.rotation.y =
-      this.data.rotationSpeed * delta * 60 * APP.simulationSpeed * 1.25;
-    super.render(delta, activeCamera);
+  public render(ctx: UpdateContext) {
+    if (this.atmosphereMesh) {
+      this.atmosphereMesh.rotation.y =
+        this.data.rotationSpeed * ctx.delta * 60 * ctx.simSpeed * 1.25;
+    }
+    super.render(ctx);
   }
 }

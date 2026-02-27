@@ -9,6 +9,7 @@ import {
 } from "../../data/raw-object.data";
 import { Astronomical } from "./astronomical.object";
 import { SimpleAstronomicalBody } from "./simple-astronomical.object";
+import type { UpdateContext } from "../core/update-context";
 
 export class Jupiter extends Astronomical {
   public moons = [
@@ -65,10 +66,10 @@ export class Jupiter extends Astronomical {
     this.isInit = true;
   }
 
-  public render(delta: number, camera?: THREE.PerspectiveCamera) {
-    super.render(delta);
+  public render(ctx: UpdateContext) {
+    super.render(ctx);
     this.moons.forEach(moon => {
-      moon.render(delta, camera);
+      moon.render(ctx);
     });
   }
 }

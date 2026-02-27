@@ -6,6 +6,7 @@ import {
 } from "../../data/raw-object.data";
 import { AsteroidBelt } from "../objects/asteroid-belt.object";
 import { AstronomicalDataParser } from "../parser/astronomical-data.parser";
+import type { UpdateContext } from "../core/update-context";
 
 /**
  * Holds minor body visuals that should not be forced into AstronomicalObject.
@@ -78,12 +79,12 @@ export class MinorBodyManager {
     scene.add(this.ambientDebris.group);
   }
 
-  public render(delta: number): void {
+  public render(ctx: UpdateContext): void {
     if (!this.isInit) return;
-    this.mainAsteroidBelt.render(delta);
-    this.kuiperColdBelt.render(delta);
-    this.kuiperHotBelt.render(delta);
-    this.ambientDebris.render(delta);
+    this.mainAsteroidBelt.render(ctx);
+    this.kuiperColdBelt.render(ctx);
+    this.kuiperHotBelt.render(ctx);
+    this.ambientDebris.render(ctx);
   }
 
   public preBloom(): void {

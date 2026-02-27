@@ -14,6 +14,7 @@ import { PURE_BLACK_MATERIAL } from "../constant/pureBlackMaterial.constant";
 import { ringShader } from "../shader/ring.shader";
 import { Astronomical } from "./astronomical.object";
 import { SimpleAstronomicalBody } from "./simple-astronomical.object";
+import type { UpdateContext } from "../core/update-context";
 
 export class Saturn extends Astronomical {
   public cameraPosition = new THREE.Vector3(1, 1, 1);
@@ -145,14 +146,14 @@ export class Saturn extends Astronomical {
     this.ringMesh.material = this.ringMaterial;
   }
 
-  public render(delta: number, camera?: THREE.PerspectiveCamera) {
-    super.render(delta);
+  public render(ctx: UpdateContext) {
+    super.render(ctx);
 
     const planetWorldPosition = new THREE.Vector3();
     this.mesh.getWorldPosition(planetWorldPosition);
 
     this.moons.forEach(moon => {
-      moon.render(delta, camera);
+      moon.render(ctx);
     });
 
     if (this.ringMaterial) {

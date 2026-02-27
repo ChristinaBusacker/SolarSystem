@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import type { UpdateContext } from "../core/update-context";
 import { AstronomicalRawData } from "../interfaces/dataset.interface";
 import { Astronomical } from "./astronomical.object";
 
@@ -45,7 +46,7 @@ export class SimpleAstronomicalBody extends Astronomical {
     return this.group?.position?.clone() ?? null;
   }
 
-  public render(delta: number, camera?: THREE.PerspectiveCamera): void {
-    super.render(delta, camera);
+  public render(ctx: UpdateContext): void {
+    super.render(ctx);
   }
 }

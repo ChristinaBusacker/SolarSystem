@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { Lensflare, LensflareElement } from "three/examples/jsm/objects/Lensflare";
-import { APP } from "..";
 import { sunRawData } from "../../data/raw-object.data";
+import type { UpdateContext } from "../core/update-context";
 import { coronaShader } from "../shader/corona";
 import { sunShader } from "../shader/sun.shader";
 import { Astronomical } from "./astronomical.object";
@@ -13,7 +13,6 @@ export class Sun extends Astronomical {
   private minVisibleSprite?: THREE.Sprite;
   private readonly tmpCamPos = new THREE.Vector3();
   private readonly tmpSunPos = new THREE.Vector3();
-  private readonly tmpViewport = new THREE.Vector2();
 
   private lensflare?: Lensflare;
   private smearElement?: LensflareElement;
@@ -77,7 +76,8 @@ export class Sun extends Astronomical {
         sunSpotsTexture: { value: this.texture },
         // Keep this independent from the actual camera.position to avoid accidental mutation.
         myCameraPosition: { value: new THREE.Vector3() },
-        cameraFar: { value: APP.cameraManager.getActiveEntry().camera.far }, // Verwende die Far-Plane der Kamera
+        // Updated per-frame in render() based on the active camera.
+        cameraFar: { value: 1_000_000 },
       },
       vertexShader: vertexShader,
       fragmentShader: fragmentShader,
@@ -192,11 +192,11 @@ export class Sun extends Astronomical {
     if (this.minVisibleSprite) this.minVisibleSprite.visible = true;
   }
 
-  public render(delta: number, camera?: THREE.PerspectiveCamera): void {
-    const activeCamera = camera ?? APP.cameraManager.getActiveEntry().camera;
+  public render(ctx: UpdateContext): void {
+    const activeCamera = ctx.camera;
 
-    this.mesh.rotation.y += this.data.rotationSpeed * delta * APP.simulationSpeed;
-    this.coronaShaderMaterial.uniforms.time.value += delta * APP.simulationSpeed;
+    this.mesh.rotation.y += this.data.rotationSpeed * ctx.delta * ctx.simSpeed;
+    this.coronaShaderMaterial.uniforms.time.value += ctx.delta * ctx.simSpeed;
 
     // Keep Sun shader uniforms in sync.
     const mat = this.mesh.material as THREE.ShaderMaterial;
@@ -217,8 +217,7 @@ export class Sun extends Astronomical {
       this.group.getWorldPosition(this.tmpSunPos);
       const dist = Math.max(0.001, this.tmpCamPos.distanceTo(this.tmpSunPos));
 
-      APP.webglRenderer.getSize(this.tmpViewport);
-      const viewportH = Math.max(1, this.tmpViewport.y);
+      const viewportH = Math.max(1, ctx.viewport.height);
       const fovRad = THREE.MathUtils.degToRad(activeCamera.fov);
       const focalPx = (0.5 * viewportH) / Math.tan(fovRad * 0.5);
 
@@ -282,6 +281,6 @@ export class Sun extends Astronomical {
       this.lensflare.visible = this.lensflareFinalVisible;
     }
 
-    super.render(delta, activeCamera);
+    super.render(ctx);
   }
 }

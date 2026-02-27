@@ -1,5 +1,4 @@
 import * as THREE from "three";
-import { APP } from "..";
 import { SimpleControl } from "../controls/simple.control";
 import { CameraEntry } from "../interfaces/entry.interfaces";
 import { SoundManager } from "./SoundManager";
@@ -7,6 +6,8 @@ import { SoundManager } from "./SoundManager";
 export class CameraManager {
   public collection: Array<CameraEntry> = [];
   private activeCamera: CameraEntry;
+
+  private cssOverlay?: HTMLElement;
 
   // Single, shared input bindings (no listener hell).
   private inputBound = false;
@@ -190,19 +191,27 @@ export class CameraManager {
   }
 
   private toggleClasses(selector: string) {
+    if (!this.cssOverlay) return;
+
     if (selector !== "Default") {
-      APP.cssRenderer.domElement.classList.remove("hideMoons");
-      const marker = APP.cssRenderer.domElement.querySelector(`.object.${selector}`);
-      marker.classList.add("hide");
+      this.cssOverlay.classList.remove("hideMoons");
+      const marker = this.cssOverlay.querySelector<HTMLElement>(`.object.${selector}`);
+      marker?.classList.add("hide");
     } else {
-      APP.cssRenderer.domElement.classList.add("hideMoons");
+      this.cssOverlay.classList.add("hideMoons");
     }
   }
 
+  public attachCssOverlay(el: HTMLElement): void {
+    this.cssOverlay = el;
+  }
+
   public switchCamera(selector: string, switchAudio = true): CameraManager {
-    APP.cssRenderer.domElement.querySelectorAll(`.object`).forEach(elem => {
-      elem.classList.remove("hide");
-    });
+    if (this.cssOverlay) {
+      this.cssOverlay.querySelectorAll(`.object`).forEach(elem => {
+        elem.classList.remove("hide");
+      });
+    }
 
     const entry = this.collection.find(entry => entry.selector === selector);
 
@@ -238,12 +247,10 @@ export class CameraManager {
 
         control.velocity.set(0, 0);
 
-        const near = Math.max(0.001, cam.near ?? 0.01);
-        const startDist = Math.max(near * 2.0, control.distanceMin * 0.02);
+        const near = Math.max(0.000001, cam.near ?? 0.01);
+        const startDist = Math.max(near * 2.0, control.distanceMin * 0.01);
         cam.position.set(0, 0, startDist);
       }
-
-      APP.updateComposer(entry.camera);
     }
 
     // Keep aspect in sync with the stage size (not the window).

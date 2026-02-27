@@ -19,6 +19,8 @@ import { Sun } from "../objects/sun.object";
 import { Uranus } from "../objects/uranus.object";
 import { Venus } from "../objects/venus.object";
 import { router } from "../router/router";
+import type { CameraRegistry } from "../core/camera-registry";
+import type { UpdateContext } from "../core/update-context";
 
 type DeclutterOptions = {
   camera: THREE.PerspectiveCamera;
@@ -87,8 +89,14 @@ export class AstronomicalManager {
     return this.entrys;
   }
 
-  public initObjects(scene: THREE.Scene) {
+  public initObjects(scene: THREE.Scene, cameraRegistry: CameraRegistry) {
     this.entrys.forEach(entry => {
+      // Provide a registry so bodies can register their cameras without importing the app singleton.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const anyObj = entry.object as any;
+      if (typeof anyObj.setCameraRegistry === "function") {
+        anyObj.setCameraRegistry(cameraRegistry);
+      }
       entry.object.init();
       scene.add(entry.object.orbitalGroup);
     });
@@ -112,9 +120,9 @@ export class AstronomicalManager {
     });
   }
 
-  public render(delta: number, camera?: THREE.PerspectiveCamera, scene?: THREE.Scene) {
+  public render(ctx: UpdateContext) {
     this.entrys.forEach(entry => {
-      entry.object.render(delta, camera, scene);
+      entry.object.render(ctx);
     });
   }
 

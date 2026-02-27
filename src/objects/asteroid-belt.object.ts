@@ -1,6 +1,6 @@
 import * as THREE from "three";
-import { APP } from "..";
 import { asteroidBeltZone } from "../../data/raw-object.data";
+import type { UpdateContext } from "../core/update-context";
 import { AstronomicalDataParser } from "../parser/astronomical-data.parser";
 import { asteroidBeltImpostorShader } from "../shader/asteroid-belt-impostor.shader";
 
@@ -140,7 +140,7 @@ export class AsteroidBelt {
       fragmentShader,
       uniforms: {
         uTime: { value: 0 },
-        uViewportScale: { value: APP.webglRenderer.getPixelRatio?.() ?? 1 },
+        uViewportScale: { value: Math.min(window.devicePixelRatio || 1, 2) },
         uSunWorldPosition: { value: this.sunWorldPosition.clone() },
         uBloomMode: { value: 0 },
       },
@@ -169,12 +169,12 @@ export class AsteroidBelt {
     this.material.uniforms.uBloomMode.value = 0;
   }
 
-  public render(delta: number): void {
-    if (!this.material || delta <= 0) return;
+  public render(ctx: UpdateContext): void {
+    if (!this.material || ctx.delta <= 0) return;
 
-    this.time += delta * 60 * APP.simulationSpeed;
+    this.time += ctx.delta * 60 * ctx.simSpeed;
     this.material.uniforms.uTime.value = this.time;
-    this.material.uniforms.uViewportScale.value = APP.webglRenderer.getPixelRatio?.() ?? 1;
+    this.material.uniforms.uViewportScale.value = ctx.dpr;
 
     // Sun is currently at system origin in this app. Keep this as a uniform for future flexibility.
     const sun = this.material.uniforms.uSunWorldPosition.value as THREE.Vector3;

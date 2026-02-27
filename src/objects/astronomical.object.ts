@@ -3,9 +3,10 @@ import { Line2 } from "three/examples/jsm/lines/Line2";
 import { LineGeometry } from "three/examples/jsm/lines/LineGeometry";
 import { LineMaterial } from "three/examples/jsm/lines/LineMaterial";
 import { CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer";
-import { APP } from "..";
 import { PURE_BLACK_MATERIAL } from "../constant/pureBlackMaterial.constant";
 import { SimpleControl } from "../controls/simple.control";
+import type { CameraRegistry } from "../core/camera-registry";
+import type { UpdateContext } from "../core/update-context";
 import { AstronomicalObject } from "../interfaces/astronomicalObject.interface";
 import { AstronomicalDataset, AstronomicalRawData } from "../interfaces/dataset.interface";
 import { AstronomicalDataParser } from "../parser/astronomical-data.parser";
@@ -42,6 +43,8 @@ export class Astronomical implements AstronomicalObject {
 
   public materials: Array<THREE.ShaderMaterial> = [];
 
+  private cameraRegistry?: CameraRegistry;
+
   private initialOffset = 7000000 * 9;
 
   public emissive = false;
@@ -66,6 +69,16 @@ export class Astronomical implements AstronomicalObject {
     this.emissive = emissive;
 
     this.angle = this.data.isOrbiting ? this.getInitialOrbitAngle() : 0;
+  }
+
+  public setCameraRegistry(registry: CameraRegistry): void {
+    this.cameraRegistry = registry;
+    // Propagate to existing moons so their init() can register cameras too.
+    this.moons?.forEach(moon => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const anyMoon = moon as any;
+      if (typeof anyMoon.setCameraRegistry === "function") anyMoon.setCameraRegistry(registry);
+    });
   }
 
   public initDisplacement(displacmentPath: string, height: number) {
@@ -294,7 +307,9 @@ export class Astronomical implements AstronomicalObject {
 
       this.group.add(this.control.group);
 
-      APP.cameraManager.addCamera(this.data.slug, this.camera, this.control);
+      if (this.cameraRegistry) {
+        this.cameraRegistry.addCamera(this.data.slug, this.camera, this.control);
+      }
     }
   }
 
@@ -504,7 +519,7 @@ export class Astronomical implements AstronomicalObject {
     }
   }
 
-  public render(delta: number, activeCamera?: THREE.PerspectiveCamera) {
+  public render(ctx: UpdateContext) {
     if (!this.isInit) return;
 
     if ((this.orbitingParent || this.moons.length > 0) && this.material) {
@@ -523,7 +538,7 @@ export class Astronomical implements AstronomicalObject {
     }
 
     if (this.data.isOrbiting) {
-      const deltaAngle = this.data.orbitalSpeed * delta * 60 * APP.simulationSpeed;
+      const deltaAngle = this.data.orbitalSpeed * ctx.delta * 60 * ctx.simSpeed;
 
       // Keep angle bounded to avoid precision loss over long runtimes.
       this.angle = THREE.MathUtils.euclideanModulo(this.angle - deltaAngle, Math.PI * 2);
@@ -537,10 +552,10 @@ export class Astronomical implements AstronomicalObject {
 
     this.updateOrbitTrailColors();
 
-    this.planetaryGroup.rotation.y += this.data.rotationSpeed * 60 * delta * APP.simulationSpeed;
+    this.planetaryGroup.rotation.y += this.data.rotationSpeed * 60 * ctx.delta * ctx.simSpeed;
 
-    if (activeCamera && this.cssObject) {
-      this.cssObject.lookAt(activeCamera.position);
+    if (this.cssObject) {
+      this.cssObject.lookAt(ctx.camera.position);
     }
   }
 }

@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { AstronomicalDataset } from "./dataset.interface";
 import { Line2 } from "three/examples/jsm/lines/Line2";
 import { CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer";
+import type { UpdateContext } from "../core/update-context";
 
 export interface AstronomicalObject {
   texture: THREE.Texture;
@@ -19,5 +20,5 @@ export interface AstronomicalObject {
   preBloom: () => void;
   postBloom: () => void;
   init: () => void;
-  render: (delta: number, camera?: THREE.PerspectiveCamera, scene?: THREE.Scene) => void;
+  render: (ctx: UpdateContext) => void;
 }

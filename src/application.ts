@@ -11,6 +11,7 @@ import { SoundManager } from "./manager/SoundManager";
 import { AppRoute, router } from "./router/router";
 import { RenderPipeline } from "./rendering/render-pipeline";
 import { ViewportService } from "./services/viewport.service";
+import type { UpdateContext } from "./core/update-context";
 
 export class Application {
   private static instance: Application | null = null;
@@ -87,7 +88,7 @@ export class Application {
     this.viewportService.init();
     this.viewportService.resizeNow();
 
-    this.astronomicalManager.initObjects(this.scene);
+    this.astronomicalManager.initObjects(this.scene, this.cameraManager);
     this.minorBodyManager.init(this.scene);
     {
       const { width, height } = this.viewportService.getViewportSize();
@@ -397,6 +398,9 @@ export class Application {
     this.cssRenderer.domElement.classList.add("markers-on");
     this.cssRenderer.domElement.classList.add("hideMoons");
     document.getElementById("app").appendChild(this.cssRenderer.domElement);
+
+    // Allow CameraManager to toggle marker classes without importing the app singleton.
+    this.cameraManager.attachCssOverlay(this.cssRenderer.domElement);
   }
 
   private initSunLight() {
@@ -549,16 +553,28 @@ export class Application {
     const deltaTime = this.clock.getDelta();
     const camera = this.cameraManager.getActiveEntry().camera;
 
+    const viewport = this.viewportService.getViewportSize();
+    const dpr = this.viewportService.getRenderPixelRatio();
+
+    const ctx: UpdateContext = {
+      delta: deltaTime,
+      simSpeed: this.simulationSpeed,
+      camera,
+      scene: this.scene,
+      dpr,
+      viewport,
+    };
+
     // Keep post-processing cameras in sync with the active camera.
     if (camera !== this.lastPipelineCamera) {
       this.updateComposer(camera);
       this.lastPipelineCamera = camera;
     }
 
-    this.starfieldManager.update(deltaTime, camera, this.viewportService.getRenderPixelRatio());
+    this.starfieldManager.update(deltaTime, camera, dpr);
 
-    this.astronomicalManager.render(deltaTime, camera, this.scene);
-    this.minorBodyManager.render(deltaTime);
+    this.astronomicalManager.render(ctx);
+    this.minorBodyManager.render(ctx);
 
     // Apply cinematic declutter rules before rendering (affects bloom + final passes).
     this.astronomicalManager.applyDeclutterVisibility({

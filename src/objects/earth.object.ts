@@ -3,7 +3,7 @@ import { Astronomical } from "./astronomical.object";
 import { SimpleAstronomicalBody } from "./simple-astronomical.object";
 
 import { MathUtils } from "three";
-import { APP } from "..";
+import type { UpdateContext } from "../core/update-context";
 import { earthRawData, moonRawData } from "../../data/raw-object.data";
 
 export class Earth extends Astronomical {
@@ -74,15 +74,15 @@ export class Earth extends Astronomical {
     }
   }
 
-  public render(delta: number, camera?: THREE.PerspectiveCamera) {
+  public render(ctx: UpdateContext) {
     if (!this.isInit) return;
 
     if (this.atmosphereMesh) {
       this.atmosphereMesh.rotation.y +=
-        this.data.rotationSpeed * 8 * delta * 0.8 * APP.simulationSpeed * -1;
+        this.data.rotationSpeed * 8 * ctx.delta * 0.8 * ctx.simSpeed * -1;
     }
 
-    super.render(delta, camera);
-    this.moon.render(delta, camera);
+    super.render(ctx);
+    this.moon.render(ctx);
   }
 }
