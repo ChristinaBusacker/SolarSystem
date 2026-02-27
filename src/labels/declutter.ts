@@ -124,9 +124,11 @@ export function computeDeclutterVisibility(args: {
       radius: b.radius,
     }));
 
+  // IMPORTANT:
+  // Do NOT ignore the selected body for occlusion.
+  // We *want* the selected planet to be able to occlude its moons (e.g. Dione behind Saturn).
+  // Self-occlusion is already avoided by the segment test (sphere center at target => t≈1).
   const ignoreIds = new Set<string>();
-  if (selectedId) ignoreIds.add(selectedId);
-  if (state.selectedParentId) ignoreIds.add(state.selectedParentId);
 
   const isFocusMode = !!selectedId && !state.isOverview;
 

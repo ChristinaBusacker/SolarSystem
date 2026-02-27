@@ -14,6 +14,7 @@ import { router } from "../router/router";
 import { astronomicalDisplacementShader } from "../shader/astronomical-displacement.shader";
 import { astronomicalShader } from "../shader/astronomical.shader";
 import { earthShader } from "../shader/earth.shader";
+import { MAX_SHADOW_CASTERS } from "../../data/settings.data";
 
 export class Astronomical implements AstronomicalObject {
   public data?: AstronomicalDataset;
@@ -318,16 +319,11 @@ export class Astronomical implements AstronomicalObject {
 
     const { vertexShader, fragmentShader } = astronomicalShader;
 
-    const casterOptions: any = {
-      casterPosition1: { value: new THREE.Vector3(0, 0, 0) },
-      casterRadius1: { value: 0.0 },
-      casterPosition2: { value: new THREE.Vector3(0, 0, 0) },
-      casterRadius2: { value: 0.0 },
-      casterPosition3: { value: new THREE.Vector3(0, 0, 0) },
-      casterRadius3: { value: 0.0 },
-      casterPosition4: { value: new THREE.Vector3(0, 0, 0) },
-      casterRadius4: { value: 0.0 },
-    };
+    const casterOptions: Record<string, unknown> = {};
+    for (let i = 1; i <= MAX_SHADOW_CASTERS; i++) {
+      casterOptions[`casterPosition${i}`] = { value: new THREE.Vector3(0, 0, 0) };
+      casterOptions[`casterRadius${i}`] = { value: 0.0 };
+    }
 
     const options = {
       dayTexture: { value: atmosphereTexture },
@@ -401,7 +397,10 @@ export class Astronomical implements AstronomicalObject {
       ? [this.orbitingParent, ...this.orbitingParent.moons.filter(moon => moon !== this)]
       : this.moons;
 
-    return shadowCasters.map(caster => {
+    // Cap for shader uniform count.
+    const limited = shadowCasters.slice(0, MAX_SHADOW_CASTERS);
+
+    return limited.map(caster => {
       const position = new THREE.Vector3();
       caster.mesh.getWorldPosition(position);
 
@@ -421,16 +420,11 @@ export class Astronomical implements AstronomicalObject {
           : astronomicalShader
         : earthShader;
 
-    const casterOptions: Record<string, unknown> = {
-      casterPosition1: { value: new THREE.Vector3(0, 0, 0) },
-      casterRadius1: { value: 0.0 },
-      casterPosition2: { value: new THREE.Vector3(0, 0, 0) },
-      casterRadius2: { value: 0.0 },
-      casterPosition3: { value: new THREE.Vector3(0, 0, 0) },
-      casterRadius3: { value: 0.0 },
-      casterPosition4: { value: new THREE.Vector3(0, 0, 0) },
-      casterRadius4: { value: 0.0 },
-    };
+    const casterOptions: Record<string, unknown> = {};
+    for (let i = 1; i <= MAX_SHADOW_CASTERS; i++) {
+      casterOptions[`casterPosition${i}`] = { value: new THREE.Vector3(0, 0, 0) };
+      casterOptions[`casterRadius${i}`] = { value: 0.0 };
+    }
 
     const options = {
       dayTexture: { value: this.texturePath[0] ? this.texture : null },
@@ -532,6 +526,12 @@ export class Astronomical implements AstronomicalObject {
           params[`casterPosition${i + 1}`] = { value: caster.position };
           params[`casterRadius${i + 1}`] = { value: caster.radius };
         });
+
+        // Clear remaining slots so we don't keep stale shadows from previous frames.
+        for (let i = shadowCasters.length + 1; i <= MAX_SHADOW_CASTERS; i++) {
+          params[`casterPosition${i}`] = { value: [0, 0, 0] };
+          params[`casterRadius${i}`] = { value: 0.0 };
+        }
 
         Object.assign(material.uniforms, params);
       });

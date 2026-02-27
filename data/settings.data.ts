@@ -1,5 +1,9 @@
-export const simulationSpeed = 200;
-// Slightly more conservative bloom for readability (still cinematic, less "flashbang").
-export const bloomThreshold = 0.55;
-export const bloomStrength = 0.28;
-export const bloomRadius = 0.2;
+// Common
+
+export const SIMULATION_SPEED = 200;
+export const MAX_SHADOW_CASTERS = 7;
+
+// POST PROCESSING
+export const BLOOM_THRESHOLD = 0.55;
+export const BLOOM_STRENGTH = 0.28;
+export const BLOOM_RADIUS = 0.2;

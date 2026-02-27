@@ -1,17 +1,17 @@
 import * as THREE from "three";
 import { CSS2DRenderer } from "three/examples/jsm/renderers/CSS2DRenderer";
-import { bloomRadius, bloomStrength, bloomThreshold, simulationSpeed } from "../data/settings.data";
+import { SIMULATION_SPEED } from "../data/settings.data";
 import { AstronomicalManager } from "./manager/AstronomicalManager";
 import { CameraManager } from "./manager/CameraManager";
 import { MinorBodyManager } from "./manager/minor-body-manager";
 import { StarfieldManager } from "./manager/StarfieldManager";
 import { UiManager } from "./ui/ui-manager";
 
-import { SoundManager } from "./manager/SoundManager";
-import { AppRoute, router } from "./router/router";
-import { RenderPipeline } from "./rendering/render-pipeline";
-import { ViewportService } from "./services/viewport.service";
 import type { UpdateContext } from "./core/update-context";
+import { SoundManager } from "./manager/SoundManager";
+import { RenderPipeline } from "./rendering/render-pipeline";
+import { AppRoute, router } from "./router/router";
+import { ViewportService } from "./services/viewport.service";
 
 export class Application {
   private static instance: Application | null = null;
@@ -19,13 +19,13 @@ export class Application {
   public webglRenderer = new THREE.WebGLRenderer({ antialias: true });
   public cssRenderer = new CSS2DRenderer();
   public scene = new THREE.Scene();
-  public clock = new THREE.Clock();
+  public timer = new THREE.Timer();
 
   private renderPipeline = new RenderPipeline(this.webglRenderer, this.scene);
 
   private viewportService: ViewportService;
 
-  public simulationSpeed = simulationSpeed;
+  public simulationSpeed = SIMULATION_SPEED;
 
   public cameraManager = new CameraManager(this.scene);
   public astronomicalManager = new AstronomicalManager();
@@ -76,6 +76,7 @@ export class Application {
   }
 
   public init() {
+    this.timer.connect(document);
     this.cameraManager.switchCamera("Default", false).initEventControls();
     const entry = this.cameraManager.getActiveEntry();
     SoundManager.init(entry.camera);
@@ -117,9 +118,6 @@ export class Application {
       width,
       height,
       dpr,
-      bloomStrength,
-      bloomRadius,
-      bloomThreshold,
     });
   }
   public static getInstance(): Application {
@@ -550,7 +548,8 @@ export class Application {
   }
 
   public animate() {
-    const deltaTime = this.clock.getDelta();
+    const deltaTime = this.timer.getDelta();
+
     const camera = this.cameraManager.getActiveEntry().camera;
 
     const viewport = this.viewportService.getViewportSize();
@@ -609,6 +608,7 @@ export class Application {
 
     requestAnimationFrame(() => {
       this.animate();
+      this.timer.update();
     });
   }
 }

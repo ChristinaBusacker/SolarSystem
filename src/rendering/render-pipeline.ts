@@ -7,15 +7,13 @@ import { SMAAPass } from "three/examples/jsm/postprocessing/SMAAPass";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
 
 import { mixPassShader } from "../shader/mixpass.shader";
+import { BLOOM_STRENGTH, BLOOM_RADIUS, BLOOM_THRESHOLD } from "../../data/settings.data";
 
 export type RenderPipelineInit = {
   camera: THREE.Camera;
   width: number;
   height: number;
   dpr: number;
-  bloomStrength: number;
-  bloomRadius: number;
-  bloomThreshold: number;
 };
 
 /**
@@ -54,9 +52,9 @@ export class RenderPipeline {
 
     const bloomPass = new UnrealBloomPass(
       new THREE.Vector2(width, height),
-      cfg.bloomStrength,
-      cfg.bloomRadius,
-      cfg.bloomThreshold,
+      BLOOM_STRENGTH,
+      BLOOM_RADIUS,
+      BLOOM_THRESHOLD,
     );
 
     this.bloomComposer.addPass(this.renderPass);

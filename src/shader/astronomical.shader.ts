@@ -36,6 +36,15 @@ export const astronomicalShader: ShaderDefinition = {
   uniform vec3 casterPosition4;
   uniform float casterRadius4;
 
+  uniform vec3 casterPosition5;
+  uniform float casterRadius5;
+
+  uniform vec3 casterPosition6;
+  uniform float casterRadius6;
+
+  uniform vec3 casterPosition7;
+  uniform float casterRadius7;
+
   varying vec2 vUv;
   varying vec3 vWorldNormal;
   varying vec3 vWorldPosition;
@@ -70,6 +79,9 @@ export const astronomicalShader: ShaderDefinition = {
     ShadowCast(casterPosition2, casterRadius2, toSun, shadow);
     ShadowCast(casterPosition3, casterRadius3, toSun, shadow);
     ShadowCast(casterPosition4, casterRadius4, toSun, shadow);
+    ShadowCast(casterPosition5, casterRadius5, toSun, shadow);
+    ShadowCast(casterPosition6, casterRadius6, toSun, shadow);
+    ShadowCast(casterPosition7, casterRadius7, toSun, shadow);
     
     shadow = clamp(shadow, 0.0, 1.0);
 
