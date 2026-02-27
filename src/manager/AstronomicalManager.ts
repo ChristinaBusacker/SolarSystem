@@ -21,6 +21,8 @@ import { Venus } from "../objects/venus.object";
 import { router } from "../router/router";
 import type { CameraRegistry } from "../core/camera-registry";
 import type { UpdateContext } from "../core/update-context";
+import { computeDeclutterVisibility } from "../labels/declutter";
+import type { DeclutterBody } from "../labels/declutter";
 
 type DeclutterOptions = {
   camera: THREE.PerspectiveCamera;
@@ -82,9 +84,6 @@ export class AstronomicalManager {
     },
   ];
 
-  constructor() {}
-
-  // Expose entries for UI-only declutter/layout logic (read-only usage).
   public getAllEntries(): Array<AstronomicalEntry> {
     return this.entrys;
   }
@@ -130,6 +129,7 @@ export class AstronomicalManager {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const w = Math.floor(width * dpr);
     const h = Math.floor(height * dpr);
+
     this.entrys.forEach(entry => {
       if (entry.object.marker && entry.object.marker.material) {
         const m = entry.object.marker.material as LineMaterial;
@@ -159,26 +159,12 @@ export class AstronomicalManager {
    * Cinematic declutter rules for orbits + CSS2D labels.
    *
    * Rules (Auto ON):
-   * - No selection (home): labels + markers for Sun + 8 planets, and planet orbits.
+   * - No selection (home): labels + markers for Sun + planets, and planet orbits.
    * - Selected planet: show the planet + its moons; show only moon orbits (no planet orbit).
    * - Selected moon: treat its parent as the focus (show sibling moons + their orbits).
    */
   public applyDeclutterVisibility(opts: DeclutterOptions): void {
     const { camera, markersVisible, orbitsVisible, declutterAuto } = opts;
-
-    const majorSlugs = new Set([
-      "sun",
-      "mercury",
-      "venus",
-      "earth",
-      "mars",
-      "jupiter",
-      "saturn",
-      "uranus",
-      "neptune",
-    ]);
-
-    const dwarfSlugs = new Set(["ceres", "pluto", "haumea", "makemake", "eris"]);
 
     const toSlug = (v: string): string => (v || "").toLowerCase();
 
@@ -191,10 +177,6 @@ export class AstronomicalManager {
           ? toSlug(route.moon)
           : null;
 
-    // For moon routes we treat the parent planet as the focus. In that mode the selected moon's own
-    // marker is redundant (similar to hiding the selected planet marker).
-    const hideSelectedMoonMarker = selectedKind === "moon";
-
     // Find selected moon + focus planet (for moon routes).
     let focusPlanetSlug: string | null = null;
     let selectedMoonSlug: string | null = null;
@@ -203,6 +185,8 @@ export class AstronomicalManager {
       focusPlanetSlug = selectedSlug;
     } else if (selectedKind === "moon") {
       selectedMoonSlug = selectedSlug;
+
+      // Find parent planet for the selected moon.
       for (const entry of this.entrys) {
         const moon = entry.object.moons.find(
           m => (m?.data?.slug ?? "").toLowerCase() === selectedSlug,
@@ -214,29 +198,9 @@ export class AstronomicalManager {
       }
     }
 
-    // Compute camera distance to focus planet for moon label LOD.
+    // Camera world position
     const camWorld = new THREE.Vector3();
     camera.getWorldPosition(camWorld);
-
-    let focusPlanetPos: THREE.Vector3 | null = null;
-    let focusPlanetSize = 0;
-    if (focusPlanetSlug) {
-      for (const entry of this.entrys) {
-        const planet = entry.object;
-        if ((planet?.data?.slug ?? "").toLowerCase() === focusPlanetSlug) {
-          focusPlanetPos = new THREE.Vector3();
-          planet.mesh.getWorldPosition(focusPlanetPos);
-          focusPlanetSize = planet.data?.size ?? 0;
-          break;
-        }
-      }
-    }
-
-    const focusDist = focusPlanetPos ? camWorld.distanceTo(focusPlanetPos) : Infinity;
-    // LOD threshold for showing moon labels when focused.
-    // data.size is *diameter* in Finn; this roughly equals radius*80.
-    const moonLabelDistMax = Math.max(10, focusPlanetSize * 40);
-    const showMoonLabels = focusPlanetSlug != null && focusDist < moonLabelDistMax;
 
     const setElementHidden = (el: HTMLElement | undefined, hidden: boolean): void => {
       if (!el) return;
@@ -250,176 +214,148 @@ export class AstronomicalManager {
       el.classList.toggle("hide-label", hidden);
     };
 
-    if (!declutterAuto) {
-      this.entrys.forEach(entry => {
-        const planet = entry.object;
-        setElementHidden(planet.cssObject?.element, !markersVisible);
-        if (planet.marker) planet.marker.visible = orbitsVisible;
+    // Determine moon label LOD (keep moon markers visible, but hide labels when far)
+    const tmpPlanetPos = new THREE.Vector3();
+    let focusPlanetPos: THREE.Vector3 | null = null;
+    let focusPlanetSize = 0;
 
-        entry.object.moons.forEach(moon => {
-          setElementHidden(moon.cssObject?.element, !markersVisible);
-          if (moon.marker) moon.marker.visible = orbitsVisible;
+    // Build bodies list for declutter engine
+    const bodies: DeclutterBody[] = [];
+    const tmpBodyPos = new THREE.Vector3();
+    const tmpMoonPos = new THREE.Vector3();
+
+    const dwarfSelectors = new Set(["ceres", "pluto", "haumea", "makemake", "eris"]);
+
+    for (const entry of this.entrys) {
+      const body = entry.object;
+
+      const slug = toSlug(body?.data?.slug ?? entry.selector);
+      const selectorSlug = toSlug(entry.selector);
+
+      // Determine kind
+      const kind: DeclutterBody["kind"] =
+        selectorSlug === "sun" ? "sun" : dwarfSelectors.has(selectorSlug) ? "dwarf" : "planet";
+
+      // Approx radius (world units). data.size seems to represent a diameter in your project.
+      const size = body?.data?.size ?? 0;
+      const radius = Math.max(1, size * 0.5);
+
+      body.mesh.getWorldPosition(tmpBodyPos);
+
+      bodies.push({
+        id: slug,
+        kind,
+        position: { x: tmpBodyPos.x, y: tmpBodyPos.y, z: tmpBodyPos.z },
+        radius,
+      });
+
+      // Track focus planet position/size for label LOD decision
+      if (focusPlanetSlug && slug === focusPlanetSlug) {
+        focusPlanetPos = tmpBodyPos.clone();
+        focusPlanetSize = size;
+      }
+
+      // Moons
+      body.moons.forEach(m => {
+        const mSlug = toSlug(m?.data?.slug ?? "");
+        if (!mSlug) return;
+
+        m.mesh.getWorldPosition(tmpMoonPos);
+
+        bodies.push({
+          id: mSlug,
+          kind: "moon",
+          parentId: slug,
+          position: { x: tmpMoonPos.x, y: tmpMoonPos.y, z: tmpMoonPos.z },
+          radius: 1, // not used for occluders (we ignore moon occlusion spheres)
         });
       });
-      return;
     }
 
-    const hasSelection = !!focusPlanetSlug;
-    const hideFocusPlanetMarker = selectedKind === "planet";
+    const focusDist = focusPlanetPos ? camWorld.distanceTo(focusPlanetPos) : Infinity;
 
-    // ===== CSS2D occlusion (hide markers behind planets) =====
-    type Occluder = { slug: string; center: THREE.Vector3; radius: number };
-    const occluders: Occluder[] = [];
-    const tmpCenter = new THREE.Vector3();
-    for (const entry of this.entrys) {
-      const slug = (entry.object?.data?.slug ?? "").toLowerCase();
-      const size = entry.object?.data?.size ?? 0;
-      if (!entry.object?.mesh || !Number.isFinite(size) || size <= 0) continue;
-      entry.object.mesh.getWorldPosition(tmpCenter);
-      occluders.push({
-        slug,
-        center: tmpCenter.clone(),
-        radius: size * 0.5 * 1.05,
-      });
-    }
+    // data.size is treated as diameter; this is a project-specific heuristic
+    const moonLabelDistMax = Math.max(10, focusPlanetSize * 40);
+    const showMoonLabels = focusPlanetSlug != null && focusDist < moonLabelDistMax;
 
-    const tmpToTarget = new THREE.Vector3();
-    const tmpToOcc = new THREE.Vector3();
-    const tmpTarget = new THREE.Vector3();
+    const isOverview = selectedKind === null;
 
-    const isOccluded = (targetPos: THREE.Vector3, targetSlug: string): boolean => {
-      tmpToTarget.copy(targetPos).sub(camPos);
-      const distToTarget = tmpToTarget.length();
-      if (!Number.isFinite(distToTarget) || distToTarget < 1e-6) return false;
-      const dir = tmpToTarget.multiplyScalar(1 / distToTarget);
+    const selectedId =
+      selectedKind === "planet"
+        ? (focusPlanetSlug ?? undefined)
+        : selectedKind === "moon"
+          ? (selectedMoonSlug ?? undefined)
+          : undefined;
 
-      for (const oc of occluders) {
-        if (!oc || oc.slug === targetSlug) continue;
+    const selectedParentId = selectedKind === "moon" ? (focusPlanetSlug ?? undefined) : undefined;
 
-        tmpToOcc.copy(oc.center).sub(camPos);
-        const proj = tmpToOcc.dot(dir);
-        if (proj <= 0 || proj >= distToTarget) continue;
+    const declutter = declutterAuto
+      ? computeDeclutterVisibility({
+          bodies,
+          state: {
+            cameraPos: { x: camWorld.x, y: camWorld.y, z: camWorld.z },
+            isOverview,
+            selectedId,
+            selectedParentId,
+            // Important: keep moon markers visible in focus mode (labels handled separately via showMoonLabels)
+            thresholds: {
+              moonFocusLabelDistance: Number.POSITIVE_INFINITY,
+            },
+            occlusion: {
+              enabled: true,
+              radiusMultiplier: 1.05,
+            },
+          },
+        })
+      : null;
 
-        const closestSq = tmpToOcc.lengthSq() - proj * proj;
-        const rSq = oc.radius * oc.radius;
-        if (closestSq <= rSq) return true;
-      }
-
-      return false;
-    };
-
-    const camPos = camWorld;
-
+    // Apply results
     this.entrys.forEach(entry => {
       const planet = entry.object;
-      const planetSlug = (planet?.data?.slug ?? "").toLowerCase();
-      const isMajor = majorSlugs.has(planetSlug);
-      const isDwarf = dwarfSlugs.has(planetSlug);
-      const isFocusPlanet = hasSelection && planetSlug === focusPlanetSlug;
+      const planetSlug = toSlug(planet?.data?.slug ?? entry.selector);
 
-      // ===== Labels / markers (CSS2D) =====
-      if (!markersVisible) {
-        setElementHidden(planet.cssObject?.element, true);
-      } else if (!hasSelection) {
-        // Home / overview: show major bodies + dwarf planets.
-        const shouldShow = isMajor || isDwarf;
-        let hidden = !shouldShow;
-        if (!hidden && planet?.mesh) {
-          planet.mesh.getWorldPosition(tmpTarget);
-          hidden = isOccluded(tmpTarget, planetSlug);
-        }
-        setElementHidden(planet.cssObject?.element, hidden);
-      } else {
-        // Selected: show only focus planet, except in planet focus mode where we hide its own marker.
-        const shouldShow = isFocusPlanet && !hideFocusPlanetMarker;
-        let hidden = !shouldShow;
-        if (!hidden && planet?.mesh) {
-          planet.mesh.getWorldPosition(tmpTarget);
-          hidden = isOccluded(tmpTarget, planetSlug);
-        }
-        setElementHidden(planet.cssObject?.element, hidden);
-      }
+      const planetSelected = selectedId != null && planetSlug === selectedId;
 
-      // ===== Planet orbit line =====
-      if (planet.marker) {
-        if (!orbitsVisible) {
-          planet.marker.visible = false;
-        } else if (!hasSelection) {
-          // Overview: show planet and dwarf-planet orbits (Sun is excluded).
-          planet.marker.visible = !!planet.data?.isOrbiting && (isMajor || isDwarf);
-        } else {
-          // Focus mode: hide planet orbits (moons only).
-          planet.marker.visible = false;
-        }
-      }
+      const planetVisible =
+        markersVisible &&
+        !planetSelected &&
+        (declutterAuto ? (declutter?.labelVisibleById[planetSlug] ?? false) : true);
 
-      // ===== Moons =====
-      entry.object.moons.forEach(moon => {
-        const moonSlug = (moon?.data?.slug ?? "").toLowerCase();
-        const moonIsSelected = selectedMoonSlug != null && moonSlug === selectedMoonSlug;
-        const hideThisMoonMarker = hideSelectedMoonMarker && moonIsSelected;
+      setElementHidden(planet.cssObject?.element, !planetVisible);
 
-        // In overview mode, allow moon markers (dots) when the camera is close to their parent planet,
-        // but hide moon labels by default to avoid clumping.
-        let showMoonMarkerInOverview = false;
-        let showMoonLabelInOverview = false;
-        if (!hasSelection && markersVisible) {
-          // Distance-based reveal around the nearest planet the user is looking at.
-          if (planet?.mesh) {
-            const pPos = new THREE.Vector3();
-            planet.mesh.getWorldPosition(pPos);
-            const d = camPos.distanceTo(pPos);
-            // If the user zooms close to a planet (even without selecting it), reveal its moons.
-            const revealDist = Math.max(15, (planet.data?.size ?? 0) * 35);
-            if (d < revealDist) {
-              showMoonMarkerInOverview = true;
-              // Labels only when even closer.
-              showMoonLabelInOverview = d < revealDist * 0.6;
-            }
-          }
+      const planetOrbitVisible =
+        orbitsVisible &&
+        (declutterAuto ? (declutter?.orbitVisibleById[planetSlug] ?? false) : true);
+
+      if (planet.marker) planet.marker.visible = planetOrbitVisible;
+
+      planet.moons.forEach(moon => {
+        const moonSlug = toSlug(moon?.data?.slug ?? "");
+        if (!moonSlug) return;
+
+        const moonSelected = selectedId != null && moonSlug === selectedId;
+
+        const moonVisible =
+          markersVisible &&
+          !moonSelected &&
+          (declutterAuto ? (declutter?.labelVisibleById[moonSlug] ?? false) : true);
+
+        setElementHidden(moon.cssObject?.element, !moonVisible);
+
+        // When the moon marker is visible, we can optionally hide only the label text (LOD)
+        if (moonVisible) {
+          const isFocus = selectedKind != null; // planet or moon route
+          const sameSystem = focusPlanetSlug != null && planetSlug === focusPlanetSlug;
+          const hideMoonLabel = declutterAuto && isFocus && sameSystem && !showMoonLabels;
+
+          setLabelHidden(moon.cssObject?.element, hideMoonLabel);
         }
 
-        // Labels
-        if (!markersVisible) {
-          setElementHidden(moon.cssObject?.element, true);
-        } else if (!hasSelection) {
-          // Overview: show moon marker dots only near a planet; hide text label unless very close.
-          let hidden = !showMoonMarkerInOverview;
-          if (!hidden && moon?.mesh) {
-            moon.mesh.getWorldPosition(tmpTarget);
-            hidden = isOccluded(tmpTarget, moonSlug);
-          }
-          setElementHidden(moon.cssObject?.element, hidden);
-          if (!hidden && showMoonMarkerInOverview) {
-            setLabelHidden(moon.cssObject?.element, !showMoonLabelInOverview);
-          }
-        } else if (isFocusPlanet) {
-          // Focus planet: show moon labels only when zoomed close enough.
-          // Do NOT show the selected moon marker (similar to selected planet marker).
-          const shouldShow = (showMoonLabels || moonIsSelected) && !hideThisMoonMarker;
-          let hidden = !shouldShow;
-          if (!hidden && moon?.mesh) {
-            moon.mesh.getWorldPosition(tmpTarget);
-            hidden = isOccluded(tmpTarget, moonSlug);
-          }
-          setElementHidden(moon.cssObject?.element, hidden);
-        } else {
-          setElementHidden(moon.cssObject?.element, true);
-        }
+        const moonOrbitVisible =
+          orbitsVisible &&
+          (declutterAuto ? (declutter?.orbitVisibleById[moonSlug] ?? false) : true);
 
-        // Orbits (moon markers)
-        if (moon.marker) {
-          if (!orbitsVisible) {
-            moon.marker.visible = false;
-          } else if (!hasSelection) {
-            moon.marker.visible = false;
-          } else if (isFocusPlanet) {
-            // Focus mode: show only orbits for moons of the focus planet.
-            moon.marker.visible = true;
-          } else {
-            moon.marker.visible = false;
-          }
-        }
+        if (moon.marker) moon.marker.visible = moonOrbitVisible;
       });
     });
   }
