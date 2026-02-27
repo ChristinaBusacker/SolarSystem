@@ -7,28 +7,21 @@
   </head>
   <body>
     <div id="layout">
-      <!-- Left navigation sidebar (planets). Shares space with the stage on desktop. -->
       <div id="sidebar-left-root" class="sidebar-root sidebar-left is-closed">
         <div id="sidebar-left-slot"></div>
       </div>
 
-      <!-- Stage: canvas + CSS2D overlay + UI overlay -->
       <div id="scene-root">
         <div id="app"></div>
 
         <div id="ui-root">
           <div data-slot="stage-controls"></div>
-          <div data-slot="zoom-controls"></div>
-          <div data-slot="scene-toggles"></div>
           <div data-slot="hud"></div>
           <div data-slot="modal"></div>
-          <div data-slot="mobile-toggles"></div>
-          <div data-slot="toast"></div>
           <div data-slot="menu"></div>
         </div>
       </div>
 
-      <!-- Right information sidebar -->
       <div id="sidebar-right-root" class="sidebar-root sidebar-right is-open">
         <div id="sidebar-right-slot"></div>
       </div>

@@ -1,3 +1,6 @@
+import * as THREE from "three";
+import { LineMaterial } from "three/examples/jsm/lines/LineMaterial";
+import { ceresRawData, erisRawData, haumeaRawData, makemakeRawData, mercuryRawData } from "../../data/raw-object.data";
 import { AstronomicalEntry } from "../interfaces/entry.interfaces";
 import { Earth } from "../objects/earth.object";
 import { Jupiter } from "../objects/jupiter.object";
@@ -5,13 +8,10 @@ import { Mars } from "../objects/mars.object";
 import { Neptun } from "../objects/neptun.object";
 import { Pluto } from "../objects/pluto.object";
 import { Saturn } from "../objects/saturn.object";
+import { SimpleAstronomicalBody } from "../objects/simple-astronomical.object";
 import { Sun } from "../objects/sun.object";
 import { Uranus } from "../objects/uranus.object";
 import { Venus } from "../objects/venus.object";
-import * as THREE from "three";
-import { LineMaterial } from "three/examples/jsm/lines/LineMaterial";
-import { ceresRawData, erisRawData, haumeaRawData, makemakeRawData, mercuryRawData } from "../../data/raw-object.data";
-import { SimpleAstronomicalBody } from "../objects/simple-astronomical.object";
 import { router } from "../router/router";
 
 type DeclutterOptions = {
@@ -86,16 +86,15 @@ export class AstronomicalManager {
     const w = Math.floor(width * dpr);
     const h = Math.floor(height * dpr);
     this.entrys.forEach((entry) => {
-      const obj: any = entry.object as any;
-      if (obj.marker && obj.marker.material) {
-        const m = obj.marker.material as LineMaterial;
+
+      if (entry.object.marker && entry.object.marker.material) {
+        const m = entry.object.marker.material as LineMaterial;
         if (m.resolution) m.resolution.set(w, h);
       }
 
       entry.object.moons.forEach((moon) => {
-        const mo: any = moon as any;
-        if (mo.marker && mo.marker.material) {
-          const mm = mo.marker.material as LineMaterial;
+        if (moon.marker && moon.marker.material) {
+          const mm = moon.marker.material as LineMaterial;
           if (mm.resolution) mm.resolution.set(w, h);
         }
       });
@@ -104,12 +103,10 @@ export class AstronomicalManager {
 
   public setOrbitsVisible(visible: boolean): void {
     this.entrys.forEach((entry) => {
-      const obj: any = entry.object as any;
-      if (obj.marker) obj.marker.visible = visible;
+      if (entry.object.marker) entry.object.marker.visible = visible;
 
       entry.object.moons.forEach((moon) => {
-        const m: any = moon as any;
-        if (m.marker) m.marker.visible = visible;
+        if (moon.marker) moon.marker.visible = visible;
       });
     });
   }
@@ -165,10 +162,9 @@ export class AstronomicalManager {
     } else if (selectedKind === "moon") {
       selectedMoonSlug = selectedSlug;
       for (const entry of this.entrys) {
-        const parent = entry.object as any;
-        const moon = (entry.object.moons as any[]).find((m) => (m?.data?.slug ?? "").toLowerCase() === selectedSlug);
+        const moon = (entry.object.moons).find((m) => (m?.data?.slug ?? "").toLowerCase() === selectedSlug);
         if (moon) {
-          focusPlanetSlug = (parent?.data?.slug ?? "").toLowerCase();
+          focusPlanetSlug = (entry.object?.data?.slug ?? "").toLowerCase();
           break;
         }
       }
@@ -182,7 +178,7 @@ export class AstronomicalManager {
     let focusPlanetSize = 0;
     if (focusPlanetSlug) {
       for (const entry of this.entrys) {
-        const planet = entry.object as any;
+        const planet = entry.object;
         if ((planet?.data?.slug ?? "").toLowerCase() === focusPlanetSlug) {
           focusPlanetPos = new THREE.Vector3();
           planet.mesh.getWorldPosition(focusPlanetPos);
@@ -201,25 +197,22 @@ export class AstronomicalManager {
     const setElementHidden = (el: HTMLElement | undefined, hidden: boolean): void => {
       if (!el) return;
       el.classList.toggle("hide", hidden);
-      // Collision hiding is applied separately.
       el.classList.remove("hide-collide");
       el.classList.remove("hide-label");
     };
 
     const setLabelHidden = (el: HTMLElement | undefined, hidden: boolean): void => {
       if (!el) return;
-      // Keep the dot visible but hide only the text label.
       el.classList.toggle("hide-label", hidden);
     };
 
-    // When auto declutter is OFF, revert to the old behavior (all bodies follow the global toggles).
     if (!declutterAuto) {
       this.entrys.forEach((entry) => {
-        const planet: any = entry.object as any;
+        const planet = entry.object;
         setElementHidden(planet.cssObject?.element, !markersVisible);
         if (planet.marker) planet.marker.visible = orbitsVisible;
 
-        entry.object.moons.forEach((moon: any) => {
+        entry.object.moons.forEach((moon) => {
           setElementHidden(moon.cssObject?.element, !markersVisible);
           if (moon.marker) moon.marker.visible = orbitsVisible;
         });
@@ -227,28 +220,22 @@ export class AstronomicalManager {
       return;
     }
 
-    // Auto declutter ON.
     const hasSelection = !!focusPlanetSlug;
-    // When we're inside a planet view, hiding that planet's own marker reduces visual clutter
-    // (the user already knows which planet they're on).
     const hideFocusPlanetMarker = selectedKind === "planet";
 
     // ===== CSS2D occlusion (hide markers behind planets) =====
-    // CSS2DRenderer draws DOM elements on top, so we emulate depth by ray/sphere occlusion.
-    // This is intentionally conservative: only hide when a body is clearly behind another body.
     type Occluder = { slug: string; center: THREE.Vector3; radius: number };
     const occluders: Occluder[] = [];
     const tmpCenter = new THREE.Vector3();
-    for (const e of this.entrys) {
-      const p: any = e.object as any;
-      const slug = (p?.data?.slug ?? "").toLowerCase();
-      const size = p?.data?.size ?? 0;
-      if (!p?.mesh || !Number.isFinite(size) || size <= 0) continue;
-      p.mesh.getWorldPosition(tmpCenter);
+    for (const entry of this.entrys) {
+
+      const slug = (entry.object?.data?.slug ?? "").toLowerCase();
+      const size = entry.object?.data?.size ?? 0;
+      if (!entry.object?.mesh || !Number.isFinite(size) || size <= 0) continue;
+      entry.object.mesh.getWorldPosition(tmpCenter);
       occluders.push({
         slug,
         center: tmpCenter.clone(),
-        // data.size is diameter in this codebase; sphere radius is size/2.
         radius: (size * 0.5) * 1.05,
       });
     }
@@ -258,7 +245,6 @@ export class AstronomicalManager {
     const tmpTarget = new THREE.Vector3();
 
     const isOccluded = (targetPos: THREE.Vector3, targetSlug: string): boolean => {
-      // Ray from camera -> target
       tmpToTarget.copy(targetPos).sub(camPos);
       const distToTarget = tmpToTarget.length();
       if (!Number.isFinite(distToTarget) || distToTarget < 1e-6) return false;
@@ -267,12 +253,10 @@ export class AstronomicalManager {
       for (const oc of occluders) {
         if (!oc || oc.slug === targetSlug) continue;
 
-        // Only consider occluders that are between camera and target along the ray.
         tmpToOcc.copy(oc.center).sub(camPos);
         const proj = tmpToOcc.dot(dir);
         if (proj <= 0 || proj >= distToTarget) continue;
 
-        // Closest distance from occluder center to the ray.
         const closestSq = tmpToOcc.lengthSq() - proj * proj;
         const rSq = oc.radius * oc.radius;
         if (closestSq <= rSq) return true;
@@ -281,11 +265,10 @@ export class AstronomicalManager {
       return false;
     };
 
-    // Precompute camera world position for overview-range rules.
     const camPos = camWorld;
 
     this.entrys.forEach((entry) => {
-      const planet: any = entry.object as any;
+      const planet = entry.object;
       const planetSlug = (planet?.data?.slug ?? "").toLowerCase();
       const isMajor = majorSlugs.has(planetSlug);
       const isDwarf = dwarfSlugs.has(planetSlug);
@@ -328,7 +311,7 @@ export class AstronomicalManager {
       }
 
       // ===== Moons =====
-      entry.object.moons.forEach((moon: any) => {
+      entry.object.moons.forEach((moon) => {
         const moonSlug = (moon?.data?.slug ?? "").toLowerCase();
         const moonIsSelected = selectedMoonSlug != null && moonSlug === selectedMoonSlug;
         const hideThisMoonMarker = hideSelectedMoonMarker && moonIsSelected;

@@ -1,10 +1,10 @@
 import * as THREE from "three";
+import { Lensflare, LensflareElement } from "three/examples/jsm/objects/Lensflare";
 import { APP } from "..";
 import { sunRawData } from "../../data/raw-object.data";
 import { coronaShader } from "../shader/corona";
 import { sunShader } from "../shader/sun.shader";
 import { Astronomical } from "./astronomical.object";
-import { Lensflare, LensflareElement } from "three/examples/jsm/objects/Lensflare";
 export class Sun extends Astronomical {
   public cameraPosition = new THREE.Vector3(10, 10, 10);
   private coronaShaderMaterial: THREE.ShaderMaterial;

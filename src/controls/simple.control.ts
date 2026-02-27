@@ -5,8 +5,6 @@ export class SimpleControl {
   public horizontal = new THREE.Group()
   public vertical = new THREE.Group()
   public group = new THREE.Group();
-  // Smoothed camera rotation velocity.
-  // IMPORTANT: start at 0 to avoid cameras drifting when not active.
   public velocity = new THREE.Vector2(0, 0)
   private isRotating = false
   public previousMousePosition = new THREE.Vector2(0, 0)
@@ -23,13 +21,12 @@ export class SimpleControl {
     this.group.add(this.horizontal);
   }
 
-  /** Begin a rotate gesture (mouse down / touch start). */
+
   public startRotate(clientX: number, clientY: number): void {
     this.isRotating = true;
     this.previousMousePosition.set(clientX, clientY);
   }
 
-  /** Continue rotate gesture. */
   public moveRotate(clientX: number, clientY: number, scale: number = 0.8): void {
     if (!this.isRotating) return;
 
@@ -42,7 +39,6 @@ export class SimpleControl {
     this.previousMousePosition.set(clientX, clientY);
   }
 
-  /** End a rotate gesture. */
   public endRotate(): void {
     this.isRotating = false;
   }
@@ -52,15 +48,13 @@ export class SimpleControl {
   }
 
   public applyWheel(deltaY: number): void {
-    // Never scale wheel delta so hard that it can't escape zoom=0.
-    const speed = 0.0012 * (0.15 + this.zoom); // still finer when zoomed-in, but never 0
+    const speed = 0.0012 * (0.15 + this.zoom)
     this.applyZoomDelta(deltaY * speed);
   }
 
   public applyZoomDelta(delta: number): void {
     this.zoom = THREE.MathUtils.clamp(this.zoom + delta, 0, 1);
 
-    // Optional endpoint snapping, but tiny epsilon so the wheel can move away from endpoints.
     if (this.zoom > 0.9995) this.zoom = 1;
     if (this.zoom < 0.0005) this.zoom = 0;
   }
@@ -69,7 +63,6 @@ export class SimpleControl {
     return (1 - t) * start + t * end;
   }
 
-  /** Immediately place the camera at the distance implied by the current zoom. */
   public snapToZoom(): void {
     const dist = this.lerp(this.distanceMin, this.distanceMax, this.zoom);
     this.camera.position.set(0, 0, dist);

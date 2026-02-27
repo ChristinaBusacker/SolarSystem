@@ -1,8 +1,8 @@
 import * as THREE from "three";
 import { APP } from "..";
-import { asteroidBeltImpostorShader } from "../shader/asteroid-belt-impostor.shader";
-import { AstronomicalDataParser } from "../parser/astronomical-data.parser";
 import { asteroidBeltZone } from "../../data/raw-object.data";
+import { AstronomicalDataParser } from "../parser/astronomical-data.parser";
+import { asteroidBeltImpostorShader } from "../shader/asteroid-belt-impostor.shader";
 
 type Rng = () => number;
 type BeltProfile = "main" | "kuiperCold" | "kuiperHot" | "ambient";

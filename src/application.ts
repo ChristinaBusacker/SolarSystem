@@ -1,32 +1,32 @@
 import * as THREE from "three";
-import { CSS2DRenderer } from "three/examples/jsm/renderers/CSS2DRenderer";
-import { CameraManager } from "./manager/CameraManager";
-import { AstronomicalManager } from "./manager/AstronomicalManager";
-import { MinorBodyManager } from "./manager/minor-body-manager";
-import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
-import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer";
+import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass";
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
+import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass";
 import { SMAAPass } from "three/examples/jsm/postprocessing/SMAAPass";
+import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
+import { CSS2DRenderer } from "three/examples/jsm/renderers/CSS2DRenderer";
 import {
-  bloomThreshold,
-  bloomStrength,
   bloomRadius,
+  bloomStrength,
+  bloomThreshold,
   simulationSpeed,
 } from "../data/settings.data";
-import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass";
-import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass";
+import { AstronomicalManager } from "./manager/AstronomicalManager";
+import { CameraManager } from "./manager/CameraManager";
+import { MinorBodyManager } from "./manager/minor-body-manager";
 import { mixPassShader } from "./shader/mixpass.shader";
 import { starfieldPointsShader } from "./shader/starfield-points.shader";
-import { UiRenderer } from "./ui/ui-renderer";
 import { HudRenderer } from "./ui/hud-renderer";
 import { StageControlsRenderer } from "./ui/stage-controls-renderer";
+import { UiRenderer } from "./ui/ui-renderer";
 
-import { PlanetSidebarRenderer } from "./ui/planet-sidebar-renderer";
-import { openSidebar, subscribeLayoutState } from "./ui/layout-state";
-import { subscribeSceneVisibilityState } from "./ui/scene-visibility-state";
-import { AppRoute, router } from "./router/router";
-import { MenuRenderer } from "./ui/menu-renderer";
 import { SoundManager } from "./manager/SoundManager";
+import { AppRoute, router } from "./router/router";
+import { openSidebar, subscribeLayoutState } from "./ui/layout-state";
+import { MenuRenderer } from "./ui/menu-renderer";
+import { PlanetSidebarRenderer } from "./ui/planet-sidebar-renderer";
+import { subscribeSceneVisibilityState } from "./ui/scene-visibility-state";
 
 export class Application {
   private static instance: Application | null = null;
@@ -1009,7 +1009,7 @@ export class Application {
 
       // Don't scale the starfield with huge far planes (some cameras go up to ~90M).
       // Extremely large radii hurt precision and can cause artifacts.
-      const far = (camera as any).far ?? 5000;
+      const far = camera.far ?? 5000;
       const desiredRadius = Math.min(5000, Math.max(200, far * 0.95));
       this.starfield.scale.setScalar(desiredRadius);
     }

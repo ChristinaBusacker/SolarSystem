@@ -1,6 +1,6 @@
 import * as THREE from "three";
-import { Astronomical } from "./astronomical.object";
 import { AstronomicalRawData } from "../interfaces/dataset.interface";
+import { Astronomical } from "./astronomical.object";
 
 type SimpleAstronomicalBodyOptions = {
   isMoon?: boolean;

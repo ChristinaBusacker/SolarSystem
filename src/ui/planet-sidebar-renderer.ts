@@ -1,6 +1,6 @@
-import sidebarLeftTpl from "./templates/sidebar-left.tpl.html";
-import { closeSidebar } from "./layout-state";
 import { router } from "../router/router";
+import { closeSidebar } from "./layout-state";
+import sidebarLeftTpl from "./templates/sidebar-left.tpl.html";
 
 export class PlanetSidebarRenderer {
   private root: HTMLElement;

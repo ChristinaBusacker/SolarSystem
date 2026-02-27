@@ -1,5 +1,7 @@
 import * as THREE from "three";
 import { AstronomicalDataset } from "./dataset.interface";
+import { Line2 } from "three/examples/jsm/lines/Line2";
+import { CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer";
 
 export interface AstronomicalObject {
   texture: THREE.Texture;
@@ -12,6 +14,8 @@ export interface AstronomicalObject {
   moons: Array<AstronomicalObject>
   data?: AstronomicalDataset;
   isMoon: boolean;
+  marker: Line2;
+  cssObject: CSS2DObject;
   preBloom: () => void;
   postBloom: () => void;
   init: () => void;

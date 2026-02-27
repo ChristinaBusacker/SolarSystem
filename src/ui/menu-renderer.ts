@@ -1,10 +1,10 @@
-import menuTpl from "./templates/menu.tpl.html";
 import { renderTemplate } from "./template";
+import menuTpl from "./templates/menu.tpl.html";
 
-import { router } from "../router/router";
-import { toggleDeclutterAuto, toggleMarkers, toggleOrbits } from "./scene-visibility-state";
-import { subscribeLayoutState } from "./layout-state";
 import { SoundManager } from "../manager/SoundManager";
+import { router } from "../router/router";
+import { subscribeLayoutState } from "./layout-state";
+import { toggleDeclutterAuto, toggleMarkers, toggleOrbits } from "./scene-visibility-state";
 
 interface MenuRenderState {
   isOpen: boolean;
@@ -159,7 +159,6 @@ export class MenuRenderer {
     this.state.isFullscreen = Boolean(document.fullscreenElement);
 
     const button = this.root.querySelector('[data-menu-action="toggle-fullscreen"]');
-    console.log(button)
     if (this.state.isFullscreen) {
       button?.classList.add('is-active')
     } else {

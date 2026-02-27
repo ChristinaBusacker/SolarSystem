@@ -7,6 +7,8 @@ APP.init();
 
 APP.animate();
 
+// On Purpose to access application via APP in console
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 (window as any).app = APP;
 
 export { APP };

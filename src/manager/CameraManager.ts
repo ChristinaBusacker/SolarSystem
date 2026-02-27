@@ -1,7 +1,7 @@
+import * as THREE from "three";
 import { APP } from "..";
 import { SimpleControl } from "../controls/simple.control";
 import { CameraEntry } from "../interfaces/entry.interfaces";
-import * as THREE from "three";
 import { SoundManager } from "./SoundManager";
 
 export class CameraManager {
@@ -244,7 +244,7 @@ export class CameraManager {
 
         control.velocity.set(0, 0);
 
-        const near = Math.max(0.001, (cam as any).near ?? 0.01);
+        const near = Math.max(0.001, cam.near ?? 0.01);
         const startDist = Math.max(near * 2.0, control.distanceMin * 0.02);
         cam.position.set(0, 0, startDist);
       }

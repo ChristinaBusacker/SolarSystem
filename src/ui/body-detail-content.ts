@@ -1,7 +1,7 @@
-import type { AstronomicalRawData } from "../interfaces/dataset.interface";
 import * as rawBodyExports from "../../data/raw-object.data";
+import { astronomicalSidebarContent } from '../../data/sidebar.data';
 import { BodyInfoOverride } from "../interfaces/bodyInfoOverride.interface";
-import { astronomicalSidebarContent } from '../../data/sidebar.data'
+import type { AstronomicalRawData } from "../interfaces/dataset.interface";
 
 const BODY_INFO_OVERRIDES: Record<string, BodyInfoOverride> = astronomicalSidebarContent
 

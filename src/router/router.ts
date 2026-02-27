@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // A tiny frameworkless router.
 //
 // 2026-ish decision:

@@ -199,7 +199,7 @@ export class SoundManager {
         audio.play();
 
         // Clean up after finishing (best effort)
-        const source: any = (audio as any).source;
+        const source: any = audio.source;
         if (source && typeof source.onended !== "undefined") {
             source.onended = () => {
                 try {

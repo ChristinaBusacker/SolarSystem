@@ -10,9 +10,9 @@ import { AstronomicalObject } from "../interfaces/astronomicalObject.interface";
 import { AstronomicalDataset, AstronomicalRawData } from "../interfaces/dataset.interface";
 import { AstronomicalDataParser } from "../parser/astronomical-data.parser";
 import { router } from "../router/router";
+import { astronomicalDisplacementShader } from "../shader/astronomical-displacement.shader";
 import { astronomicalShader } from "../shader/astronomical.shader";
 import { earthShader } from "../shader/earth.shader";
-import { astronomicalDisplacementShader } from "../shader/astronomical-displacement.shader";
 
 export class Astronomical implements AstronomicalObject {
   public data?: AstronomicalDataset;
@@ -315,12 +315,6 @@ export class Astronomical implements AstronomicalObject {
         this.camera,
       );
 
-
-      if (this.data.slug === 'phobos') {
-        console.log(this.data.size * 5, this.control)
-
-      }
-
       this.group.add(this.control.group);
 
       APP.cameraManager.addCamera(this.data.slug, this.camera, this.control);
@@ -456,11 +450,6 @@ export class Astronomical implements AstronomicalObject {
       casterPosition4: { value: new THREE.Vector3(0, 0, 0) },
       casterRadius4: { value: 0.0 },
     };
-
-    if (this.data.slug === "phobos") {
-      console.log(this.data.size)
-    }
-
 
     const options = {
       dayTexture: { value: this.texturePath[0] ? this.texture : null },

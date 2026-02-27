@@ -1,7 +1,7 @@
-import stageControlsTpl from "./templates/stage-controls.tpl.html";
-import { renderTemplate } from "./template";
-import { getLayoutState, subscribeLayoutState, toggleSidebar } from "./layout-state";
 import { router } from "../router/router";
+import { getLayoutState, subscribeLayoutState, toggleSidebar } from "./layout-state";
+import { renderTemplate } from "./template";
+import stageControlsTpl from "./templates/stage-controls.tpl.html";
 
 interface StageControlsRenderState {
   leftSidebarOpen: boolean;

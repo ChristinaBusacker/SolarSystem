@@ -42,7 +42,6 @@ export class Earth extends Astronomical {
 
     if (moonPosition) {
       const tiltAdjustment = moonPosition.x;
-      console.log(tiltAdjustment)
 
       this.mesh.rotation.z = THREE.MathUtils.degToRad(tiltAdjustment);
       this.atmosphereMesh.rotation.z = THREE.MathUtils.degToRad(tiltAdjustment);

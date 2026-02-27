@@ -1,8 +1,8 @@
-import sidebarTpl from "./templates/sidebar.tpl.html";
-import { renderTemplate } from "./template";
+import { router } from "../router/router";
 import { renderSelectedBodyDetails } from "./body-detail-content";
 import { closeSidebar } from "./layout-state";
-import { router } from "../router/router";
+import { renderTemplate } from "./template";
+import sidebarTpl from "./templates/sidebar.tpl.html";
 
 export interface UiState {
   hidePlanets: boolean;

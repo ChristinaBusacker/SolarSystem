@@ -24,7 +24,6 @@ export function subscribeLayoutState(listener: (s: LayoutState) => void): () => 
 }
 
 function commit(next: LayoutState): void {
-  console.log(next)
   if (next.leftOpen || next.rightOpen) {
     document.body.classList.add('sidebar-open')
   }

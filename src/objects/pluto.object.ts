@@ -1,7 +1,7 @@
-import { charonRawData, plutoRawData } from "../../data/raw-object.data";
-import { Astronomical } from "./astronomical.object";
 import * as THREE from "three";
 import { MathUtils } from "three";
+import { charonRawData, plutoRawData } from "../../data/raw-object.data";
+import { Astronomical } from "./astronomical.object";
 import { SimpleAstronomicalBody } from "./simple-astronomical.object";
 
 export class Pluto extends Astronomical {

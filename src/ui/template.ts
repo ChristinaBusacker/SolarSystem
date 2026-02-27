@@ -1,5 +1,7 @@
 type TemplateContext = Record<string, unknown>;
 
+// On purpose because this function shpuld support any javascript object
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getPath(obj: any, path: string): unknown {
   return path
     .split(".")
