@@ -5,16 +5,10 @@ import { AstronomicalManager } from "./manager/AstronomicalManager";
 import { CameraManager } from "./manager/CameraManager";
 import { MinorBodyManager } from "./manager/minor-body-manager";
 import { StarfieldManager } from "./manager/StarfieldManager";
-import { HudRenderer } from "./ui/hud-renderer";
-import { StageControlsRenderer } from "./ui/stage-controls-renderer";
-import { UiRenderer } from "./ui/ui-renderer";
+import { UiManager } from "./ui/ui-manager";
 
 import { SoundManager } from "./manager/SoundManager";
 import { AppRoute, router } from "./router/router";
-import { openSidebar, subscribeLayoutState } from "./ui/layout-state";
-import { MenuRenderer } from "./ui/menu-renderer";
-import { PlanetSidebarRenderer } from "./ui/planet-sidebar-renderer";
-import { subscribeSceneVisibilityState } from "./ui/scene-visibility-state";
 import { RenderPipeline } from "./rendering/render-pipeline";
 import { ViewportService } from "./services/viewport.service";
 
@@ -51,31 +45,12 @@ export class Application {
   private lastDeclutterLayoutMs = 0;
   private lastPlanetClusterLayoutMs = 0;
 
-  private lastLayoutKey: string | null = null;
-
-  private uiRight?: UiRenderer;
-  private menuRenderer?: MenuRenderer;
+  private uiManager: UiManager;
 
   // Current selection derived from the router (used for declutter logic).
   private currentSelectedBodySlug?: string;
 
   private constructor() {
-    window.addEventListener("ui:speedChange", (e: Event) => {
-      const ce = e as CustomEvent<{ speed: number }>;
-      if (ce.detail?.speed != null) this.simulationSpeed = ce.detail.speed;
-    });
-
-    window.addEventListener("ui:zoom-step", this.handleUiZoomStep as EventListener);
-
-    window.addEventListener("ui:select-body", (e: Event) => {
-      const ce = e as CustomEvent<{ name: string; kind: "planet" | "moon" }>;
-      const name = ce.detail?.name;
-      const kind = ce.detail?.kind;
-      if (!name || !kind) return;
-      if (kind === "moon") router.goMoon(name);
-      else router.goPlanet(name);
-    });
-
     this.viewportService = new ViewportService({
       webglRenderer: this.webglRenderer,
       cssRenderer: this.cssRenderer,
@@ -83,21 +58,21 @@ export class Application {
       cameraManager: this.cameraManager,
       astronomicalManager: this.astronomicalManager,
     });
+
+    this.uiManager = new UiManager({
+      cssRenderer: this.cssRenderer,
+      viewportService: this.viewportService,
+      cameraManager: this.cameraManager,
+      onSimulationSpeedChange: speed => {
+        this.simulationSpeed = speed;
+      },
+      onSceneVisibilityChange: v => {
+        this.markersVisible = v.markersVisible;
+        this.orbitsVisible = v.orbitsVisible;
+        this.declutterAuto = v.declutterAuto;
+      },
+    });
   }
-
-  private readonly handleUiZoomStep = (e: Event): void => {
-    const ce = e as CustomEvent<{ direction?: "in" | "out" }>;
-    const direction = ce.detail?.direction;
-    if (direction !== "in" && direction !== "out") return;
-
-    const activeEntry = this.cameraManager.getActiveEntry();
-    const control = activeEntry?.control;
-    if (!control) return;
-
-    const step = 0.075;
-    const signedStep = direction === "in" ? -step : step;
-    control.zoom = THREE.MathUtils.clamp(control.zoom + signedStep, 0, 1);
-  };
 
   public init() {
     this.cameraManager.switchCamera("Default", false).initEventControls();
@@ -125,7 +100,9 @@ export class Application {
     this.starfieldManager.init(this.scene);
     this.initSunLight();
     this.initPostProcessing();
-    this.initUi();
+    this.uiManager.init({
+      simulationSpeed: this.simulationSpeed,
+    });
     setTimeout(() => {
       this.initRouter();
     }, 1000);
@@ -151,86 +128,6 @@ export class Application {
     return Application.instance;
   }
 
-  private initUi() {
-    const stageControlsSlot = document.querySelector<HTMLElement>(
-      '#ui-root [data-slot="stage-controls"]',
-    );
-
-    if (stageControlsSlot) {
-      new StageControlsRenderer(stageControlsSlot).init();
-    }
-
-    const uiSlotHud = document.querySelector<HTMLElement>('#ui-root [data-slot="hud"]');
-
-    const menuSlot = document.querySelector<HTMLElement>('#ui-root [data-slot="menu"]');
-
-    if (uiSlotHud) {
-      new HudRenderer(uiSlotHud, {
-        bodyName: "None",
-        simulationSpeed: this.simulationSpeed,
-        paused: this.simulationSpeed <= 0,
-        orbitsVisible: {
-          planets: true,
-          moons: true,
-        },
-        markersVisible: true,
-      });
-    }
-
-    const uiRightSidebarSlot = document.querySelector<HTMLElement>("#sidebar-right-slot");
-    if (uiRightSidebarSlot) {
-      this.uiRight = new UiRenderer(uiRightSidebarSlot, {
-        hideMoons: false,
-        hidePlanets: false,
-      });
-      this.uiRight.init();
-    }
-
-    if (menuSlot) {
-      this.menuRenderer = new MenuRenderer(menuSlot);
-    }
-
-    const uiLeftSidebarSlot = document.querySelector<HTMLElement>("#sidebar-left-slot");
-    if (uiLeftSidebarSlot) {
-      new PlanetSidebarRenderer(uiLeftSidebarSlot).init();
-    }
-
-    // Apply open/close state to both sidebars and resize smoothly during transitions.
-    subscribeLayoutState(s => {
-      const leftRoot = document.getElementById("sidebar-left-root");
-      const rightRoot = document.getElementById("sidebar-right-root");
-
-      if (leftRoot) {
-        leftRoot.classList.toggle("is-open", s.leftOpen);
-        leftRoot.classList.toggle("is-closed", !s.leftOpen);
-      }
-      if (rightRoot) {
-        rightRoot.classList.toggle("is-open", s.rightOpen);
-        rightRoot.classList.toggle("is-closed", !s.rightOpen);
-      }
-
-      const key = `${s.leftOpen ? 1 : 0}${s.rightOpen ? 1 : 0}`;
-      if (this.lastLayoutKey !== null && this.lastLayoutKey !== key) {
-        this.viewportService.resizeDuringTransition(280);
-      }
-      this.lastLayoutKey = key;
-    });
-
-    // Scene visibility toggles (markers/orbits)
-    subscribeSceneVisibilityState(v => {
-      const overlay = this.cssRenderer?.domElement as HTMLElement | undefined;
-      if (overlay) {
-        overlay.classList.toggle("markers-off", !v.markersVisible);
-        overlay.classList.toggle("markers-on", v.markersVisible);
-      }
-
-      // Mirror state for per-frame declutter rules.
-      this.markersVisible = v.markersVisible;
-      this.orbitsVisible = v.orbitsVisible;
-      this.declutterAuto = v.declutterAuto;
-    });
-  }
-
   private initRouter(): void {
     router.start();
     router.subscribe(r => this.applyRoute(r));
@@ -239,7 +136,7 @@ export class Application {
   private applyRoute(route: AppRoute): void {
     if (route.name === "home") {
       this.cameraManager.switchCamera("Default");
-      this.uiRight?.setSelectedBodyName(undefined);
+      this.uiManager.setSelectedBodyName(undefined);
       this.currentSelectedBodySlug = undefined;
 
       // Apply declutter immediately to avoid a one-frame flash of labels.
@@ -256,7 +153,7 @@ export class Application {
     const bodyName = route.name === "planet" ? route.planet : route.moon;
 
     this.cameraManager.switchCamera(bodyName);
-    this.uiRight?.setSelectedBodyName(bodyName);
+    this.uiManager.setSelectedBodyName(bodyName);
     this.currentSelectedBodySlug = undefined;
 
     // Apply declutter immediately to avoid a one-frame flash of labels.
@@ -268,7 +165,7 @@ export class Application {
     });
 
     // Show info panel when a body is selected.
-    openSidebar("right");
+    this.uiManager.openRightSidebar();
   }
 
   private initWebGLRenderer() {
