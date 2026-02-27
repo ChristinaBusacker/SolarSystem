@@ -1,4 +1,5 @@
 @use "../tokens" as t;
+@use "../typography" as typo;
 
 .ui-stage-controls {
   position: absolute;
@@ -39,6 +40,7 @@
   transition:
     opacity t.$dur-fast t.$ease-standard,
     transform t.$dur-fast t.$ease-standard;
+  font-family: typo.$font-family-heading;
 }
 
 .ui-stage-controls__top-center.is-hidden {
@@ -155,7 +157,6 @@
   max-width: min(52vw, 460px);
   display: flex;
   flex-direction: column;
-  font-family: Out;
   margin-top: 10px !important;
   cursor: pointer;
 
