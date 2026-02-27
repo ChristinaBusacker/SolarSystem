@@ -235,6 +235,18 @@ export class CameraManager {
         cam.position.set(0, 0, mid);
 
         control.zoom = 1;
+      } else {
+        // Re-trigger the "fly out" every time a body camera is selected.
+        // These cameras persist in the collection, so without resetting their starting distance,
+        // the first selection animates (from z=0) but subsequent selections appear static.
+        const control = this.activeCamera.control;
+        const cam = this.activeCamera.camera;
+
+        control.velocity.set(0, 0);
+
+        const near = Math.max(0.001, (cam as any).near ?? 0.01);
+        const startDist = Math.max(near * 2.0, control.distanceMin * 0.02);
+        cam.position.set(0, 0, startDist);
       }
 
       APP.updateComposer(entry.camera);

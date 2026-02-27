@@ -525,7 +525,7 @@ export class Application {
     if (items.length < 2) return;
     items.sort((a, b) => a.prio - b.prio);
 
-    const margin = 10; // px padding around label rectangles
+    const margin = 10;
     const intersects = (a: DOMRect, b: DOMRect): boolean => {
       return !(
         a.right + margin < b.left ||
@@ -538,14 +538,12 @@ export class Application {
     const clusters: Array<{ leader: Item; hiddenCount: number }> = [];
 
     for (const it of items) {
-      // Find a cluster whose leader label overlaps with this label.
       const hit = clusters.find((c) => intersects(it.rect, c.leader.rect));
       if (!hit) {
         clusters.push({ leader: it, hiddenCount: 0 });
         continue;
       }
 
-      // Hide only the text label for lower-priority items.
       it.el.classList.add("hide-label");
       hit.hiddenCount += 1;
     }
@@ -563,8 +561,6 @@ export class Application {
   }
 
   private getRenderPixelRatio(): number {
-    // Favor sharpness while staying within a sensible mobile budget.
-    // You can bump this to 3 on high-end devices, but 2 is a good default.
     return Math.min(window.devicePixelRatio || 1, 2);
   }
 
@@ -727,7 +723,6 @@ export class Application {
   public onResize() {
     const { width, height } = this.getViewportSize();
 
-    // Avoid thrashing render targets during transitions.
     if (width < 2 || height < 2) return;
     if (
       width === this.lastViewportSize.width &&
@@ -738,26 +733,21 @@ export class Application {
 
     const activeCamera = this.cameraManager.getActiveEntry().camera;
 
-    // Keep pixel ratio in sync (e.g. browser zoom or OS setting changes).
     const dpr = this.getRenderPixelRatio();
     if (dpr !== this.lastDevicePixelRatio) {
       this.lastDevicePixelRatio = dpr;
       this.webglRenderer.setPixelRatio(dpr);
       this.bloomComposer.setPixelRatio?.(dpr);
       this.finalComposer.setPixelRatio?.(dpr);
-      // Force a buffer resize at the next opportunity.
       this.lastRenderSize = { width: 0, height: 0 };
     }
 
-    // Always keep camera + CSS2D in sync with the *container* size.
     this.cssRenderer.setSize(width, height);
     this.astronomicalManager.setOrbitLineResolution(width, height);
 
     activeCamera.aspect = width / height;
     activeCamera.updateProjectionMatrix();
 
-    // During sidebar transitions we keep the WebGL render buffers stable to avoid
-    // GPU stalls & render-target reallocations (the "flashbang" problem).
     if (this.isLayoutTransitioning) return;
 
     if (

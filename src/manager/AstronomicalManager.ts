@@ -152,6 +152,10 @@ export class AstronomicalManager {
     const selectedSlug =
       route.name === "planet" ? toSlug(route.planet) : route.name === "moon" ? toSlug(route.moon) : null;
 
+    // For moon routes we treat the parent planet as the focus. In that mode the selected moon's own
+    // marker is redundant (similar to hiding the selected planet marker).
+    const hideSelectedMoonMarker = selectedKind === "moon";
+
     // Find selected moon + focus planet (for moon routes).
     let focusPlanetSlug: string | null = null;
     let selectedMoonSlug: string | null = null;
@@ -229,6 +233,54 @@ export class AstronomicalManager {
     // (the user already knows which planet they're on).
     const hideFocusPlanetMarker = selectedKind === "planet";
 
+    // ===== CSS2D occlusion (hide markers behind planets) =====
+    // CSS2DRenderer draws DOM elements on top, so we emulate depth by ray/sphere occlusion.
+    // This is intentionally conservative: only hide when a body is clearly behind another body.
+    type Occluder = { slug: string; center: THREE.Vector3; radius: number };
+    const occluders: Occluder[] = [];
+    const tmpCenter = new THREE.Vector3();
+    for (const e of this.entrys) {
+      const p: any = e.object as any;
+      const slug = (p?.data?.slug ?? "").toLowerCase();
+      const size = p?.data?.size ?? 0;
+      if (!p?.mesh || !Number.isFinite(size) || size <= 0) continue;
+      p.mesh.getWorldPosition(tmpCenter);
+      occluders.push({
+        slug,
+        center: tmpCenter.clone(),
+        // data.size is diameter in this codebase; sphere radius is size/2.
+        radius: (size * 0.5) * 1.05,
+      });
+    }
+
+    const tmpToTarget = new THREE.Vector3();
+    const tmpToOcc = new THREE.Vector3();
+    const tmpTarget = new THREE.Vector3();
+
+    const isOccluded = (targetPos: THREE.Vector3, targetSlug: string): boolean => {
+      // Ray from camera -> target
+      tmpToTarget.copy(targetPos).sub(camPos);
+      const distToTarget = tmpToTarget.length();
+      if (!Number.isFinite(distToTarget) || distToTarget < 1e-6) return false;
+      const dir = tmpToTarget.multiplyScalar(1 / distToTarget);
+
+      for (const oc of occluders) {
+        if (!oc || oc.slug === targetSlug) continue;
+
+        // Only consider occluders that are between camera and target along the ray.
+        tmpToOcc.copy(oc.center).sub(camPos);
+        const proj = tmpToOcc.dot(dir);
+        if (proj <= 0 || proj >= distToTarget) continue;
+
+        // Closest distance from occluder center to the ray.
+        const closestSq = tmpToOcc.lengthSq() - proj * proj;
+        const rSq = oc.radius * oc.radius;
+        if (closestSq <= rSq) return true;
+      }
+
+      return false;
+    };
+
     // Precompute camera world position for overview-range rules.
     const camPos = camWorld;
 
@@ -244,10 +296,22 @@ export class AstronomicalManager {
         setElementHidden(planet.cssObject?.element, true);
       } else if (!hasSelection) {
         // Home / overview: show major bodies + dwarf planets.
-        setElementHidden(planet.cssObject?.element, !(isMajor || isDwarf));
+        const shouldShow = (isMajor || isDwarf);
+        let hidden = !shouldShow;
+        if (!hidden && planet?.mesh) {
+          planet.mesh.getWorldPosition(tmpTarget);
+          hidden = isOccluded(tmpTarget, planetSlug);
+        }
+        setElementHidden(planet.cssObject?.element, hidden);
       } else {
         // Selected: show only focus planet, except in planet focus mode where we hide its own marker.
-        setElementHidden(planet.cssObject?.element, !(isFocusPlanet && !hideFocusPlanetMarker));
+        const shouldShow = (isFocusPlanet && !hideFocusPlanetMarker);
+        let hidden = !shouldShow;
+        if (!hidden && planet?.mesh) {
+          planet.mesh.getWorldPosition(tmpTarget);
+          hidden = isOccluded(tmpTarget, planetSlug);
+        }
+        setElementHidden(planet.cssObject?.element, hidden);
       }
 
       // ===== Planet orbit line =====
@@ -267,6 +331,7 @@ export class AstronomicalManager {
       entry.object.moons.forEach((moon: any) => {
         const moonSlug = (moon?.data?.slug ?? "").toLowerCase();
         const moonIsSelected = selectedMoonSlug != null && moonSlug === selectedMoonSlug;
+        const hideThisMoonMarker = hideSelectedMoonMarker && moonIsSelected;
 
         // In overview mode, allow moon markers (dots) when the camera is close to their parent planet,
         // but hide moon labels by default to avoid clumping.
@@ -293,14 +358,25 @@ export class AstronomicalManager {
           setElementHidden(moon.cssObject?.element, true);
         } else if (!hasSelection) {
           // Overview: show moon marker dots only near a planet; hide text label unless very close.
-          setElementHidden(moon.cssObject?.element, !showMoonMarkerInOverview);
-          if (showMoonMarkerInOverview) {
+          let hidden = !showMoonMarkerInOverview;
+          if (!hidden && moon?.mesh) {
+            moon.mesh.getWorldPosition(tmpTarget);
+            hidden = isOccluded(tmpTarget, moonSlug);
+          }
+          setElementHidden(moon.cssObject?.element, hidden);
+          if (!hidden && showMoonMarkerInOverview) {
             setLabelHidden(moon.cssObject?.element, !showMoonLabelInOverview);
           }
         } else if (isFocusPlanet) {
           // Focus planet: show moon labels only when zoomed close enough.
-          // Keep the selected moon label visible even when zoomed out.
-          setElementHidden(moon.cssObject?.element, !(showMoonLabels || moonIsSelected));
+          // Do NOT show the selected moon marker (similar to selected planet marker).
+          const shouldShow = (showMoonLabels || moonIsSelected) && !hideThisMoonMarker;
+          let hidden = !shouldShow;
+          if (!hidden && moon?.mesh) {
+            moon.mesh.getWorldPosition(tmpTarget);
+            hidden = isOccluded(tmpTarget, moonSlug);
+          }
+          setElementHidden(moon.cssObject?.element, hidden);
         } else {
           setElementHidden(moon.cssObject?.element, true);
         }
