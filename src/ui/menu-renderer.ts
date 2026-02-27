@@ -30,7 +30,7 @@ export class MenuRenderer {
       }
     });
 
-    router.subscribe((route) => {
+    router.subscribe(() => {
       this.state.isOpen = false;
       this.render();
       this.ensureSoundState();

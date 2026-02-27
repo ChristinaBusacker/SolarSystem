@@ -1,4 +1,3 @@
-import * as THREE from "three";
 import { titaniaRawData } from "../../data/raw-object.data";
 import { Astronomical } from "./astronomical.object";
 
@@ -16,7 +15,7 @@ export class Titania extends Astronomical {
     }
 
 
-    public render(delta: number, camera?: THREE.PerspectiveCamera) {
+    public render(delta: number) {
         super.render(delta);
     }
 }

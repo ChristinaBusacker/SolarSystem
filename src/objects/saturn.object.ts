@@ -53,7 +53,6 @@ export class Saturn extends Astronomical {
         const ringGeometry = new THREE.RingGeometry(ringInnerRadius, ringOuterRadius, 256);
 
         const phiSegments = 256;
-        const thetaSegments = 1;
 
         const uv = ringGeometry.attributes.uv;
         for (let i = 0; i < phiSegments + 1; i++) {

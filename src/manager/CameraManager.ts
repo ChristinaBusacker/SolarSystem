@@ -16,7 +16,7 @@ export class CameraManager {
   private pinchStartZoom = 0;
 
   constructor(scene: THREE.Scene) {
-    let defaultCamera = new THREE.PerspectiveCamera(
+    const defaultCamera = new THREE.PerspectiveCamera(
       75,
       window.innerWidth / window.innerHeight,
       10,

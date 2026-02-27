@@ -379,7 +379,7 @@ export class Astronomical implements AstronomicalObject {
   }
 
   public addInteractions() {
-    let div = document.createElement("div");
+    const div = document.createElement("div");
     div.style.width = "5px";
     div.style.height = "5px";
     div.style.backgroundColor = this.data.color;
@@ -398,7 +398,7 @@ export class Astronomical implements AstronomicalObject {
       this.data.slug,
     );
 
-    let p = document.createElement("p");
+    const p = document.createElement("p");
     p.style.color = "white";
     p.innerText = this.data.name;
     p.dataset.baseLabel = this.data.name;

@@ -1,0 +1,7 @@
+dist
+node_modules
+coverage
+
+# Build outputs / caches (if they appear)
+.cache
+.tmp

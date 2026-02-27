@@ -69,7 +69,6 @@ export class Earth extends Astronomical {
   public render(
     delta: number,
     camera?: THREE.PerspectiveCamera,
-    scene?: THREE.Scene
   ) {
     if (!this.isInit) return
 

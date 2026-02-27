@@ -235,7 +235,7 @@ export class Application {
     );
 
     if (uiSlotHud) {
-      const hud = new HudRenderer(uiSlotHud, {
+      new HudRenderer(uiSlotHud, {
         bodyName: "None",
         simulationSpeed: this.simulationSpeed,
         paused: this.simulationSpeed <= 0,
@@ -368,7 +368,7 @@ export class Application {
     this.webglRenderer.toneMappingExposure = 1;
     document.getElementById("app").appendChild(this.webglRenderer.domElement);
 
-    var gl = this.webglRenderer.getContext();
+    const gl = this.webglRenderer.getContext();
 
     // Blending aktivieren
     gl.enable(gl.BLEND);
@@ -460,7 +460,7 @@ export class Application {
    * In wide shots, inner planet labels pile up in the center. We keep the marker dots visible/clickable,
    * but hide overlapping *text* labels and append a small "+N" indicator to the kept label.
    */
-  private applyPlanetLabelClustering(activeCamera: THREE.PerspectiveCamera): void {
+  private applyPlanetLabelClustering(): void {
     if (!this.declutterAuto || !this.markersVisible) return;
 
     const route: AppRoute = router.getCurrent();
@@ -1050,7 +1050,7 @@ export class Application {
     // Cheap overlap avoidance for moon labels (only when declutter is enabled).
     // Runs at a low frequency to avoid layout thrash.
     this.applyMoonLabelCollisionAvoidance();
-    this.applyPlanetLabelClustering(camera);
+    this.applyPlanetLabelClustering();
 
     this.cameraManager.updateControls(deltaTime);
 
