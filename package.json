@@ -1,7 +1,8 @@
 {
-  "name": "solarsytsemts",
+  "name": "solar-system-sim",
   "version": "1.0.0",
-  "description": "",
+  "description": "Interactive Three.js solar system simulation with a cinematic, responsive UI.",
+  "private": true,
   "main": "index.js",
   "scripts": {
     "start": "npm run dev",
@@ -16,7 +17,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@types/three": "^0.183.1",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
