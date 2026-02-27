@@ -14,8 +14,8 @@
 }
 
 .ui-stage-controls__top-left {
-  top: 12px;
-  left: 12px;
+  top: 16px;
+  left: 0;
 }
 
 .ui-stage-controls__top-right {
@@ -49,8 +49,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
+  width: 48px;
+  height: 48px;
   border-radius: 12px;
   border: none;
   background: transparent;
@@ -149,21 +149,27 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 14px;
   max-width: min(52vw, 460px);
+  display: flex;
+  flex-direction: column;
+  font-family: Out;
+  margin-top: 10px !important;
+
+  & svg {
+    width: 16px;
+  }
 }
 
 @media (max-width: 900px) {
   .ui-stage-controls__top-center {
     max-width: calc(100vw - 128px);
-    top: 10px;
+    top: 14px;
   }
 
   .ui-stage-focus__title {
     max-width: calc(100vw - 180px);
-    font-size: 12px;
+    font-size: 16px;
     letter-spacing: 0.06em;
   }
 

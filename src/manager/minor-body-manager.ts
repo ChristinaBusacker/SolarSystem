@@ -23,8 +23,8 @@ export class MinorBodyManager {
     outerRadius: kuiperBeltInnerZone.outerRadiusKm / AstronomicalDataParser.FINN_TO_KM,
     maxEccentricity: 0.08,
     inclinationStdDeg: 3.5,
-    minSpriteSize: 380,
-    maxSpriteSize: 1024,
+    minSpriteSize: 180,
+    maxSpriteSize: 360,
     seed: 7331,
   });
 
@@ -37,8 +37,8 @@ export class MinorBodyManager {
     outerRadius: kuiperBeltOuterZone.outerRadiusKm / AstronomicalDataParser.FINN_TO_KM,
     maxEccentricity: 0.22,
     inclinationStdDeg: 14.0,
-    minSpriteSize: 360,
-    maxSpriteSize: 920,
+    minSpriteSize: 60,
+    maxSpriteSize: 240,
     seed: 7349,
   });
 

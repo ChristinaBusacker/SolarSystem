@@ -67,7 +67,7 @@ export class AsteroidBelt {
       maxEccentricity: 0.075,
       inclinationStdDeg: 3.0,
       minSpriteSize: 40,
-      maxSpriteSize: 360,
+      maxSpriteSize: 180,
       seed: 1337,
       profile: "main",
       groupName: "MainAsteroidBelt",
