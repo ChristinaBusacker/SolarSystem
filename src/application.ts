@@ -26,6 +26,7 @@ import { openSidebar, subscribeLayoutState } from "./ui/layout-state";
 import { subscribeSceneVisibilityState } from "./ui/scene-visibility-state";
 import { AppRoute, router } from "./router/router";
 import { MenuRenderer } from "./ui/menu-renderer";
+import { SoundManager } from "./manager/SoundManager";
 
 export class Application {
   private static instance: Application | null = null;
@@ -126,7 +127,10 @@ export class Application {
   };
 
   public init() {
-    this.cameraManager.switchCamera("Default").initEventControls();
+    this.cameraManager.switchCamera("Default", false).initEventControls();
+    const entry = this.cameraManager.getActiveEntry()
+    SoundManager.init(entry.camera);
+    SoundManager.initAmbientSound('/assets/sounds/ambient.mp3')
     this.attachViewportResizeObserver();
     this.onResize();
     this.astronomicalManager.initObjects(this.scene);

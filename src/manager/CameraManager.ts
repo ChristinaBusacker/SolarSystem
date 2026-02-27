@@ -2,6 +2,7 @@ import { APP } from "..";
 import { SimpleControl } from "../controls/simple.control";
 import { CameraEntry } from "../interfaces/entry.interfaces";
 import * as THREE from "three";
+import { SoundManager } from "./SoundManager";
 
 export class CameraManager {
   public collection: Array<CameraEntry> = [];
@@ -202,7 +203,7 @@ export class CameraManager {
     }
   }
 
-  public switchCamera(selector: string): CameraManager {
+  public switchCamera(selector: string, switchAudio = true): CameraManager {
 
     APP.cssRenderer.domElement.querySelectorAll(`.object`).forEach((elem) => {
       elem.classList.remove("hide");
@@ -216,6 +217,11 @@ export class CameraManager {
       // Stop any drag state before switching.
       this.activeCamera?.control?.endRotate();
       this.activeCamera = entry;
+
+      if (switchAudio) {
+        SoundManager.attachToCamera(this.activeCamera.camera)
+      }
+
 
       // Home view should always come up fully zoomed out.
       if (selector === "Default") {

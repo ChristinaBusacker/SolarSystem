@@ -4,6 +4,7 @@ import { renderTemplate } from "./template";
 import { router } from "../router/router";
 import { toggleDeclutterAuto, toggleMarkers, toggleOrbits } from "./scene-visibility-state";
 import { subscribeLayoutState } from "./layout-state";
+import { SoundManager } from "../manager/SoundManager";
 
 interface MenuRenderState {
   isOpen: boolean;
@@ -21,7 +22,9 @@ export class MenuRenderer {
     this.root = root;
 
     subscribeLayoutState((snapshot) => {
-      this.render();
+      if (snapshot.rightOpen) {
+        this.root.classList.remove('open')
+      }
     });
 
     router.subscribe((route) => {
@@ -34,6 +37,7 @@ export class MenuRenderer {
     this.render();
     this.bindActions();
   }
+
 
   private render(): void {
     this.root.innerHTML = renderTemplate(menuTpl, {
@@ -80,7 +84,7 @@ export class MenuRenderer {
 
       if (action === "toggle-audio") {
         actionNode.parentElement.classList.toggle('is-active')
-        return;
+        return SoundManager.toggleAmbient();
       }
 
       if (action === "go-home") {
@@ -110,6 +114,11 @@ export class MenuRenderer {
         void this.toggleFullscreen();
       }
     });
+
+    this.root.querySelector('[data-volume-slider').addEventListener('change', function (e) {
+      const target = e.target as HTMLInputElement;
+      SoundManager.setVolume(parseInt(target.value))
+    })
   }
 
   private async toggleFullscreen(): Promise<void> {
