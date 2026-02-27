@@ -16,6 +16,7 @@ import { MenuRenderer } from "./ui/menu-renderer";
 import { PlanetSidebarRenderer } from "./ui/planet-sidebar-renderer";
 import { subscribeSceneVisibilityState } from "./ui/scene-visibility-state";
 import { RenderPipeline } from "./rendering/render-pipeline";
+import { ViewportService } from "./services/viewport.service";
 
 export class Application {
   private static instance: Application | null = null;
@@ -26,6 +27,8 @@ export class Application {
   public clock = new THREE.Clock();
 
   private renderPipeline = new RenderPipeline(this.webglRenderer, this.scene);
+
+  private viewportService: ViewportService;
 
   public simulationSpeed = simulationSpeed;
 
@@ -43,20 +46,6 @@ export class Application {
   // We keep it in sync to avoid "offset sky" and other weirdness when switching bodies.
   private lastPipelineCamera?: THREE.Camera;
 
-  // Container size (scene-root).
-  private lastViewportSize: { width: number; height: number } = {
-    width: 0,
-    height: 0,
-  };
-
-  // Actual WebGL render-buffer size (we avoid re-allocations during sidebar transitions).
-  private lastRenderSize: { width: number; height: number } = {
-    width: 0,
-    height: 0,
-  };
-
-  private lastDevicePixelRatio = 1;
-
   // Scene visibility state (mirrors ui/scene-visibility-state).
   private markersVisible = true;
   private orbitsVisible = true;
@@ -66,11 +55,7 @@ export class Application {
   private lastDeclutterLayoutMs = 0;
   private lastPlanetClusterLayoutMs = 0;
 
-  private isLayoutTransitioning = false;
-  private resizeScheduled = false;
-  private transitionResizeTimer: number | null = null;
   private lastLayoutKey: string | null = null;
-  private viewportObserver: ResizeObserver | null = null;
 
   private uiRight?: UiRenderer;
   private menuRenderer?: MenuRenderer;
@@ -79,8 +64,6 @@ export class Application {
   private currentSelectedBodySlug?: string;
 
   private constructor() {
-    window.addEventListener("resize", () => this.scheduleResize());
-
     window.addEventListener("ui:speedChange", (e: Event) => {
       const ce = e as CustomEvent<{ speed: number }>;
       if (ce.detail?.speed != null) this.simulationSpeed = ce.detail.speed;
@@ -95,6 +78,14 @@ export class Application {
       if (!name || !kind) return;
       if (kind === "moon") router.goMoon(name);
       else router.goPlanet(name);
+    });
+
+    this.viewportService = new ViewportService({
+      webglRenderer: this.webglRenderer,
+      cssRenderer: this.cssRenderer,
+      renderPipeline: this.renderPipeline,
+      cameraManager: this.cameraManager,
+      astronomicalManager: this.astronomicalManager,
     });
   }
 
@@ -121,16 +112,20 @@ export class Application {
       stopAmbientOnHidden: true,
       resumeAmbientOnVisible: true,
     });
-    this.attachViewportResizeObserver();
-    this.onResize();
+
+    this.viewportService.init();
+    this.viewportService.resizeNow();
+
     this.astronomicalManager.initObjects(this.scene);
     this.minorBodyManager.init(this.scene);
     {
-      const { width, height } = this.getViewportSize();
+      const { width, height } = this.viewportService.getViewportSize();
       this.astronomicalManager.setOrbitLineResolution(width, height);
     }
     this.initWebGLRenderer();
     this.initCSS2DRenderer();
+    // Ensure renderers + camera match the final DOM size.
+    this.viewportService.resizeNow();
     this.initBackground();
     this.initSunLight();
     this.initPostProcessing();
@@ -141,8 +136,8 @@ export class Application {
   }
 
   public initPostProcessing() {
-    const { width, height } = this.getViewportSize();
-    const dpr = this.getRenderPixelRatio();
+    const { width, height } = this.viewportService.getViewportSize();
+    const dpr = this.viewportService.getRenderPixelRatio();
     this.renderPipeline.init({
       camera: this.cameraManager.getActiveEntry().camera,
       width,
@@ -220,7 +215,7 @@ export class Application {
 
       const key = `${s.leftOpen ? 1 : 0}${s.rightOpen ? 1 : 0}`;
       if (this.lastLayoutKey !== null && this.lastLayoutKey !== key) {
-        this.resizeDuringTransition(280);
+        this.viewportService.resizeDuringTransition(280);
       }
       this.lastLayoutKey = key;
     });
@@ -281,17 +276,16 @@ export class Application {
   }
 
   private initWebGLRenderer() {
-    const { width, height } = this.getViewportSize();
+    const { width, height } = this.viewportService.getViewportSize();
 
     // On HiDPI displays (almost all phones), a missing pixel ratio makes the whole scene
     // look "mushy" because the canvas gets upscaled by CSS.
-    this.lastDevicePixelRatio = this.getRenderPixelRatio();
-    this.webglRenderer.setPixelRatio(this.lastDevicePixelRatio);
-    this.renderPipeline.setPixelRatio(this.lastDevicePixelRatio);
+    const dpr = this.viewportService.getRenderPixelRatio();
+    this.webglRenderer.setPixelRatio(dpr);
+    this.renderPipeline.setPixelRatio(dpr);
 
     // Keep the canvas styled by CSS (100% size) and only update the render buffer size here.
     this.webglRenderer.setSize(width, height, false);
-    this.lastRenderSize = { width, height };
 
     // Prevent "white flash" if rendering stalls during resizes/transitions.
     this.webglRenderer.setClearColor(0x000000, 1);
@@ -406,7 +400,7 @@ export class Application {
     const overlay = this.cssRenderer?.domElement as HTMLElement | undefined;
     if (!overlay) return;
 
-    const { width, height } = this.getViewportSize();
+    const { width, height } = this.viewportService.getViewportSize();
     if (width < 2 || height < 2) return;
 
     const planetEls = Array.from(
@@ -501,12 +495,8 @@ export class Application {
     }
   }
 
-  private getRenderPixelRatio(): number {
-    return Math.min(window.devicePixelRatio || 1, 2);
-  }
-
   private initCSS2DRenderer() {
-    const { width, height } = this.getViewportSize();
+    const { width, height } = this.viewportService.getViewportSize();
 
     this.cssRenderer.setSize(width, height);
 
@@ -657,113 +647,8 @@ export class Application {
   }
 
   public onResize() {
-    const { width, height } = this.getViewportSize();
-
-    if (width < 2 || height < 2) return;
-    if (width === this.lastViewportSize.width && height === this.lastViewportSize.height) return;
-    this.lastViewportSize = { width, height };
-
-    const activeCamera = this.cameraManager.getActiveEntry().camera;
-
-    const dpr = this.getRenderPixelRatio();
-    if (dpr !== this.lastDevicePixelRatio) {
-      this.lastDevicePixelRatio = dpr;
-      this.webglRenderer.setPixelRatio(dpr);
-      this.renderPipeline.setPixelRatio(dpr);
-      this.lastRenderSize = { width: 0, height: 0 };
-    }
-
-    this.cssRenderer.setSize(width, height);
-    this.astronomicalManager.setOrbitLineResolution(width, height);
-
-    activeCamera.aspect = width / height;
-    activeCamera.updateProjectionMatrix();
-
-    if (this.isLayoutTransitioning) return;
-
-    if (width === this.lastRenderSize.width && height === this.lastRenderSize.height) return;
-    this.lastRenderSize = { width, height };
-
-    this.webglRenderer.setSize(width, height, false);
-    this.renderPipeline.setSize(width, height);
-  }
-
-  private getViewportSize(): { width: number; height: number } {
-    const viewport = document.getElementById("scene-root");
-    if (!viewport) {
-      return { width: window.innerWidth, height: window.innerHeight };
-    }
-
-    const rect = viewport.getBoundingClientRect();
-    // Guard against 0 sizes during early init.
-    return {
-      width: Math.max(1, Math.floor(rect.width)),
-      height: Math.max(1, Math.floor(rect.height)),
-    };
-  }
-
-  private scheduleResize(): void {
-    if (this.resizeScheduled) return;
-    this.resizeScheduled = true;
-    requestAnimationFrame(() => {
-      this.resizeScheduled = false;
-      this.onResize();
-    });
-  }
-
-  private resizeDuringTransition(durationMs: number): void {
-    // Calling onResize every frame can cause flicker on some GPUs.
-    // Instead, update a few times during the CSS transition.
-    if (this.transitionResizeTimer != null) {
-      window.clearInterval(this.transitionResizeTimer);
-      this.transitionResizeTimer = null;
-    }
-
-    const steps = 7;
-    const interval = Math.max(20, Math.floor(Math.max(0, durationMs) / steps));
-    let i = 0;
-
-    this.isLayoutTransitioning = true;
-    this.scheduleResize();
-
-    this.transitionResizeTimer = window.setInterval(() => {
-      this.scheduleResize();
-      i += 1;
-      if (i >= steps) {
-        if (this.transitionResizeTimer != null) window.clearInterval(this.transitionResizeTimer);
-        this.transitionResizeTimer = null;
-        // Final snap to exact size at the end of the transition.
-        window.setTimeout(() => {
-          this.isLayoutTransitioning = false;
-          // First update camera/CSS2D.
-          this.scheduleResize();
-          // Then resize heavy WebGL buffers once.
-          const { width, height } = this.getViewportSize();
-          const dpr = this.getRenderPixelRatio();
-          if (dpr !== this.lastDevicePixelRatio) {
-            this.lastDevicePixelRatio = dpr;
-            this.webglRenderer.setPixelRatio(dpr);
-            this.renderPipeline.setPixelRatio(dpr);
-          }
-          this.lastRenderSize = { width: 0, height: 0 };
-          this.webglRenderer.setSize(width, height, false);
-          this.renderPipeline.setSize(width, height);
-          this.lastRenderSize = { width, height };
-        }, 60);
-      }
-    }, interval);
-  }
-
-  private attachViewportResizeObserver(): void {
-    const viewport = document.getElementById("scene-root");
-    if (!viewport || typeof ResizeObserver === "undefined") return;
-
-    this.viewportObserver?.disconnect();
-    this.viewportObserver = new ResizeObserver(() => {
-      this.scheduleResize();
-    });
-
-    this.viewportObserver.observe(viewport);
+    // Kept for backwards compatibility; prefer viewportService.
+    this.viewportService.resizeNow();
   }
 
   public updateComposer(newCamera: THREE.Camera) {
@@ -923,7 +808,7 @@ export class Application {
       this.starfieldMaterial.uniforms.uTime.value += deltaTime;
     }
     if (this.starfieldMaterial?.uniforms?.uPixelRatio) {
-      this.starfieldMaterial.uniforms.uPixelRatio.value = this.lastDevicePixelRatio;
+      this.starfieldMaterial.uniforms.uPixelRatio.value = this.viewportService.getRenderPixelRatio();
     }
 
     this.astronomicalManager.render(deltaTime, camera, this.scene);
