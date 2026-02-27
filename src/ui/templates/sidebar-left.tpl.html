@@ -3,7 +3,7 @@
     <header class="ui-sidebar__header">
       <div class="ui-sidebar__title">
         <h2>Navigation</h2>
-        <p class="ui-subtitle">Bodies</p>
+        <p class="ui-subtitle">Cameras</p>
       </div>
 
       <button
@@ -18,6 +18,20 @@
     </header>
 
     <div class="ui-sidebar__content">
+      <section class="ui-nav-group" aria-labelledby="nav-group-scenes">
+        <header class="ui-nav-group__header">
+          <h3 class="ui-nav-group__title" id="nav-group-scenes">Scenes</h3>
+          <span class="ui-nav-group__meta">Cameras</span>
+        </header>
+
+        <div class="ui-planet-list" role="list">
+          <button class="ui-planet" type="button" data-action="select-camera" data-camera="Default">
+            <span class="ui-planet__icon ui-planet__icon--sun" aria-hidden="true"></span>
+            <span class="ui-planet__name">Overview</span>
+          </button>
+        </div>
+      </section>
+
       <section class="ui-nav-group" aria-labelledby="nav-group-planets">
         <header class="ui-nav-group__header">
           <h3 class="ui-nav-group__title" id="nav-group-planets">Planets</h3>

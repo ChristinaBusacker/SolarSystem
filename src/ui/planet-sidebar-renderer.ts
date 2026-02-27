@@ -68,6 +68,12 @@ export class PlanetSidebarRenderer {
         return;
       }
 
+      const sceneBtn = target?.closest<HTMLElement>("[data-action='select-camera']");
+      if (sceneBtn) {
+        e.stopPropagation();
+        router.goHome();
+      }
+
       // Legacy fallback for older buttons (kept so partial template edits don't explode)
       const planetBtn = target?.closest<HTMLElement>("[data-action='select-planet']");
       if (planetBtn) {
