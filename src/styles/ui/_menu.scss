@@ -51,8 +51,7 @@ $step: 50px;
           appearance: none;
           width: 26px;
           height: 26px;
-          background: url("../assets/svgs/speed-slider.svg") center / contain
-            no-repeat;
+          background: url("../assets/svgs/speed-slider.svg") center / contain no-repeat;
           border: 0;
           margin-top: -12px;
         }
@@ -60,8 +59,7 @@ $step: 50px;
         &::-moz-range-thumb {
           width: 26px;
           height: 26px;
-          background: url("../assets/svgs/speed-slider.svg") center / contain
-            no-repeat;
+          background: url("../assets/svgs/speed-slider.svg") center / contain no-repeat;
           border: 0;
           border-radius: 0;
         }

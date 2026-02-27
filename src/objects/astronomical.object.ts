@@ -65,17 +65,14 @@ export class Astronomical implements AstronomicalObject {
 
     this.emissive = emissive;
 
-    this.angle = this.data.isOrbiting
-      ? this.getInitialOrbitAngle()
-      : 0;
+    this.angle = this.data.isOrbiting ? this.getInitialOrbitAngle() : 0;
   }
 
   public initDisplacement(displacmentPath: string, height: number) {
-
-    this.displacementHeight = height
+    this.displacementHeight = height;
 
     const textureLoader = new THREE.TextureLoader();
-    this.displacementMap = textureLoader.load(displacmentPath)
+    this.displacementMap = textureLoader.load(displacmentPath);
     this.displacementMap.wrapS = THREE.RepeatWrapping;
     this.displacementMap.wrapT = THREE.ClampToEdgeWrapping;
 
@@ -85,7 +82,6 @@ export class Astronomical implements AstronomicalObject {
     // Optional sinnvoll
     this.displacementMap.minFilter = THREE.LinearMipmapLinearFilter;
     this.displacementMap.magFilter = THREE.LinearFilter;
-
   }
 
   private getInitialOrbitAngle(): number {
@@ -102,21 +98,11 @@ export class Astronomical implements AstronomicalObject {
   }
 
   public addMarker(a: number, b: number): Line2 {
-    const orbitCurve = new THREE.EllipseCurve(
-      0,
-      0,
-      a,
-      b,
-      0,
-      2 * Math.PI,
-      false,
-      0,
-    );
+    const orbitCurve = new THREE.EllipseCurve(0, 0, a, b, 0, 2 * Math.PI, false, 0);
 
     // Higher tessellation noticeably reduces the apparent wobble of Line2 on
     // projected ellipses. We keep planet orbits very dense and moons a bit lighter.
-    const approxCirc =
-      Math.PI * (3 * (a + b) - Math.sqrt((3 * a + b) * (a + 3 * b)));
+    const approxCirc = Math.PI * (3 * (a + b) - Math.sqrt((3 * a + b) * (a + 3 * b)));
     const minSegments = this.isMoon ? 768 : 2048;
     const maxSegments = this.isMoon ? 4096 : 16384;
     const byCircumference = Math.ceil(approxCirc * 0.12);
@@ -158,7 +144,7 @@ export class Astronomical implements AstronomicalObject {
       blending: THREE.NormalBlending,
     });
 
-    material.onBeforeCompile = (shader) => {
+    material.onBeforeCompile = shader => {
       const target = "gl_FragColor = vec4( diffuseColor.rgb, alpha );";
 
       if (!shader.fragmentShader.includes(target)) {
@@ -179,7 +165,7 @@ export class Astronomical implements AstronomicalObject {
 
     // Orbit-Farbe behalten (nicht schwarz werden lassen)
     gl_FragColor = vec4(diffuse, alpha * trailAlpha);
-    `
+    `,
       );
     };
 
@@ -197,7 +183,7 @@ export class Astronomical implements AstronomicalObject {
     this.orbitTrailPointCount = pointCount;
     this.orbitTrailParams = new Float32Array(pointCount);
     for (let i = 0; i < pointCount; i++) {
-      this.orbitTrailParams[i] = (i / Math.max(1, pointCount - 1));
+      this.orbitTrailParams[i] = i / Math.max(1, pointCount - 1);
     }
     this.orbitBaseColor.set(this.data.color);
     this.updateOrbitTrailColors();
@@ -209,15 +195,22 @@ export class Astronomical implements AstronomicalObject {
     if (!this.marker || !this.orbitTrailParams || this.orbitTrailPointCount < 2) return;
 
     const geometry = this.marker.geometry as unknown as THREE.InstancedBufferGeometry;
-    const cStart = geometry.getAttribute("instanceColorStart") as THREE.InterleavedBufferAttribute | undefined;
-    const cEnd = geometry.getAttribute("instanceColorEnd") as THREE.InterleavedBufferAttribute | undefined;
+    const cStart = geometry.getAttribute("instanceColorStart") as
+      | THREE.InterleavedBufferAttribute
+      | undefined;
+    const cEnd = geometry.getAttribute("instanceColorEnd") as
+      | THREE.InterleavedBufferAttribute
+      | undefined;
     if (!cStart || !cEnd) return;
 
     const pointCount = this.orbitTrailPointCount;
 
     const route = router.getCurrent();
-    const selectedBodyName = route.name === "planet" ? route.planet : route.name === "moon" ? route.moon : null;
-    const hideTrailForSelected = !!selectedBodyName && (selectedBodyName === this.data.slug || selectedBodyName === this.data.name);
+    const selectedBodyName =
+      route.name === "planet" ? route.planet : route.name === "moon" ? route.moon : null;
+    const hideTrailForSelected =
+      !!selectedBodyName &&
+      (selectedBodyName === this.data.slug || selectedBodyName === this.data.name);
 
     if (hideTrailForSelected) {
       for (let seg = 0; seg < pointCount - 1; seg++) {
@@ -240,7 +233,7 @@ export class Astronomical implements AstronomicalObject {
       const fadeStart = headGap + headSolidArc;
       const x = THREE.MathUtils.clamp((d - fadeStart) / (visibleArc - fadeStart), 0, 1);
       // 1 -> 0 smooth fade (tail only)
-      return (x * x * (3 - 2 * x));
+      return x * x * (3 - 2 * x);
     };
 
     for (let seg = 0; seg < pointCount - 1; seg++) {
@@ -255,22 +248,9 @@ export class Astronomical implements AstronomicalObject {
       let d = current - tm;
       if (d < 0) d += 1;
 
-
       const f = fadeForBehind(d);
-      cStart.setXYZW(
-        seg,
-        f,
-        f,
-        f,
-        f
-      );
-      cEnd.setXYZW(
-        seg,
-        f,
-        f,
-        f,
-        f
-      );
+      cStart.setXYZW(seg, f, f, f, f);
+      cEnd.setXYZW(seg, f, f, f, f);
     }
 
     cStart.data.needsUpdate = true;
@@ -286,10 +266,7 @@ export class Astronomical implements AstronomicalObject {
   }
 
   private initOrbit() {
-    this.marker = this.addMarker(
-      this.data.semiMajorAxis,
-      this.data.semiMinorAxis,
-    );
+    this.marker = this.addMarker(this.data.semiMajorAxis, this.data.semiMinorAxis);
 
     this.orbitalGroup.add(this.marker);
     this.orbitalGroup.rotateX(THREE.MathUtils.DEG2RAD * this.data.orbitalTilt);
@@ -356,15 +333,8 @@ export class Astronomical implements AstronomicalObject {
       side: THREE.DoubleSide,
     });
 
-    const atmosphereGeometry = new THREE.SphereGeometry(
-      size / 2 + 0.0001,
-      128,
-      128,
-    ); // Atmosphäre leicht größer als die Oberfläche
-    this.atmosphereMesh = new THREE.Mesh(
-      atmosphereGeometry,
-      this.atmosphereMaterial,
-    );
+    const atmosphereGeometry = new THREE.SphereGeometry(size / 2 + 0.0001, 128, 128); // Atmosphäre leicht größer als die Oberfläche
+    this.atmosphereMesh = new THREE.Mesh(atmosphereGeometry, this.atmosphereMaterial);
 
     this.materials.push(this.atmosphereMaterial);
     this.atmosphereMesh.name = this.data.name + " Atmo";
@@ -398,7 +368,7 @@ export class Astronomical implements AstronomicalObject {
     p.dataset.baseLabel = this.data.name;
     div.appendChild(p);
 
-    div.onclick = (ev) => {
+    div.onclick = ev => {
       ev.stopPropagation();
       window.dispatchEvent(
         new CustomEvent("ui:select-body", {
@@ -418,13 +388,10 @@ export class Astronomical implements AstronomicalObject {
 
   public getShadowCasters() {
     const shadowCasters = this.isMoon
-      ? [
-        this.orbitingParent,
-        ...this.orbitingParent.moons.filter((moon) => moon !== this),
-      ]
+      ? [this.orbitingParent, ...this.orbitingParent.moons.filter(moon => moon !== this)]
       : this.moons;
 
-    return shadowCasters.map((caster) => {
+    return shadowCasters.map(caster => {
       const position = new THREE.Vector3();
       caster.mesh.getWorldPosition(position);
 
@@ -438,7 +405,11 @@ export class Astronomical implements AstronomicalObject {
 
   public generateMaterials() {
     const { vertexShader, fragmentShader } =
-      this.texturePath.length < 2 ? (this.displacementMap ? astronomicalDisplacementShader : astronomicalShader) : earthShader;
+      this.texturePath.length < 2
+        ? this.displacementMap
+          ? astronomicalDisplacementShader
+          : astronomicalShader
+        : earthShader;
 
     const casterOptions: any = {
       casterPosition1: { value: new THREE.Vector3(0, 0, 0) },
@@ -495,7 +466,6 @@ export class Astronomical implements AstronomicalObject {
   }
 
   public init() {
-
     const geometry = new THREE.SphereGeometry(this.data.size / 2, 64, 32);
 
     this.mesh = new THREE.Mesh(geometry);
@@ -505,9 +475,7 @@ export class Astronomical implements AstronomicalObject {
     this.orbitalGroup.name = this.data.slug + " orbitalGroup";
 
     this.planetaryGroup.add(this.mesh);
-    this.planetaryGroup.rotateX(
-      this.data.planetaryTilt * THREE.MathUtils.DEG2RAD * 0.5,
-    );
+    this.planetaryGroup.rotateX(this.data.planetaryTilt * THREE.MathUtils.DEG2RAD * 0.5);
 
     this.group.add(this.addInteractions());
 
@@ -547,7 +515,7 @@ export class Astronomical implements AstronomicalObject {
     if ((this.orbitingParent || this.moons.length > 0) && this.material) {
       const shadowCasters = this.getShadowCasters();
 
-      this.materials.forEach((material) => {
+      this.materials.forEach(material => {
         const params: any = {};
 
         shadowCasters.forEach((caster, i) => {
@@ -560,14 +528,10 @@ export class Astronomical implements AstronomicalObject {
     }
 
     if (this.data.isOrbiting) {
-      const deltaAngle =
-        this.data.orbitalSpeed * delta * 60 * APP.simulationSpeed;
+      const deltaAngle = this.data.orbitalSpeed * delta * 60 * APP.simulationSpeed;
 
       // Keep angle bounded to avoid precision loss over long runtimes.
-      this.angle = THREE.MathUtils.euclideanModulo(
-        this.angle - deltaAngle,
-        Math.PI * 2,
-      );
+      this.angle = THREE.MathUtils.euclideanModulo(this.angle - deltaAngle, Math.PI * 2);
 
       this.group.position.set(
         this.data.semiMajorAxis * Math.cos(this.angle),
@@ -578,8 +542,7 @@ export class Astronomical implements AstronomicalObject {
 
     this.updateOrbitTrailColors();
 
-    this.planetaryGroup.rotation.y +=
-      this.data.rotationSpeed * 60 * delta * APP.simulationSpeed;
+    this.planetaryGroup.rotation.y += this.data.rotationSpeed * 60 * delta * APP.simulationSpeed;
 
     if (activeCamera && this.cssObject) {
       this.cssObject.lookAt(activeCamera.position);

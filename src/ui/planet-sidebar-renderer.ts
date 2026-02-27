@@ -25,7 +25,6 @@ export class PlanetSidebarRenderer {
     }
   }
 
-
   private bindPointerLeakGuard(): void {
     const stop = (event: Event) => {
       event.stopPropagation();
@@ -45,9 +44,11 @@ export class PlanetSidebarRenderer {
 
   private bind(): void {
     // Close button + body navigation
-    this.root.addEventListener("click", (e) => {
+    this.root.addEventListener("click", e => {
       const target = e.target as HTMLElement | null;
-      const closeBtn = target?.closest<HTMLElement>("[data-action='sidebar-close'][data-side='left']");
+      const closeBtn = target?.closest<HTMLElement>(
+        "[data-action='sidebar-close'][data-side='left']",
+      );
       if (closeBtn) {
         e.stopPropagation();
         closeSidebar("left");
@@ -79,7 +80,7 @@ export class PlanetSidebarRenderer {
     // Stop pointer events from reaching camera controls when interacting.
     this.root.addEventListener(
       "pointerdown",
-      (e) => {
+      e => {
         const target = e.target as HTMLElement | null;
         if (target?.closest("button, a, input, select, textarea")) e.stopPropagation();
       },

@@ -1,5 +1,9 @@
 import type * as THREE from "three";
-import { asteroidBeltZone, kuiperBeltInnerZone, kuiperBeltOuterZone } from "../../data/raw-object.data";
+import {
+  asteroidBeltZone,
+  kuiperBeltInnerZone,
+  kuiperBeltOuterZone,
+} from "../../data/raw-object.data";
 import { AsteroidBelt } from "../objects/asteroid-belt.object";
 import { AstronomicalDataParser } from "../parser/astronomical-data.parser";
 

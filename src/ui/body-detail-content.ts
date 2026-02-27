@@ -1,9 +1,9 @@
 import * as rawBodyExports from "../../data/raw-object.data";
-import { astronomicalSidebarContent } from '../../data/sidebar.data';
+import { astronomicalSidebarContent } from "../../data/sidebar.data";
 import { BodyInfoOverride } from "../interfaces/bodyInfoOverride.interface";
 import type { AstronomicalRawData } from "../interfaces/dataset.interface";
 
-const BODY_INFO_OVERRIDES: Record<string, BodyInfoOverride> = astronomicalSidebarContent
+const BODY_INFO_OVERRIDES: Record<string, BodyInfoOverride> = astronomicalSidebarContent;
 
 const DWARF_PLANET_SLUGS = new Set(["pluto", "ceres", "eris", "haumea", "makemake"]);
 
@@ -46,7 +46,10 @@ function inferTypeLabel(body: AstronomicalRawData): string {
   return "Planet";
 }
 
-function buildRows(body: AstronomicalRawData, moons: AstronomicalRawData[]): Array<[string, string]> {
+function buildRows(
+  body: AstronomicalRawData,
+  moons: AstronomicalRawData[],
+): Array<[string, string]> {
   const rows: Array<[string, string]> = [];
 
   rows.push(["Type", inferTypeLabel(body)]);
@@ -102,8 +105,8 @@ export function renderSelectedBodyDetails(bodyName?: string | null): string {
 
   const allBodies = getAllRawBodies();
   const body =
-    allBodies.find((entry) => entry.name.toLowerCase() === bodyName.toLowerCase()) ??
-    allBodies.find((entry) => entry.slug.toLowerCase() === bodyName.toLowerCase());
+    allBodies.find(entry => entry.name.toLowerCase() === bodyName.toLowerCase()) ??
+    allBodies.find(entry => entry.slug.toLowerCase() === bodyName.toLowerCase());
 
   if (!body) {
     return `
@@ -114,7 +117,7 @@ export function renderSelectedBodyDetails(bodyName?: string | null): string {
   }
 
   const moons = allBodies
-    .filter((entry) => entry.parentSlug === body.slug)
+    .filter(entry => entry.parentSlug === body.slug)
     .sort((a, b) => a.name.localeCompare(b.name));
 
   const override = BODY_INFO_OVERRIDES[body.slug];
@@ -134,22 +137,27 @@ export function renderSelectedBodyDetails(bodyName?: string | null): string {
   const moonChipsHtml =
     moons.length > 0
       ? `<div class="ui-body-chips">${moons
-        .map((moon) => `<button class="ui-body-chip"
+          .map(
+            moon => `<button class="ui-body-chip"
         data-action="select-body"
         data-kind="moon"
         data-name="${moon.slug}">
         <span class="planet__icon--${moon.slug}"></span>
         ${escapeHtml(moon.name)}
-        </button>`)
-        .join("")}</div>`
+        </button>`,
+          )
+          .join("")}</div>`
       : `<div class="ui-body-subtle">No moons listed.</div>`;
 
-  const moonChipsHtmlContainer = inferTypeLabel(body) !== 'Moon' ? `
+  const moonChipsHtmlContainer =
+    inferTypeLabel(body) !== "Moon"
+      ? `
       <div class="ui-body-block">
-        <div class="ui-body-block__title">${body.isOrbiting ? 'Moons' : 'Planets'}</div>
+        <div class="ui-body-block__title">${body.isOrbiting ? "Moons" : "Planets"}</div>
         ${moonChipsHtml}
       </div>
-  ` : ""
+  `
+      : "";
 
   const description = override?.summary ?? body.description ?? "No description yet.";
 
@@ -185,15 +193,17 @@ export function renderSelectedBodyDetails(bodyName?: string | null): string {
       <div class="ui-body-block">
         <div class="ui-body-block__title">Quick facts</div>
         <ul class="ui-body-facts">
-          ${override.facts.map((fact) => `<li>${escapeHtml(fact)}</li>`).join("")}
+          ${override.facts.map(fact => `<li>${escapeHtml(fact)}</li>`).join("")}
         </ul>
       </div>
     `
     : "";
 
-  const texturePreviewBlock = override?.texture ? `
+  const texturePreviewBlock = override?.texture
+    ? `
         <img class="sidebar__texture" src="${override.texture}" />
-  `: ""
+  `
+    : "";
 
   return `
     <div class="ui-body-details">

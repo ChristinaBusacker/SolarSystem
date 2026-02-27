@@ -37,7 +37,7 @@ function commit(next: SceneVisibilityState): void {
 
   state = next;
   const snapshot = getSceneVisibilityState();
-  listeners.forEach((l) => l(snapshot));
+  listeners.forEach(l => l(snapshot));
 }
 
 export function setMarkersVisible(visible: boolean): void {

@@ -25,18 +25,16 @@ export function subscribeLayoutState(listener: (s: LayoutState) => void): () => 
 
 function commit(next: LayoutState): void {
   if (next.leftOpen || next.rightOpen) {
-    document.body.classList.add('sidebar-open')
-  }
-
-  else if ((!next.leftOpen && !next.rightOpen)) {
-    document.body.classList.remove('sidebar-open')
+    document.body.classList.add("sidebar-open");
+  } else if (!next.leftOpen && !next.rightOpen) {
+    document.body.classList.remove("sidebar-open");
   }
 
   if (next.leftOpen === state.leftOpen && next.rightOpen === state.rightOpen) return;
 
   state = next;
   const snapshot = getLayoutState();
-  listeners.forEach((l) => l(snapshot));
+  listeners.forEach(l => l(snapshot));
 }
 
 export function openSidebar(side: SidebarSide): void {

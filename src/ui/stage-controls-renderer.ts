@@ -28,13 +28,13 @@ export class StageControlsRenderer {
     this.state.leftSidebarOpen = layout.leftOpen;
     this.state.rightSidebarOpen = layout.rightOpen;
 
-    subscribeLayoutState((snapshot) => {
+    subscribeLayoutState(snapshot => {
       this.state.leftSidebarOpen = snapshot.leftOpen;
       this.state.rightSidebarOpen = snapshot.rightOpen;
       this.render();
     });
 
-    router.subscribe((route) => {
+    router.subscribe(route => {
       if (route.name === "planet") {
         this.state.hasFocusedBody = true;
         this.state.focusTitle = this.slugToLabel(route.planet);
@@ -64,9 +64,7 @@ export class StageControlsRenderer {
       fullscreenIconClass: this.state.isFullscreen
         ? "ui-stage-btn__icon--fullscreen-exit"
         : "ui-stage-btn__icon--fullscreen",
-      fullscreenAriaLabel: this.state.isFullscreen
-        ? "Exit fullscreen"
-        : "Enter fullscreen",
+      fullscreenAriaLabel: this.state.isFullscreen ? "Exit fullscreen" : "Enter fullscreen",
     });
   }
 
@@ -76,7 +74,7 @@ export class StageControlsRenderer {
   }
 
   private bindActions(): void {
-    this.root.addEventListener("click", (event) => {
+    this.root.addEventListener("click", event => {
       const target = event.target as HTMLElement | null;
       const actionNode = target?.closest<HTMLElement>("[data-stage-action]");
       if (!actionNode) return;
@@ -85,13 +83,13 @@ export class StageControlsRenderer {
       if (!action) return;
 
       if (action === "toggle-left") {
-        toggleSidebar('left')
+        toggleSidebar("left");
         window.dispatchEvent(new CustomEvent("ui:request-toggle-sidebar-left"));
         return;
       }
 
       if (action === "toggle-right") {
-        toggleSidebar('right')
+        toggleSidebar("right");
         window.dispatchEvent(new CustomEvent("ui:request-toggle-sidebar"));
         return;
       }
@@ -150,7 +148,7 @@ export class StageControlsRenderer {
     return slug
       .split("-")
       .filter(Boolean)
-      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .map(part => part.charAt(0).toUpperCase() + part.slice(1))
       .join(" ");
   }
 }

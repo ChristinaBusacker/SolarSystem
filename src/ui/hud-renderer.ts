@@ -44,7 +44,7 @@ export class HudRenderer {
     { label: "1 m / s", secondsPerSecond: 30 * 24 * 60 * 60 },
     { label: "3 m / s", secondsPerSecond: 3 * 30 * 24 * 60 * 60 },
     { label: "6 m / s", secondsPerSecond: 6 * 30 * 24 * 60 * 60 },
-    { label: "1 y / s", secondsPerSecond: 12 * 30 * 24 * 60 * 60 }
+    { label: "1 y / s", secondsPerSecond: 12 * 30 * 24 * 60 * 60 },
   ];
 
   constructor(root: HTMLElement, initial: HudState) {
@@ -106,7 +106,11 @@ export class HudRenderer {
     const speedSlider = this.root.querySelector<HTMLInputElement>("[data-speed-slider]");
     if (speedSlider) {
       speedSlider.addEventListener("input", () => {
-        const presetIndex = this.clamp(Math.round(Number(speedSlider.value)), 0, this.speedPresets.length - 1);
+        const presetIndex = this.clamp(
+          Math.round(Number(speedSlider.value)),
+          0,
+          this.speedPresets.length - 1,
+        );
         const speed = this.presetIndexToSpeed(presetIndex);
 
         this.lastNonZeroPresetIndex = presetIndex;
@@ -140,12 +144,14 @@ export class HudRenderer {
         window.dispatchEvent(
           new CustomEvent("ui:toggleMarkers", {
             detail: { visible: this.state.markersVisible },
-          })
+          }),
         );
       });
     }
 
-    const orbitPlanetToggle = this.root.querySelector<HTMLButtonElement>("[data-toggle-orbits-planets]");
+    const orbitPlanetToggle = this.root.querySelector<HTMLButtonElement>(
+      "[data-toggle-orbits-planets]",
+    );
     if (orbitPlanetToggle) {
       orbitPlanetToggle.addEventListener("click", () => {
         this.state.orbitsVisible.planets = !this.state.orbitsVisible.planets;
@@ -154,7 +160,9 @@ export class HudRenderer {
       });
     }
 
-    const orbitMoonToggle = this.root.querySelector<HTMLButtonElement>("[data-toggle-orbits-moons]");
+    const orbitMoonToggle = this.root.querySelector<HTMLButtonElement>(
+      "[data-toggle-orbits-moons]",
+    );
     if (orbitMoonToggle) {
       orbitMoonToggle.addEventListener("click", () => {
         this.state.orbitsVisible.moons = !this.state.orbitsVisible.moons;
@@ -168,17 +176,15 @@ export class HudRenderer {
     window.dispatchEvent(
       new CustomEvent("ui:speedChange", {
         detail: { speed },
-      })
+      }),
     );
   }
-
-
 
   private emitOrbitVisibilityChange(): void {
     window.dispatchEvent(
       new CustomEvent("ui:toggleOrbits", {
         detail: { ...this.state.orbitsVisible },
-      })
+      }),
     );
   }
 
@@ -220,7 +226,8 @@ export class HudRenderer {
       return;
     }
 
-    label.textContent = this.speedPresets[this.speedToPresetIndex(speed)]?.label ?? this.formatSpeedFallback(speed);
+    label.textContent =
+      this.speedPresets[this.speedToPresetIndex(speed)]?.label ?? this.formatSpeedFallback(speed);
   }
 
   private syncScaleLabels(): void {
@@ -238,11 +245,14 @@ export class HudRenderer {
     pauseButton.classList.toggle("is-paused", this.paused);
     pauseButton.setAttribute("aria-pressed", String(this.paused));
     pauseButton.setAttribute("aria-label", this.paused ? "Resume simulation" : "Pause simulation");
-
   }
 
   private syncOrbitToggles(): void {
-    const syncButton = (selector: string, visible: boolean, labels: { on: string; off: string }) => {
+    const syncButton = (
+      selector: string,
+      visible: boolean,
+      labels: { on: string; off: string },
+    ) => {
       const btn = this.root.querySelector<HTMLButtonElement>(selector);
       if (!btn) return;
 

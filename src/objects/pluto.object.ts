@@ -8,7 +8,12 @@ export class Pluto extends Astronomical {
   public cameraPosition = new THREE.Vector3(1, 1, 1);
 
   public moons = [
-    new SimpleAstronomicalBody("/assets/textures/1k_charon.png", "/assets/normals/2k_moon.png", charonRawData, { isMoon: true }),
+    new SimpleAstronomicalBody(
+      "/assets/textures/1k_charon.png",
+      "/assets/normals/2k_moon.png",
+      charonRawData,
+      { isMoon: true },
+    ),
   ];
 
   constructor() {
@@ -18,7 +23,7 @@ export class Pluto extends Astronomical {
   public init() {
     super.init();
 
-    this.moons.forEach((moon) => {
+    this.moons.forEach(moon => {
       moon.orbitingParent = this;
       moon.init();
 
@@ -29,15 +34,14 @@ export class Pluto extends Astronomical {
       this.group.add(moonGrp);
     });
 
-    this.generateMaterials()
+    this.generateMaterials();
     this.isInit = true;
   }
-
 
   public render(delta: number, camera?: THREE.PerspectiveCamera) {
     super.render(delta);
 
-    this.moons.forEach((moon) => {
+    this.moons.forEach(moon => {
       moon.render(delta, camera);
     });
   }

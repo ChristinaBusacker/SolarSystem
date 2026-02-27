@@ -1,45 +1,68 @@
 import * as THREE from "three";
 import { MathUtils } from "three";
-import { neptuneRawData, nereidRawData, proteusRawData, tritonRawData } from "../../data/raw-object.data";
+import {
+  neptuneRawData,
+  nereidRawData,
+  proteusRawData,
+  tritonRawData,
+} from "../../data/raw-object.data";
 import { Astronomical } from "./astronomical.object";
 import { SimpleAstronomicalBody } from "./simple-astronomical.object";
 
 export class Neptun extends Astronomical {
+  public moons = [
+    new SimpleAstronomicalBody(
+      "/assets/textures/1k_proteus.png",
+      "/assets/normals/2k_moon.png",
+      proteusRawData,
+      { isMoon: true },
+    ),
+    new SimpleAstronomicalBody(
+      "/assets/textures/2k_triton.jpg",
+      "/assets/normals/2k_mars.png",
+      tritonRawData,
+      { isMoon: true },
+    ),
+    new SimpleAstronomicalBody(
+      "/assets/textures/1k_nereid.png",
+      "/assets/normals/2k_moon.png",
+      nereidRawData,
+      { isMoon: true },
+    ),
+  ];
 
-    public moons = [
-        new SimpleAstronomicalBody("/assets/textures/1k_proteus.png", "/assets/normals/2k_moon.png", proteusRawData, { isMoon: true }),
-        new SimpleAstronomicalBody("/assets/textures/2k_triton.jpg", "/assets/normals/2k_mars.png", tritonRawData, { isMoon: true }),
-        new SimpleAstronomicalBody("/assets/textures/1k_nereid.png", "/assets/normals/2k_moon.png", nereidRawData, { isMoon: true }),
-    ]
+  constructor() {
+    super(
+      ["/assets/textures/2k_neptune.jpg"],
+      "/assets/normals/2k_mars.png",
+      neptuneRawData,
+      false,
+    );
+  }
 
-    constructor() {
-        super(["/assets/textures/2k_neptune.jpg"], "/assets/normals/2k_mars.png", neptuneRawData, false);
-    }
+  public init() {
+    super.init();
 
-    public init() {
-        super.init();
+    this.moons.forEach(moon => {
+      moon.orbitingParent = this;
+      moon.init();
 
+      const moonGrp = new THREE.Group();
+      moonGrp.add(moon.orbitalGroup);
+      moonGrp.rotateX(MathUtils.DEG2RAD * moon.data.orbitalTilt);
 
-        this.moons.forEach(moon => {
-            moon.orbitingParent = this;
-            moon.init();
+      this.group.add(moonGrp);
+    });
 
-            const moonGrp = new THREE.Group();
-            moonGrp.add(moon.orbitalGroup);
-            moonGrp.rotateX(MathUtils.DEG2RAD * moon.data.orbitalTilt);
+    this.generateMaterials();
+    this.isInit = true;
+  }
 
-            this.group.add(moonGrp);
-        })
+  public render(delta: number, camera?: THREE.PerspectiveCamera) {
+    super.render(delta);
 
-        this.generateMaterials()
-        this.isInit = true;
-    }
-
-    public render(delta: number, camera?: THREE.PerspectiveCamera) {
-        super.render(delta);
-
-        this.moons.forEach(moon => {
-            moon.render(delta, camera);
-        })
-    }
+    this.moons.forEach(moon => {
+      moon.render(delta, camera);
+    });
+  }
 }

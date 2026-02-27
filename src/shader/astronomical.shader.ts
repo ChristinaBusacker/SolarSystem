@@ -83,5 +83,5 @@ export const astronomicalShader: ShaderDefinition = {
 
     gl_FragColor =finalColor;
   }
-  `
+  `,
 };

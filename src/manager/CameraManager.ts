@@ -185,18 +185,14 @@ export class CameraManager {
   }
 
   public removeCamera(selector: string): CameraManager {
-    this.collection = this.collection.filter(
-      (entry) => entry.selector !== selector,
-    );
+    this.collection = this.collection.filter(entry => entry.selector !== selector);
     return this;
   }
 
   private toggleClasses(selector: string) {
     if (selector !== "Default") {
       APP.cssRenderer.domElement.classList.remove("hideMoons");
-      const marker = APP.cssRenderer.domElement.querySelector(
-        `.object.${selector}`,
-      );
+      const marker = APP.cssRenderer.domElement.querySelector(`.object.${selector}`);
       marker.classList.add("hide");
     } else {
       APP.cssRenderer.domElement.classList.add("hideMoons");
@@ -204,12 +200,11 @@ export class CameraManager {
   }
 
   public switchCamera(selector: string, switchAudio = true): CameraManager {
-
-    APP.cssRenderer.domElement.querySelectorAll(`.object`).forEach((elem) => {
+    APP.cssRenderer.domElement.querySelectorAll(`.object`).forEach(elem => {
       elem.classList.remove("hide");
     });
 
-    const entry = this.collection.find((entry) => entry.selector === selector);
+    const entry = this.collection.find(entry => entry.selector === selector);
 
     if (!entry) {
       console.error(`Cant find camera with selector ${selector}`);
@@ -219,9 +214,8 @@ export class CameraManager {
       this.activeCamera = entry;
 
       if (switchAudio) {
-        SoundManager.attachToCamera(this.activeCamera.camera)
+        SoundManager.attachToCamera(this.activeCamera.camera);
       }
-
 
       // Home view should always come up fully zoomed out.
       if (selector === "Default") {
@@ -262,7 +256,7 @@ export class CameraManager {
       this.activeCamera.camera.updateProjectionMatrix();
     }
 
-    this.toggleClasses(selector)
+    this.toggleClasses(selector);
 
     return this;
   }

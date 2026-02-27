@@ -8,7 +8,7 @@ module.exports = merge(common, {
   mode: "production",
   devtool: "source-map",
   output: {
-    publicPath: '/',
+    publicPath: "/",
   },
   module: {
     rules: [
@@ -23,9 +23,9 @@ module.exports = merge(common, {
           {
             loader: "sass-loader",
             options: {
-              implementation: require("sass")
-            }
-          }
+              implementation: require("sass"),
+            },
+          },
         ],
       },
     ],

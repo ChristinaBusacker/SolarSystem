@@ -7,12 +7,22 @@ import { APP } from "..";
 import { earthRawData, moonRawData } from "../../data/raw-object.data";
 
 export class Earth extends Astronomical {
-  public moon = new SimpleAstronomicalBody("/assets/textures/2k_moon.jpg", "/assets/normals/2k_moon.png", moonRawData, { isMoon: true, rotateTextureHalfTurn: false });
-  public moons = [this.moon]
+  public moon = new SimpleAstronomicalBody(
+    "/assets/textures/2k_moon.jpg",
+    "/assets/normals/2k_moon.png",
+    moonRawData,
+    { isMoon: true, rotateTextureHalfTurn: false },
+  );
+  public moons = [this.moon];
   public cameraPosition = new THREE.Vector3(-4, 4, 4);
 
   constructor() {
-    super(["/assets/textures/2k_earth_daymap.jpg", "/assets/textures/2k_earth_nightmap.jpg"], "/assets/normals/2k_earth.png", earthRawData, false);
+    super(
+      ["/assets/textures/2k_earth_daymap.jpg", "/assets/textures/2k_earth_nightmap.jpg"],
+      "/assets/normals/2k_earth.png",
+      earthRawData,
+      false,
+    );
   }
 
   public init() {
@@ -24,7 +34,7 @@ export class Earth extends Astronomical {
     this.specMap = textureLoader.load("/assets/spec/2k_earth_specular_map.png");
 
     this.moon.orbitingParent = this;
-    this.moon.init()
+    this.moon.init();
 
     const moonGrp = new THREE.Group();
     moonGrp.add(this.moon.orbitalGroup);
@@ -32,9 +42,9 @@ export class Earth extends Astronomical {
 
     this.group.add(moonGrp);
 
-    this.generateMaterials()
+    this.generateMaterials();
     //this.planetaryGroup.rotation.z = THREE.MathUtils.degToRad(this.data.planetaryTilt);
-    this.isInit = true
+    this.isInit = true;
   }
 
   private adjustAxisTilt() {
@@ -46,39 +56,33 @@ export class Earth extends Astronomical {
       this.mesh.rotation.z = THREE.MathUtils.degToRad(tiltAdjustment);
       this.atmosphereMesh.rotation.z = THREE.MathUtils.degToRad(tiltAdjustment);
     }
-
   }
 
   public preBloom(): void {
-    super.preBloom()
+    super.preBloom();
     if (!this.moon.emissive) {
-      this.moon.preBloom()
+      this.moon.preBloom();
       //this.moon.marker.material.color = new THREE.Color(0x000000);
     }
   }
 
   public postBloom(): void {
-    super.postBloom()
+    super.postBloom();
     if (!this.moon.emissive) {
-      this.moon.postBloom()
+      this.moon.postBloom();
       //this.moon.marker.material.color = new THREE.Color(0xffffff);
     }
   }
 
-  public render(
-    delta: number,
-    camera?: THREE.PerspectiveCamera,
-  ) {
-    if (!this.isInit) return
+  public render(delta: number, camera?: THREE.PerspectiveCamera) {
+    if (!this.isInit) return;
 
     if (this.atmosphereMesh) {
       this.atmosphereMesh.rotation.y +=
         this.data.rotationSpeed * 8 * delta * 0.8 * APP.simulationSpeed * -1;
     }
 
-
     super.render(delta, camera);
     this.moon.render(delta, camera);
-
   }
 }

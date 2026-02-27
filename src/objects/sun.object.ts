@@ -32,25 +32,24 @@ export class Sun extends Astronomical {
   private lensflareFinalVisible = true;
   private readonly tmpSunNdc = new THREE.Vector3();
 
-
   private static createGlowTexture(): THREE.Texture {
     const size = 96;
-    const canvas = document.createElement('canvas');
+    const canvas = document.createElement("canvas");
     canvas.width = size;
     canvas.height = size;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) {
       // Fallback: 1x1 white
       const tex = new THREE.DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1);
-      tex.needsUpdate = true
+      tex.needsUpdate = true;
       return tex;
     }
 
     const g = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
-    g.addColorStop(0.0, 'rgba(255, 235, 180, 1.0)');
-    g.addColorStop(0.25, 'rgba(255, 210, 120, 0.85)');
-    g.addColorStop(0.55, 'rgba(255, 170, 60, 0.25)');
-    g.addColorStop(1.0, 'rgba(255, 140, 20, 0.0)');
+    g.addColorStop(0.0, "rgba(255, 235, 180, 1.0)");
+    g.addColorStop(0.25, "rgba(255, 210, 120, 0.85)");
+    g.addColorStop(0.55, "rgba(255, 170, 60, 0.25)");
+    g.addColorStop(1.0, "rgba(255, 140, 20, 0.0)");
 
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, size, size);
@@ -66,9 +65,9 @@ export class Sun extends Astronomical {
   }
 
   public init() {
-    super.init()
+    super.init();
 
-    const { vertexShader, fragmentShader } = sunShader
+    const { vertexShader, fragmentShader } = sunShader;
 
     this.mesh.material = new THREE.ShaderMaterial({
       uniforms: {
@@ -77,12 +76,11 @@ export class Sun extends Astronomical {
         sunSpotsTexture: { value: this.texture },
         // Keep this independent from the actual camera.position to avoid accidental mutation.
         myCameraPosition: { value: new THREE.Vector3() },
-        cameraFar: { value: APP.cameraManager.getActiveEntry().camera.far } // Verwende die Far-Plane der Kamera
+        cameraFar: { value: APP.cameraManager.getActiveEntry().camera.far }, // Verwende die Far-Plane der Kamera
       },
       vertexShader: vertexShader,
-      fragmentShader: fragmentShader
+      fragmentShader: fragmentShader,
     });
-
 
     // Adding Corona to sun
     this.coronaShaderMaterial = new THREE.ShaderMaterial(coronaShader);
@@ -90,18 +88,14 @@ export class Sun extends Astronomical {
     this.coronaShaderMaterial.depthWrite = false;
     this.coronaShaderMaterial.depthTest = true;
 
-    const coronaGeometry = new THREE.SphereGeometry(this.data.size / 2 * 1.02, 64, 64);
-    const coronaMesh = new THREE.Mesh(
-      coronaGeometry,
-      this.coronaShaderMaterial
-    );
+    const coronaGeometry = new THREE.SphereGeometry((this.data.size / 2) * 1.02, 64, 64);
+    const coronaMesh = new THREE.Mesh(coronaGeometry, this.coronaShaderMaterial);
 
     coronaMesh.position.set(0, 0, 0);
     coronaMesh.renderOrder = 1;
     this.group.add(coronaMesh);
 
     this.initLensflare();
-
 
     // Small additive glow sprite so the Sun stays visible in wide shots.
     const glowTex = Sun.createGlowTexture();
@@ -175,8 +169,8 @@ export class Sun extends Astronomical {
     this.smearElement = add(texSmear, 820, 0.0, 0xfff2d0, 0.28);
 
     // Ghost chain toward screen center (warm + subtle, not milky overlays)
-    add(texGhost, 120, 0.18, 0xfff7ea, 0.10);
-    add(texRing, 220, 0.30, 0xffe9c6, 0.10);
+    add(texGhost, 120, 0.18, 0xfff7ea, 0.1);
+    add(texRing, 220, 0.3, 0xffe9c6, 0.1);
     add(texGhost, 210, 0.42, 0xffd9a6, 0.08);
     add(texRing, 340, 0.58, 0xfff1d6, 0.07);
     add(texGhost, 280, 0.72, 0xffffff, 0.05);
@@ -200,7 +194,6 @@ export class Sun extends Astronomical {
     if (this.minVisibleSprite) this.minVisibleSprite.visible = true;
   }
 
-
   public render(delta: number, camera?: THREE.PerspectiveCamera): void {
     const activeCamera = camera ?? APP.cameraManager.getActiveEntry().camera;
 
@@ -219,7 +212,6 @@ export class Sun extends Astronomical {
       mat.uniforms.cameraFar.value = activeCamera.far;
     }
 
-
     // Enforce a minimum on-screen size for the glow sprite.
     if (this.minVisibleSprite) {
       // tmpCamPos is already updated above (shader uniform sync), but keep this safe.
@@ -230,7 +222,7 @@ export class Sun extends Astronomical {
       APP.webglRenderer.getSize(this.tmpViewport);
       const viewportH = Math.max(1, this.tmpViewport.y);
       const fovRad = THREE.MathUtils.degToRad(activeCamera.fov);
-      const focalPx = 0.5 * viewportH / Math.tan(fovRad * 0.5);
+      const focalPx = (0.5 * viewportH) / Math.tan(fovRad * 0.5);
 
       const minPx = 14; // minimum diameter in CSS pixels
       const requiredWorld = (minPx * dist) / Math.max(1e-6, focalPx);
@@ -242,24 +234,25 @@ export class Sun extends Astronomical {
       this.minVisibleSprite.scale.set(finalWorld, finalWorld, 1);
     }
 
-
-
     if (this.lensflare) {
       // Sun position in NDC (-1..1)
       this.group.getWorldPosition(this.tmpSunPos);
       this.tmpSunNdc.copy(this.tmpSunPos).project(activeCamera);
 
       const inFront = this.tmpSunNdc.z > 0 && this.tmpSunNdc.z < 1;
-      const distFromCenter = Math.sqrt(this.tmpSunNdc.x * this.tmpSunNdc.x + this.tmpSunNdc.y * this.tmpSunNdc.y);
+      const distFromCenter = Math.sqrt(
+        this.tmpSunNdc.x * this.tmpSunNdc.x + this.tmpSunNdc.y * this.tmpSunNdc.y,
+      );
 
       // Fade out when near edges / off-screen
-      const onScreen = inFront && Math.abs(this.tmpSunNdc.x) < 1.35 && Math.abs(this.tmpSunNdc.y) < 1.35;
+      const onScreen =
+        inFront && Math.abs(this.tmpSunNdc.x) < 1.35 && Math.abs(this.tmpSunNdc.y) < 1.35;
 
       // NOTE: MathUtils.smoothstep signature is smoothstep(x, min, max)
       // We want:
       // - a small but always-present core glint (even near screen center)
       // - ghosts/rings become stronger toward the edges, but start earlier than before
-      const edgeFade = THREE.MathUtils.smoothstep(distFromCenter, 0.05, 1.10); // 0 center -> 1 edges
+      const edgeFade = THREE.MathUtils.smoothstep(distFromCenter, 0.05, 1.1); // 0 center -> 1 edges
       const ghostGate = THREE.MathUtils.smoothstep(distFromCenter, 0.03, 0.18); // allow ghosts closer to center
 
       const coreIntensity = onScreen ? THREE.MathUtils.clamp(0.22 + 0.78 * edgeFade, 0, 1) : 0;
@@ -278,7 +271,7 @@ export class Sun extends Astronomical {
 
         const isCore = i < this.flareCoreCount;
         const t = isCore ? coreIntensity : ghostIntensity;
-        const sizeScale = isCore ? (0.85 + 0.15 * t) : (0.25 + 0.75 * t);
+        const sizeScale = isCore ? 0.85 + 0.15 * t : 0.25 + 0.75 * t;
 
         p.el.size = p.baseSize * sizeScale;
         p.el.color.copy(p.baseColor).multiplyScalar(globalStrength * t);

@@ -148,7 +148,7 @@ export class AppRouter {
     if (same) return;
 
     this.current = route;
-    this.listeners.forEach((l) => l(route));
+    this.listeners.forEach(l => l(route));
   }
 }
 

@@ -1,7 +1,7 @@
 import { ShaderDefinition } from "../interfaces/shaderDefinition.interface";
 
 export const sunShader: ShaderDefinition = {
-    vertexShader: `
+  vertexShader: `
     uniform float time;
     varying vec2 vUv;
     varying vec3 vNormal;
@@ -21,7 +21,7 @@ export const sunShader: ShaderDefinition = {
         gl_Position = projectionMatrix * viewPosition;
     }
     `,
-    fragmentShader: `
+  fragmentShader: `
     uniform sampler2D sunTexture;
     uniform sampler2D sunSpotsTexture;
     uniform vec3 myCameraPosition; // Die Position der Kamera im Weltkoordinatensystem
@@ -55,5 +55,5 @@ export const sunShader: ShaderDefinition = {
         vec3 color = sunColor + emission;
         gl_FragColor = vec4(color, 1.0);
     }
-    `
+    `,
 };

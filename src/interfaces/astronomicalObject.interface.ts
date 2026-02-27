@@ -11,7 +11,7 @@ export interface AstronomicalObject {
   camera: THREE.PerspectiveCamera;
   group: THREE.Group;
   orbitalGroup: THREE.Group;
-  moons: Array<AstronomicalObject>
+  moons: Array<AstronomicalObject>;
   data?: AstronomicalDataset;
   isMoon: boolean;
   marker: Line2;
@@ -19,5 +19,5 @@ export interface AstronomicalObject {
   preBloom: () => void;
   postBloom: () => void;
   init: () => void;
-  render: (delta: number, camera?: THREE.PerspectiveCamera, scene?: THREE.Scene) => void
+  render: (delta: number, camera?: THREE.PerspectiveCamera, scene?: THREE.Scene) => void;
 }

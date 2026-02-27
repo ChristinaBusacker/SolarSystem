@@ -9,7 +9,7 @@ import { toggleDeclutterAuto, toggleMarkers, toggleOrbits } from "./scene-visibi
 interface MenuRenderState {
   isOpen: boolean;
   isFullscreen: boolean;
-  isSoundActive: boolean
+  isSoundActive: boolean;
 }
 
 export class MenuRenderer {
@@ -17,15 +17,15 @@ export class MenuRenderer {
   private state: MenuRenderState = {
     isOpen: false,
     isFullscreen: false,
-    isSoundActive: false
+    isSoundActive: false,
   };
 
   public constructor(root: HTMLElement) {
     this.root = root;
 
-    subscribeLayoutState((snapshot) => {
+    subscribeLayoutState(snapshot => {
       if (snapshot.rightOpen) {
-        this.root.classList.remove('open')
+        this.root.classList.remove("open");
         this.ensureSoundState();
       }
     });
@@ -42,20 +42,18 @@ export class MenuRenderer {
     this.bindActions();
   }
 
-
   private render(): void {
     this.root.innerHTML = renderTemplate(menuTpl, {
-      menuState: this.state.isOpen ? 'open' : ''
+      menuState: this.state.isOpen ? "open" : "",
     });
 
     this.ensureSoundState();
   }
 
   private ensureSoundState() {
-
     if (this.state.isSoundActive) {
-      const elem = this.root.querySelector('[data-menu-action="toggle-audio"]')
-      elem.parentElement.classList.add('is-active')
+      const elem = this.root.querySelector('[data-menu-action="toggle-audio"]');
+      elem.parentElement.classList.add("is-active");
     }
   }
 
@@ -65,7 +63,7 @@ export class MenuRenderer {
   }
 
   private bindActions(): void {
-    this.root.addEventListener("click", (event) => {
+    this.root.addEventListener("click", event => {
       this.ensureSoundState();
       const target = event.target as HTMLElement | null;
       const actionNode = target?.closest<HTMLElement>("[data-menu-action]");
@@ -75,31 +73,31 @@ export class MenuRenderer {
       if (!action) return;
 
       if (action === "toggle-menu") {
-        this.root.classList.toggle('open')
+        this.root.classList.toggle("open");
         return;
       }
 
       if (action === "toggle-marker") {
         toggleMarkers();
-        actionNode.parentElement.classList.toggle('is-active')
+        actionNode.parentElement.classList.toggle("is-active");
         return;
       }
 
       if (action === "toggle-orbits") {
         toggleOrbits();
-        actionNode.parentElement.classList.toggle('is-active')
+        actionNode.parentElement.classList.toggle("is-active");
         return;
       }
 
       if (action === "toggle-declutter") {
         toggleDeclutterAuto();
-        actionNode.parentElement.classList.toggle('is-active')
+        actionNode.parentElement.classList.toggle("is-active");
         return;
       }
 
       if (action === "toggle-audio") {
         this.state.isSoundActive = !this.state.isSoundActive;
-        actionNode.parentElement.classList.toggle('is-active')
+        actionNode.parentElement.classList.toggle("is-active");
         return SoundManager.toggleAmbient();
       }
 
@@ -131,10 +129,10 @@ export class MenuRenderer {
       }
     });
 
-    this.root.querySelector('[data-volume-slider').addEventListener('change', function (e) {
+    this.root.querySelector("[data-volume-slider").addEventListener("change", function (e) {
       const target = e.target as HTMLInputElement;
-      SoundManager.setVolume(parseInt(target.value))
-    })
+      SoundManager.setVolume(parseInt(target.value));
+    });
   }
 
   private async toggleFullscreen(): Promise<void> {
@@ -149,8 +147,6 @@ export class MenuRenderer {
     }
   }
 
-
-
   private readonly handleFullscreenChange = (): void => {
     this.syncFullscreenState();
   };
@@ -160,9 +156,9 @@ export class MenuRenderer {
 
     const button = this.root.querySelector('[data-menu-action="toggle-fullscreen"]');
     if (this.state.isFullscreen) {
-      button?.classList.add('is-active')
+      button?.classList.add("is-active");
     } else {
-      button?.classList.remove('is-active')
+      button?.classList.remove("is-active");
     }
   }
 }

@@ -1,6 +1,5 @@
 import type * as THREE from "three";
 
-
 export interface AstronomicalRawData {
   name: string;
   slug: string;
@@ -19,10 +18,10 @@ export interface AstronomicalRawData {
   ringInnerRadiusKm?: number;
   ringOuterRadiusKm?: number;
   denyCamera?: boolean;
-};
+}
 export interface AstronomicalDataset {
-  title?: string //DEPRECATED
-  slug: string,
+  title?: string; //DEPRECATED
+  slug: string;
   name: string;
   description: string;
   size: number;

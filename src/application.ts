@@ -6,12 +6,7 @@ import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass";
 import { SMAAPass } from "three/examples/jsm/postprocessing/SMAAPass";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
 import { CSS2DRenderer } from "three/examples/jsm/renderers/CSS2DRenderer";
-import {
-  bloomRadius,
-  bloomStrength,
-  bloomThreshold,
-  simulationSpeed,
-} from "../data/settings.data";
+import { bloomRadius, bloomStrength, bloomThreshold, simulationSpeed } from "../data/settings.data";
 import { AstronomicalManager } from "./manager/AstronomicalManager";
 import { CameraManager } from "./manager/CameraManager";
 import { MinorBodyManager } from "./manager/minor-body-manager";
@@ -87,7 +82,7 @@ export class Application {
   private viewportObserver: ResizeObserver | null = null;
 
   private uiRight?: UiRenderer;
-  private menuRenderer?: MenuRenderer
+  private menuRenderer?: MenuRenderer;
 
   // Current selection derived from the router (used for declutter logic).
   private currentSelectedBodySlug?: string;
@@ -128,9 +123,9 @@ export class Application {
 
   public init() {
     this.cameraManager.switchCamera("Default", false).initEventControls();
-    const entry = this.cameraManager.getActiveEntry()
+    const entry = this.cameraManager.getActiveEntry();
     SoundManager.init(entry.camera);
-    SoundManager.initAmbientSound('/assets/sounds/ambient.mp3');
+    SoundManager.initAmbientSound("/assets/sounds/ambient.mp3");
     SoundManager.bindVisibilityHandling({
       stopAmbientOnHidden: true,
       resumeAmbientOnVisible: true,
@@ -149,21 +144,16 @@ export class Application {
     this.initSunLight();
     this.initPostProcessing();
     this.initUi();
-    setTimeout(() => { this.initRouter(); }, 1000)
-
+    setTimeout(() => {
+      this.initRouter();
+    }, 1000);
   }
 
   public initPostProcessing() {
-    const renderScene = new RenderPass(
-      this.scene,
-      this.cameraManager.getActiveEntry().camera,
-    );
+    const renderScene = new RenderPass(this.scene, this.cameraManager.getActiveEntry().camera);
 
     const bloomPass = new UnrealBloomPass(
-      new THREE.Vector2(
-        this.getViewportSize().width,
-        this.getViewportSize().height,
-      ),
+      new THREE.Vector2(this.getViewportSize().width, this.getViewportSize().height),
       bloomStrength,
       bloomRadius,
       bloomThreshold,
@@ -225,14 +215,9 @@ export class Application {
       new StageControlsRenderer(stageControlsSlot).init();
     }
 
+    const uiSlotHud = document.querySelector<HTMLElement>('#ui-root [data-slot="hud"]');
 
-    const uiSlotHud = document.querySelector<HTMLElement>(
-      '#ui-root [data-slot="hud"]',
-    );
-
-    const menuSlot = document.querySelector<HTMLElement>(
-      '#ui-root [data-slot="menu"]',
-    );
+    const menuSlot = document.querySelector<HTMLElement>('#ui-root [data-slot="menu"]');
 
     if (uiSlotHud) {
       new HudRenderer(uiSlotHud, {
@@ -245,12 +230,9 @@ export class Application {
         },
         markersVisible: true,
       });
-
     }
 
-    const uiRightSidebarSlot = document.querySelector<HTMLElement>(
-      "#sidebar-right-slot",
-    );
+    const uiRightSidebarSlot = document.querySelector<HTMLElement>("#sidebar-right-slot");
     if (uiRightSidebarSlot) {
       this.uiRight = new UiRenderer(uiRightSidebarSlot, {
         hideMoons: false,
@@ -263,15 +245,13 @@ export class Application {
       this.menuRenderer = new MenuRenderer(menuSlot);
     }
 
-
-    const uiLeftSidebarSlot =
-      document.querySelector<HTMLElement>("#sidebar-left-slot");
+    const uiLeftSidebarSlot = document.querySelector<HTMLElement>("#sidebar-left-slot");
     if (uiLeftSidebarSlot) {
       new PlanetSidebarRenderer(uiLeftSidebarSlot).init();
     }
 
     // Apply open/close state to both sidebars and resize smoothly during transitions.
-    subscribeLayoutState((s) => {
+    subscribeLayoutState(s => {
       const leftRoot = document.getElementById("sidebar-left-root");
       const rightRoot = document.getElementById("sidebar-right-root");
 
@@ -292,7 +272,7 @@ export class Application {
     });
 
     // Scene visibility toggles (markers/orbits)
-    subscribeSceneVisibilityState((v) => {
+    subscribeSceneVisibilityState(v => {
       const overlay = this.cssRenderer?.domElement as HTMLElement | undefined;
       if (overlay) {
         overlay.classList.toggle("markers-off", !v.markersVisible);
@@ -308,7 +288,7 @@ export class Application {
 
   private initRouter(): void {
     router.start();
-    router.subscribe((r) => this.applyRoute(r));
+    router.subscribe(r => this.applyRoute(r));
   }
 
   private applyRoute(route: AppRoute): void {
@@ -404,7 +384,7 @@ export class Application {
       const moonEl = overlay.querySelector<HTMLElement>(`.object.moon.${selectedMoonSlug}`);
       if (moonEl) {
         const blacklist = new Set(["object", "moon", selectedMoonSlug]);
-        const parent = Array.from(moonEl.classList).find((c) => !blacklist.has(c));
+        const parent = Array.from(moonEl.classList).find(c => !blacklist.has(c));
         if (parent) focusSlug = parent;
       }
     } else {
@@ -420,7 +400,7 @@ export class Application {
     if (moonEls.length < 2) return;
 
     // Reset collision hides.
-    moonEls.forEach((el) => el.classList.remove("hide-collide"));
+    moonEls.forEach(el => el.classList.remove("hide-collide"));
 
     // Prefer to keep the currently selected moon visible.
     if (selectedMoonSlug) {
@@ -446,7 +426,7 @@ export class Application {
       const r = el.getBoundingClientRect();
       if (r.width <= 0 || r.height <= 0) continue;
 
-      if (kept.some((k) => intersects(r, k))) {
+      if (kept.some(k => intersects(r, k))) {
         el.classList.add("hide-collide");
       } else {
         kept.push(r);
@@ -476,7 +456,9 @@ export class Application {
     const { width, height } = this.getViewportSize();
     if (width < 2 || height < 2) return;
 
-    const planetEls = Array.from(overlay.querySelectorAll<HTMLElement>(`.object.planet:not(.hide)`));
+    const planetEls = Array.from(
+      overlay.querySelectorAll<HTMLElement>(`.object.planet:not(.hide)`),
+    );
     if (planetEls.length < 2) return;
 
     // Reset previous clustering state.
@@ -509,13 +491,19 @@ export class Application {
 
     // IMPORTANT: cluster based on the *actual text label* DOM rect, not the dot position.
     // Otherwise the label can overlap even when the dots are slightly apart.
-    type Item = { el: HTMLElement; slug: string; prio: number; p: HTMLParagraphElement; rect: DOMRect };
+    type Item = {
+      el: HTMLElement;
+      slug: string;
+      prio: number;
+      p: HTMLParagraphElement;
+      rect: DOMRect;
+    };
     const items: Item[] = [];
 
     for (const el of planetEls) {
       const p = el.querySelector<HTMLParagraphElement>("p");
       if (!p) continue;
-      const slug = priorityOrder.find((s) => el.classList.contains(s));
+      const slug = priorityOrder.find(s => el.classList.contains(s));
       if (!slug) continue;
       const r = p.getBoundingClientRect();
       if (r.width <= 0 || r.height <= 0) continue;
@@ -538,7 +526,7 @@ export class Application {
     const clusters: Array<{ leader: Item; hiddenCount: number }> = [];
 
     for (const it of items) {
-      const hit = clusters.find((c) => intersects(it.rect, c.leader.rect));
+      const hit = clusters.find(c => intersects(it.rect, c.leader.rect));
       if (!hit) {
         clusters.push({ leader: it, hiddenCount: 0 });
         continue;
@@ -571,7 +559,7 @@ export class Application {
 
     this.cssRenderer.domElement.classList.add("css-renderer");
     this.cssRenderer.domElement.classList.add("markers-on");
-    this.cssRenderer.domElement.classList.add('hideMoons')
+    this.cssRenderer.domElement.classList.add("hideMoons");
     document.getElementById("app").appendChild(this.cssRenderer.domElement);
   }
 
@@ -633,20 +621,15 @@ export class Application {
     };
 
     const sampleColor = (r: number): THREE.Color => {
-      if (r < 0.06) return new THREE.Color(0.55, 0.70, 1.00);
-      if (r < 0.16) return new THREE.Color(0.70, 0.82, 1.00);
-      if (r < 0.62) return new THREE.Color(1.00, 1.00, 1.00);
-      if (r < 0.88) return new THREE.Color(1.00, 0.92, 0.76);
-      return new THREE.Color(1.00, 0.75, 0.52);
+      if (r < 0.06) return new THREE.Color(0.55, 0.7, 1.0);
+      if (r < 0.16) return new THREE.Color(0.7, 0.82, 1.0);
+      if (r < 0.62) return new THREE.Color(1.0, 1.0, 1.0);
+      if (r < 0.88) return new THREE.Color(1.0, 0.92, 0.76);
+      return new THREE.Color(1.0, 0.75, 0.52);
     };
 
     let i = 0;
-    const writeStar = (
-      dir: THREE.Vector3,
-      sizePx: number,
-      alpha: number,
-      color: THREE.Color
-    ) => {
+    const writeStar = (dir: THREE.Vector3, sizePx: number, alpha: number, color: THREE.Color) => {
       positions[i * 3 + 0] = dir.x;
       positions[i * 3 + 1] = dir.y;
       positions[i * 3 + 2] = dir.z;
@@ -724,11 +707,7 @@ export class Application {
     const { width, height } = this.getViewportSize();
 
     if (width < 2 || height < 2) return;
-    if (
-      width === this.lastViewportSize.width &&
-      height === this.lastViewportSize.height
-    )
-      return;
+    if (width === this.lastViewportSize.width && height === this.lastViewportSize.height) return;
     this.lastViewportSize = { width, height };
 
     const activeCamera = this.cameraManager.getActiveEntry().camera;
@@ -750,11 +729,7 @@ export class Application {
 
     if (this.isLayoutTransitioning) return;
 
-    if (
-      width === this.lastRenderSize.width &&
-      height === this.lastRenderSize.height
-    )
-      return;
+    if (width === this.lastRenderSize.width && height === this.lastRenderSize.height) return;
     this.lastRenderSize = { width, height };
 
     this.webglRenderer.setSize(width, height, false);
@@ -806,8 +781,7 @@ export class Application {
       this.scheduleResize();
       i += 1;
       if (i >= steps) {
-        if (this.transitionResizeTimer != null)
-          window.clearInterval(this.transitionResizeTimer);
+        if (this.transitionResizeTimer != null) window.clearInterval(this.transitionResizeTimer);
         this.transitionResizeTimer = null;
         // Final snap to exact size at the end of the transition.
         window.setTimeout(() => {
@@ -847,15 +821,14 @@ export class Application {
   }
 
   public updateComposer(newCamera: THREE.Camera) {
-    [this.bloomComposer, this.finalComposer].forEach((composer) => {
-      composer.passes.forEach((pass) => {
+    [this.bloomComposer, this.finalComposer].forEach(composer => {
+      composer.passes.forEach(pass => {
         if (pass instanceof RenderPass) {
           pass.camera = newCamera;
         }
       });
     });
   }
-
 
   private applyCss2dLabelClustering(): void {
     // Only do aggressive clustering in the overview (no selected body).
@@ -909,16 +882,9 @@ export class Application {
 
       if (kind === "planet") {
         if (
-          [
-            "Mercury",
-            "Venus",
-            "Earth",
-            "Mars",
-            "Jupiter",
-            "Saturn",
-            "Uranus",
-            "Neptune",
-          ].includes(body)
+          ["Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune"].includes(
+            body,
+          )
         )
           return 900;
         if (["Ceres", "Pluto", "Haumea", "Makemake", "Eris"].includes(body)) return 850;

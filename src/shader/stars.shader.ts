@@ -34,5 +34,5 @@ export const starsShader: ShaderDefinition = {
       if (texColor.a < 0.1) discard;
       else gl_FragColor = starColor * texColor; // Multiplikation der Farben
     }
-    `
+    `,
 };

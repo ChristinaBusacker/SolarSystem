@@ -1,45 +1,82 @@
 import * as THREE from "three";
 import { MathUtils } from "three";
-import { arielRawData, mirandaRawData, oberonRawData, titaniaRawData, umbrielRawData, uranusRawData } from "../../data/raw-object.data";
+import {
+  arielRawData,
+  mirandaRawData,
+  oberonRawData,
+  titaniaRawData,
+  umbrielRawData,
+  uranusRawData,
+} from "../../data/raw-object.data";
 import { Astronomical } from "./astronomical.object";
 import { SimpleAstronomicalBody } from "./simple-astronomical.object";
 
 export class Uranus extends Astronomical {
-    public moons = [
-        new SimpleAstronomicalBody("/assets/textures/1k_miranda-0.png", "/assets/normals/2k_moon.png", mirandaRawData, { isMoon: true }),
-        new SimpleAstronomicalBody("/assets/textures/1k_ariel.png", "/assets/normals/2k_moon.png", arielRawData, { isMoon: true }),
-        new SimpleAstronomicalBody("/assets/textures/1k_umbriel.png", "/assets/normals/2k_moon.png", umbrielRawData, { isMoon: true }),
-        new SimpleAstronomicalBody("/assets/textures/titania.jpg", "/assets/normals/2k_moon.png", titaniaRawData, { isMoon: true }),
-        new SimpleAstronomicalBody("/assets/textures/1k_oberonmap1.png", "/assets/normals/2k_moon.png", oberonRawData, { isMoon: true }),
-    ]
+  public moons = [
+    new SimpleAstronomicalBody(
+      "/assets/textures/1k_miranda-0.png",
+      "/assets/normals/2k_moon.png",
+      mirandaRawData,
+      { isMoon: true },
+    ),
+    new SimpleAstronomicalBody(
+      "/assets/textures/1k_ariel.png",
+      "/assets/normals/2k_moon.png",
+      arielRawData,
+      { isMoon: true },
+    ),
+    new SimpleAstronomicalBody(
+      "/assets/textures/1k_umbriel.png",
+      "/assets/normals/2k_moon.png",
+      umbrielRawData,
+      { isMoon: true },
+    ),
+    new SimpleAstronomicalBody(
+      "/assets/textures/titania.jpg",
+      "/assets/normals/2k_moon.png",
+      titaniaRawData,
+      { isMoon: true },
+    ),
+    new SimpleAstronomicalBody(
+      "/assets/textures/1k_oberonmap1.png",
+      "/assets/normals/2k_moon.png",
+      oberonRawData,
+      { isMoon: true },
+    ),
+  ];
 
-    constructor() {
-        super(["/assets/textures/2k_uranus.jpg"], "/assets/normals/2k_uranus.png", uranusRawData, false);
-    }
+  constructor() {
+    super(
+      ["/assets/textures/2k_uranus.jpg"],
+      "/assets/normals/2k_uranus.png",
+      uranusRawData,
+      false,
+    );
+  }
 
-    public init() {
-        super.init();
-        this.generateMaterials()
+  public init() {
+    super.init();
+    this.generateMaterials();
 
-        this.moons.forEach(moon => {
-            moon.orbitingParent = this;
-            moon.init();
+    this.moons.forEach(moon => {
+      moon.orbitingParent = this;
+      moon.init();
 
-            const moonGrp = new THREE.Group();
-            moonGrp.add(moon.orbitalGroup);
-            moonGrp.rotateX(MathUtils.DEG2RAD * moon.data.orbitalTilt);
+      const moonGrp = new THREE.Group();
+      moonGrp.add(moon.orbitalGroup);
+      moonGrp.rotateX(MathUtils.DEG2RAD * moon.data.orbitalTilt);
 
-            this.group.add(moonGrp);
-        })
+      this.group.add(moonGrp);
+    });
 
-        this.isInit = true;
-    }
+    this.isInit = true;
+  }
 
-    public render(delta: number, camera?: THREE.PerspectiveCamera) {
-        super.render(delta);
+  public render(delta: number, camera?: THREE.PerspectiveCamera) {
+    super.render(delta);
 
-        this.moons.forEach(moon => {
-            moon.render(delta, camera);
-        })
-    }
+    this.moons.forEach(moon => {
+      moon.render(delta, camera);
+    });
+  }
 }

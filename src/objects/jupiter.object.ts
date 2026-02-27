@@ -1,19 +1,50 @@
 import * as THREE from "three";
 import { MathUtils } from "three";
-import { callistoRawData, europaRawData, ganymedeRawData, ioRawData, jupiterRawData } from "../../data/raw-object.data";
+import {
+  callistoRawData,
+  europaRawData,
+  ganymedeRawData,
+  ioRawData,
+  jupiterRawData,
+} from "../../data/raw-object.data";
 import { Astronomical } from "./astronomical.object";
 import { SimpleAstronomicalBody } from "./simple-astronomical.object";
 
 export class Jupiter extends Astronomical {
   public moons = [
-    new SimpleAstronomicalBody("/assets/textures/2k_io.jpg", "/assets/normals/2k_moon.png", ioRawData, { isMoon: true, rotateTextureHalfTurn: true }),
-    new SimpleAstronomicalBody("/assets/textures/2k_europa.jpg", "/assets/normals/2k_moon.png", europaRawData, { isMoon: true, rotateTextureHalfTurn: true }),
-    new SimpleAstronomicalBody("/assets/textures/2k_ganymede.jpg", "/assets/normals/2k_moon.png", ganymedeRawData, { isMoon: true, rotateTextureHalfTurn: true }),
-    new SimpleAstronomicalBody("/assets/textures/2k_callisto.jpg", "/assets/normals/2k_moon.png", callistoRawData, { isMoon: true, rotateTextureHalfTurn: true }),
+    new SimpleAstronomicalBody(
+      "/assets/textures/2k_io.jpg",
+      "/assets/normals/2k_moon.png",
+      ioRawData,
+      { isMoon: true, rotateTextureHalfTurn: true },
+    ),
+    new SimpleAstronomicalBody(
+      "/assets/textures/2k_europa.jpg",
+      "/assets/normals/2k_moon.png",
+      europaRawData,
+      { isMoon: true, rotateTextureHalfTurn: true },
+    ),
+    new SimpleAstronomicalBody(
+      "/assets/textures/2k_ganymede.jpg",
+      "/assets/normals/2k_moon.png",
+      ganymedeRawData,
+      { isMoon: true, rotateTextureHalfTurn: true },
+    ),
+    new SimpleAstronomicalBody(
+      "/assets/textures/2k_callisto.jpg",
+      "/assets/normals/2k_moon.png",
+      callistoRawData,
+      { isMoon: true, rotateTextureHalfTurn: true },
+    ),
   ];
 
   constructor() {
-    super(["/assets/textures/2k_jupiter.jpg"], "/assets/normals/2k_jupiter.png", jupiterRawData, false);
+    super(
+      ["/assets/textures/2k_jupiter.jpg"],
+      "/assets/normals/2k_jupiter.png",
+      jupiterRawData,
+      false,
+    );
   }
 
   public init() {
@@ -28,9 +59,9 @@ export class Jupiter extends Astronomical {
       moonGrp.rotateX(MathUtils.DEG2RAD * moon.data.orbitalTilt);
 
       this.group.add(moonGrp);
-    })
+    });
 
-    this.generateMaterials()
+    this.generateMaterials();
     this.isInit = true;
   }
 
@@ -38,6 +69,6 @@ export class Jupiter extends Astronomical {
     super.render(delta);
     this.moons.forEach(moon => {
       moon.render(delta, camera);
-    })
+    });
   }
 }

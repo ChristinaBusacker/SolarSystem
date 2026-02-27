@@ -1,6 +1,12 @@
 import * as THREE from "three";
 import { LineMaterial } from "three/examples/jsm/lines/LineMaterial";
-import { ceresRawData, erisRawData, haumeaRawData, makemakeRawData, mercuryRawData } from "../../data/raw-object.data";
+import {
+  ceresRawData,
+  erisRawData,
+  haumeaRawData,
+  makemakeRawData,
+  mercuryRawData,
+} from "../../data/raw-object.data";
 import { AstronomicalEntry } from "../interfaces/entry.interfaces";
 import { Earth } from "../objects/earth.object";
 import { Jupiter } from "../objects/jupiter.object";
@@ -24,22 +30,57 @@ type DeclutterOptions = {
 export class AstronomicalManager {
   private entrys: Array<AstronomicalEntry> = [
     { selector: "Sun", object: new Sun() },
-    { selector: "Mercury", object: new SimpleAstronomicalBody("/assets/textures/2k_mercury.jpg", "/assets/normals/2k_mercury.png", mercuryRawData) },
+    {
+      selector: "Mercury",
+      object: new SimpleAstronomicalBody(
+        "/assets/textures/2k_mercury.jpg",
+        "/assets/normals/2k_mercury.png",
+        mercuryRawData,
+      ),
+    },
     { selector: "Venus", object: new Venus() },
     { selector: "Earth", object: new Earth() },
     { selector: "Mars", object: new Mars() },
-    { selector: "Ceres", object: new SimpleAstronomicalBody("/assets/textures/1k_ceres.png", "/assets/normals/2k_moon.png", ceresRawData) },
+    {
+      selector: "Ceres",
+      object: new SimpleAstronomicalBody(
+        "/assets/textures/1k_ceres.png",
+        "/assets/normals/2k_moon.png",
+        ceresRawData,
+      ),
+    },
     { selector: "Jupiter", object: new Jupiter() },
     { selector: "Saturn", object: new Saturn() },
     { selector: "Uranus", object: new Uranus() },
     { selector: "Neptune", object: new Neptun() },
     { selector: "Pluto", object: new Pluto() },
-    { selector: "Haumea", object: new SimpleAstronomicalBody("/assets/textures/1k_haumea.png", "/assets/normals/2k_moon.png", haumeaRawData) },
-    { selector: "Makemake", object: new SimpleAstronomicalBody("/assets/textures/3k_makemake.jpg", "/assets/normals/2k_moon.png", makemakeRawData) },
-    { selector: "Eris", object: new SimpleAstronomicalBody("/assets/textures/2k_eris.png", "/assets/normals/2k_moon.png", erisRawData) },
+    {
+      selector: "Haumea",
+      object: new SimpleAstronomicalBody(
+        "/assets/textures/1k_haumea.png",
+        "/assets/normals/2k_moon.png",
+        haumeaRawData,
+      ),
+    },
+    {
+      selector: "Makemake",
+      object: new SimpleAstronomicalBody(
+        "/assets/textures/3k_makemake.jpg",
+        "/assets/normals/2k_moon.png",
+        makemakeRawData,
+      ),
+    },
+    {
+      selector: "Eris",
+      object: new SimpleAstronomicalBody(
+        "/assets/textures/2k_eris.png",
+        "/assets/normals/2k_moon.png",
+        erisRawData,
+      ),
+    },
   ];
 
-  constructor() { }
+  constructor() {}
 
   // Expose entries for UI-only declutter/layout logic (read-only usage).
   public getAllEntries(): Array<AstronomicalEntry> {
@@ -47,36 +88,32 @@ export class AstronomicalManager {
   }
 
   public initObjects(scene: THREE.Scene) {
-    this.entrys.forEach((entry) => {
+    this.entrys.forEach(entry => {
       entry.object.init();
       scene.add(entry.object.orbitalGroup);
     });
   }
 
   public getEntry(selector: string): AstronomicalEntry | undefined {
-    return this.entrys.find((entry) => entry.selector === selector);
+    return this.entrys.find(entry => entry.selector === selector);
   }
 
   public preBloom() {
-    this.entrys.forEach((entry) => {
+    this.entrys.forEach(entry => {
       entry.object.preBloom();
-      entry.object.moons.forEach((moon) => moon.preBloom());
+      entry.object.moons.forEach(moon => moon.preBloom());
     });
   }
 
   public postBloom() {
-    this.entrys.forEach((entry) => {
+    this.entrys.forEach(entry => {
       entry.object.postBloom();
-      entry.object.moons.forEach((moon) => moon.postBloom());
+      entry.object.moons.forEach(moon => moon.postBloom());
     });
   }
 
-  public render(
-    delta: number,
-    camera?: THREE.PerspectiveCamera,
-    scene?: THREE.Scene,
-  ) {
-    this.entrys.forEach((entry) => {
+  public render(delta: number, camera?: THREE.PerspectiveCamera, scene?: THREE.Scene) {
+    this.entrys.forEach(entry => {
       entry.object.render(delta, camera, scene);
     });
   }
@@ -85,14 +122,13 @@ export class AstronomicalManager {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const w = Math.floor(width * dpr);
     const h = Math.floor(height * dpr);
-    this.entrys.forEach((entry) => {
-
+    this.entrys.forEach(entry => {
       if (entry.object.marker && entry.object.marker.material) {
         const m = entry.object.marker.material as LineMaterial;
         if (m.resolution) m.resolution.set(w, h);
       }
 
-      entry.object.moons.forEach((moon) => {
+      entry.object.moons.forEach(moon => {
         if (moon.marker && moon.marker.material) {
           const mm = moon.marker.material as LineMaterial;
           if (mm.resolution) mm.resolution.set(w, h);
@@ -102,10 +138,10 @@ export class AstronomicalManager {
   }
 
   public setOrbitsVisible(visible: boolean): void {
-    this.entrys.forEach((entry) => {
+    this.entrys.forEach(entry => {
       if (entry.object.marker) entry.object.marker.visible = visible;
 
-      entry.object.moons.forEach((moon) => {
+      entry.object.moons.forEach(moon => {
         if (moon.marker) moon.marker.visible = visible;
       });
     });
@@ -134,20 +170,18 @@ export class AstronomicalManager {
       "neptune",
     ]);
 
-    const dwarfSlugs = new Set([
-      "ceres",
-      "pluto",
-      "haumea",
-      "makemake",
-      "eris",
-    ]);
+    const dwarfSlugs = new Set(["ceres", "pluto", "haumea", "makemake", "eris"]);
 
     const toSlug = (v: string): string => (v || "").toLowerCase();
 
     const route = router.getCurrent();
     const selectedKind = route.name === "planet" ? "planet" : route.name === "moon" ? "moon" : null;
     const selectedSlug =
-      route.name === "planet" ? toSlug(route.planet) : route.name === "moon" ? toSlug(route.moon) : null;
+      route.name === "planet"
+        ? toSlug(route.planet)
+        : route.name === "moon"
+          ? toSlug(route.moon)
+          : null;
 
     // For moon routes we treat the parent planet as the focus. In that mode the selected moon's own
     // marker is redundant (similar to hiding the selected planet marker).
@@ -162,7 +196,9 @@ export class AstronomicalManager {
     } else if (selectedKind === "moon") {
       selectedMoonSlug = selectedSlug;
       for (const entry of this.entrys) {
-        const moon = (entry.object.moons).find((m) => (m?.data?.slug ?? "").toLowerCase() === selectedSlug);
+        const moon = entry.object.moons.find(
+          m => (m?.data?.slug ?? "").toLowerCase() === selectedSlug,
+        );
         if (moon) {
           focusPlanetSlug = (entry.object?.data?.slug ?? "").toLowerCase();
           break;
@@ -207,12 +243,12 @@ export class AstronomicalManager {
     };
 
     if (!declutterAuto) {
-      this.entrys.forEach((entry) => {
+      this.entrys.forEach(entry => {
         const planet = entry.object;
         setElementHidden(planet.cssObject?.element, !markersVisible);
         if (planet.marker) planet.marker.visible = orbitsVisible;
 
-        entry.object.moons.forEach((moon) => {
+        entry.object.moons.forEach(moon => {
           setElementHidden(moon.cssObject?.element, !markersVisible);
           if (moon.marker) moon.marker.visible = orbitsVisible;
         });
@@ -228,7 +264,6 @@ export class AstronomicalManager {
     const occluders: Occluder[] = [];
     const tmpCenter = new THREE.Vector3();
     for (const entry of this.entrys) {
-
       const slug = (entry.object?.data?.slug ?? "").toLowerCase();
       const size = entry.object?.data?.size ?? 0;
       if (!entry.object?.mesh || !Number.isFinite(size) || size <= 0) continue;
@@ -236,7 +271,7 @@ export class AstronomicalManager {
       occluders.push({
         slug,
         center: tmpCenter.clone(),
-        radius: (size * 0.5) * 1.05,
+        radius: size * 0.5 * 1.05,
       });
     }
 
@@ -267,7 +302,7 @@ export class AstronomicalManager {
 
     const camPos = camWorld;
 
-    this.entrys.forEach((entry) => {
+    this.entrys.forEach(entry => {
       const planet = entry.object;
       const planetSlug = (planet?.data?.slug ?? "").toLowerCase();
       const isMajor = majorSlugs.has(planetSlug);
@@ -279,7 +314,7 @@ export class AstronomicalManager {
         setElementHidden(planet.cssObject?.element, true);
       } else if (!hasSelection) {
         // Home / overview: show major bodies + dwarf planets.
-        const shouldShow = (isMajor || isDwarf);
+        const shouldShow = isMajor || isDwarf;
         let hidden = !shouldShow;
         if (!hidden && planet?.mesh) {
           planet.mesh.getWorldPosition(tmpTarget);
@@ -288,7 +323,7 @@ export class AstronomicalManager {
         setElementHidden(planet.cssObject?.element, hidden);
       } else {
         // Selected: show only focus planet, except in planet focus mode where we hide its own marker.
-        const shouldShow = (isFocusPlanet && !hideFocusPlanetMarker);
+        const shouldShow = isFocusPlanet && !hideFocusPlanetMarker;
         let hidden = !shouldShow;
         if (!hidden && planet?.mesh) {
           planet.mesh.getWorldPosition(tmpTarget);
@@ -311,7 +346,7 @@ export class AstronomicalManager {
       }
 
       // ===== Moons =====
-      entry.object.moons.forEach((moon) => {
+      entry.object.moons.forEach(moon => {
         const moonSlug = (moon?.data?.slug ?? "").toLowerCase();
         const moonIsSelected = selectedMoonSlug != null && moonSlug === selectedMoonSlug;
         const hideThisMoonMarker = hideSelectedMoonMarker && moonIsSelected;

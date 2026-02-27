@@ -58,7 +58,6 @@ export class AsteroidBelt {
   private readonly sunWorldPosition = new THREE.Vector3(0, 0, 0);
 
   public constructor(opts?: Partial<AsteroidBeltOptions>) {
-
     this.opts = {
       // Main belt defaults (Mars–Jupiter) tuned for readability.
       count: 2056,
@@ -95,7 +94,8 @@ export class AsteroidBelt {
 
     for (let i = 0; i < count; i++) {
       const a = this.sampleRadius(rng);
-      const e = Math.pow(rng(), this.opts.profile === "ambient" ? 1.8 : 2.2) * this.opts.maxEccentricity;
+      const e =
+        Math.pow(rng(), this.opts.profile === "ambient" ? 1.8 : 2.2) * this.opts.maxEccentricity;
       const b = a * Math.sqrt(1 - e * e);
 
       aSemiMajor[i] = a;
@@ -104,8 +104,7 @@ export class AsteroidBelt {
       aArgPeri[i] = rng() * Math.PI * 2;
       aInclination[i] = randNormal(rng) * incStd;
       aPhase0[i] = rng() * Math.PI * 2;
-      aAngularSpeed[i] =
-        0.0000027397 * Math.pow(1000 / a, 1.5);
+      aAngularSpeed[i] = 0.0000027397 * Math.pow(1000 / a, 1.5);
 
       aSize[i] = this.sampleSpriteSize(rng);
       aShapeSeed[i] = rng();
@@ -118,7 +117,10 @@ export class AsteroidBelt {
 
     this.geometry = new THREE.BufferGeometry();
     // Base position is unused but required for Points.
-    this.geometry.setAttribute("position", new THREE.Float32BufferAttribute(new Float32Array(count * 3), 3));
+    this.geometry.setAttribute(
+      "position",
+      new THREE.Float32BufferAttribute(new Float32Array(count * 3), 3),
+    );
     this.geometry.setAttribute("aSemiMajor", new THREE.Float32BufferAttribute(aSemiMajor, 1));
     this.geometry.setAttribute("aSemiMinor", new THREE.Float32BufferAttribute(aSemiMinor, 1));
     this.geometry.setAttribute("aEcc", new THREE.Float32BufferAttribute(aEcc, 1));
@@ -355,20 +357,23 @@ export class AsteroidBelt {
     const hsl = { h: 0, s: 0, l: 0 };
     c.getHSL(hsl);
 
-    const satFactor = this.opts.profile === "kuiperCold"
-      ? (0.72 + rng() * 0.24)
-      : this.opts.profile === "ambient"
-        ? (0.78 + rng() * 0.22)
-        : (0.85 + rng() * 0.35);
-    const lightFactor = this.opts.profile === "kuiperCold"
-      ? (0.8 + rng() * 0.42)
-      : this.opts.profile === "kuiperHot"
-        ? (0.78 + rng() * 0.4)
+    const satFactor =
+      this.opts.profile === "kuiperCold"
+        ? 0.72 + rng() * 0.24
         : this.opts.profile === "ambient"
-          ? (0.76 + rng() * 0.34)
-          : (0.82 + rng() * 0.38);
+          ? 0.78 + rng() * 0.22
+          : 0.85 + rng() * 0.35;
+    const lightFactor =
+      this.opts.profile === "kuiperCold"
+        ? 0.8 + rng() * 0.42
+        : this.opts.profile === "kuiperHot"
+          ? 0.78 + rng() * 0.4
+          : this.opts.profile === "ambient"
+            ? 0.76 + rng() * 0.34
+            : 0.82 + rng() * 0.38;
     const lightMin = this.opts.profile === "ambient" ? 0.18 : 0.2;
-    const lightMax = this.opts.profile === "kuiperCold" ? 0.8 : this.opts.profile === "kuiperHot" ? 0.76 : 0.72;
+    const lightMax =
+      this.opts.profile === "kuiperCold" ? 0.8 : this.opts.profile === "kuiperHot" ? 0.76 : 0.72;
 
     c.setHSL(
       hsl.h,

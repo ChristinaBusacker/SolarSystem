@@ -5,19 +5,20 @@ import { venusRawData } from "../../data/raw-object.data";
 import { Astronomical } from "./astronomical.object";
 
 export class Venus extends Astronomical {
-
   constructor() {
-    super(["/assets/textures/2k_venus_surface.jpg"], "/assets/normals/2k_venus.png", venusRawData, false);
+    super(
+      ["/assets/textures/2k_venus_surface.jpg"],
+      "/assets/normals/2k_venus.png",
+      venusRawData,
+      false,
+    );
   }
 
   public init() {
     super.init();
-    this.addAtmosphere(
-      "/assets/textures/2k_venus_atmosphere.jpg",
-      this.data.size
-    );
-    this.generateMaterials()
-    this.isInit = true
+    this.addAtmosphere("/assets/textures/2k_venus_atmosphere.jpg", this.data.size);
+    this.generateMaterials();
+    this.isInit = true;
   }
 
   public render(delta: number, activeCamera?: THREE.PerspectiveCamera) {

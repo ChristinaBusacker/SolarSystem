@@ -29,18 +29,16 @@ export class Mars extends Astronomical {
   public init() {
     super.init();
 
-    this.moons.forEach((moon) => {
+    this.moons.forEach(moon => {
       moon.orbitingParent = this;
 
-      if (moon.data.slug === 'phobos') {
-        moon.initDisplacement('/assets/displacement/phobos4.jpg', 0.0004)
+      if (moon.data.slug === "phobos") {
+        moon.initDisplacement("/assets/displacement/phobos4.jpg", 0.0004);
       }
 
-      if (moon.data.slug === 'deimos') {
-        moon.initDisplacement('/assets/displacement/deimos3.jpg', 0.0002)
+      if (moon.data.slug === "deimos") {
+        moon.initDisplacement("/assets/displacement/deimos3.jpg", 0.0002);
       }
-
-
 
       moon.init();
 
@@ -58,7 +56,7 @@ export class Mars extends Astronomical {
   public render(delta: number, camera?: THREE.PerspectiveCamera) {
     super.render(delta);
 
-    this.moons.forEach((moon) => {
+    this.moons.forEach(moon => {
       moon.render(delta, camera);
     });
   }

@@ -58,11 +58,9 @@ export class UiRenderer {
       checkedHideMoons: this.state.hideMoons ? "checked" : "",
     });
 
-
-
     this.root.innerHTML = html;
 
-    this.root.addEventListener('click', (event) => {
+    this.root.addEventListener("click", event => {
       const target = event.target as HTMLElement | null;
       if (!target) return;
 
@@ -101,7 +99,7 @@ export class UiRenderer {
 
   private bindActions(): void {
     // Event delegation.
-    this.root.addEventListener("click", (e) => {
+    this.root.addEventListener("click", e => {
       const target = e.target as HTMLElement | null;
       const el = target?.closest<HTMLElement>("[data-action]");
       const action = el?.getAttribute("data-action");
@@ -120,7 +118,7 @@ export class UiRenderer {
       if (el instanceof HTMLInputElement && el.type === "checkbox") return;
     });
 
-    this.root.addEventListener("change", (e) => {
+    this.root.addEventListener("change", e => {
       const target = e.target as HTMLElement | null;
       const el = target?.closest<HTMLElement>("[data-action]");
       const action = el?.getAttribute("data-action");
