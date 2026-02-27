@@ -310,7 +310,7 @@ export class Astronomical implements AstronomicalObject {
       );
 
       this.control = new SimpleControl(
-        Math.max(this.data.size * 5, 0.012),
+        Math.max(this.data.size * 1.5, 0.012),
         Math.max(this.data.size * 64, 0.15),
         this.camera,
       );
