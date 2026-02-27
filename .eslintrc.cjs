@@ -19,7 +19,6 @@ module.exports = {
   ],
   ignorePatterns: ["dist/", "node_modules/", "coverage/"],
   rules: {
-    // Keep Patch 1 non-invasive: prefer warnings over errors for existing code.
     "no-unused-vars": "off",
     "@typescript-eslint/no-unused-vars": [
       "warn",
@@ -29,6 +28,6 @@ module.exports = {
         caughtErrorsIgnorePattern: "^_",
       },
     ],
-    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-explicit-any": "warn",
   },
 };
