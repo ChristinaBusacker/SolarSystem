@@ -8,14 +8,16 @@ import { SoundManager } from "../manager/SoundManager";
 
 interface MenuRenderState {
   isOpen: boolean;
-  isFullscreen: boolean
+  isFullscreen: boolean;
+  isSoundActive: boolean
 }
 
 export class MenuRenderer {
   private readonly root: HTMLElement;
   private state: MenuRenderState = {
     isOpen: false,
-    isFullscreen: false
+    isFullscreen: false,
+    isSoundActive: false
   };
 
   public constructor(root: HTMLElement) {
@@ -24,12 +26,14 @@ export class MenuRenderer {
     subscribeLayoutState((snapshot) => {
       if (snapshot.rightOpen) {
         this.root.classList.remove('open')
+        this.ensureSoundState();
       }
     });
 
     router.subscribe((route) => {
       this.state.isOpen = false;
       this.render();
+      this.ensureSoundState();
     });
 
     document.addEventListener("fullscreenchange", this.handleFullscreenChange.bind(this));
@@ -43,6 +47,16 @@ export class MenuRenderer {
     this.root.innerHTML = renderTemplate(menuTpl, {
       menuState: this.state.isOpen ? 'open' : ''
     });
+
+    this.ensureSoundState();
+  }
+
+  private ensureSoundState() {
+
+    if (this.state.isSoundActive) {
+      const elem = this.root.querySelector('[data-menu-action="toggle-audio"]')
+      elem.parentElement.classList.add('is-active')
+    }
   }
 
   public init(): void {
@@ -52,6 +66,7 @@ export class MenuRenderer {
 
   private bindActions(): void {
     this.root.addEventListener("click", (event) => {
+      this.ensureSoundState();
       const target = event.target as HTMLElement | null;
       const actionNode = target?.closest<HTMLElement>("[data-menu-action]");
       if (!actionNode) return;
@@ -83,6 +98,7 @@ export class MenuRenderer {
       }
 
       if (action === "toggle-audio") {
+        this.state.isSoundActive = !this.state.isSoundActive;
         actionNode.parentElement.classList.toggle('is-active')
         return SoundManager.toggleAmbient();
       }
@@ -149,13 +165,5 @@ export class MenuRenderer {
     } else {
       button?.classList.remove('is-active')
     }
-  }
-
-  private slugToLabel(slug: string): string {
-    return slug
-      .split("-")
-      .filter(Boolean)
-      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-      .join(" ");
   }
 }
