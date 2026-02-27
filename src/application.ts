@@ -130,7 +130,11 @@ export class Application {
     this.cameraManager.switchCamera("Default", false).initEventControls();
     const entry = this.cameraManager.getActiveEntry()
     SoundManager.init(entry.camera);
-    SoundManager.initAmbientSound('/assets/sounds/ambient.mp3')
+    SoundManager.initAmbientSound('/assets/sounds/ambient.mp3');
+    SoundManager.bindVisibilityHandling({
+      stopAmbientOnHidden: true,
+      resumeAmbientOnVisible: true,
+    });
     this.attachViewportResizeObserver();
     this.onResize();
     this.astronomicalManager.initObjects(this.scene);

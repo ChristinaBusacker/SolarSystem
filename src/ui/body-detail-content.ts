@@ -84,7 +84,7 @@ function buildRows(body: AstronomicalRawData, moons: AstronomicalRawData[]): Arr
     rows.push(["Orbits", body.parentSlug]);
   }
 
-  if (moons.length > 0) {
+  if (moons.length > 0 && body.isOrbiting) {
     rows.push(["Moons", `${moons.length}`]);
   }
 
@@ -146,7 +146,7 @@ export function renderSelectedBodyDetails(bodyName?: string | null): string {
 
   const moonChipsHtmlContainer = inferTypeLabel(body) !== 'Moon' ? `
       <div class="ui-body-block">
-        <div class="ui-body-block__title">Moons</div>
+        <div class="ui-body-block__title">${body.isOrbiting ? 'Moons' : 'Planets'}</div>
         ${moonChipsHtml}
       </div>
   ` : ""

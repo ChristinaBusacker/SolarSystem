@@ -17,6 +17,7 @@ export const astronomicalSidebarPlanetContent: Record<string, BodyInfoOverride> 
             "Its solar wind helps shape the heliosphere",
         ],
         texture: "/assets/textures/2k_sun.jpg",
+        isSun: true
     },
 
     mercury: {

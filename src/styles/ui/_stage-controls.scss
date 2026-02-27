@@ -149,12 +149,13 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  font-size: 14px;
+  font-size: 18px;
   max-width: min(52vw, 460px);
   display: flex;
   flex-direction: column;
   font-family: Out;
   margin-top: 10px !important;
+  cursor: pointer;
 
   & svg {
     width: 16px;

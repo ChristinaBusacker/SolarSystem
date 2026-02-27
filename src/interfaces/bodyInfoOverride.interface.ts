@@ -5,4 +5,5 @@ export interface BodyInfoOverride {
     atmosphere?: string;
     texture?: string
     facts?: string[];
+    isSun?: boolean
 }

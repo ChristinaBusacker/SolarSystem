@@ -8,14 +8,32 @@ export class SoundManager {
 
     private static bufferCache = new Map<string, AudioBuffer>();
 
+    // Note: You currently default to 3 (=30%). If you want 50%, set this to 5.
     private static volumeLevel: VolumeLevel = 3;
-    private static ambient: THREE.Audio | null = null;
+
     private static ambientPath: string | null = null;
 
     private static unlockPromise: Promise<void> | null = null;
 
+    private static visibilityBound = false;
+    private static resumeAmbientOnVisible = false;
+    private static stopAmbientOnHidden = true;
+    private static ambientWasPlayingBeforeHide = false;
+
+    // --- Ambient (manual WebAudio for pause/resume position) ---
+    private static ambientBuffer: AudioBuffer | null = null;
+    private static ambientGain: GainNode | null = null;
+    private static ambientSource: AudioBufferSourceNode | null = null;
+
+    private static ambientOffsetSec = 0;     // where we paused (in seconds)
+    private static ambientStartedAtSec = 0; // ctx.currentTime when we started/resumed
+    private static ambientPlaying = false;
+
+    // If autoplay blocked a resume, remember and retry on next unlock() call.
+    private static pendingAmbientResume = false;
+
     /**
-     * Call once. Pass either a camera (recommended) or an existing AudioListener.
+     * Call once. Pass a camera (recommended).
      */
     public static init(camera: THREE.Camera): void {
         if (!SoundManager.listener) {
@@ -36,7 +54,7 @@ export class SoundManager {
     }
 
     public static async toggleAmbient(): Promise<void> {
-        if (!SoundManager.ambient) {
+        if (!SoundManager.ambientBuffer) {
             if (SoundManager.ambientPath) {
                 await SoundManager.initAmbientSound(SoundManager.ambientPath);
             } else {
@@ -44,13 +62,54 @@ export class SoundManager {
             }
         }
 
-        if (SoundManager.ambient!.isPlaying) {
-            SoundManager.stopAmbient();
+        if (SoundManager.ambientPlaying) {
+            SoundManager.pauseAmbient(); // keep position
             return;
         }
 
         await SoundManager.unlock();
         await SoundManager.playAmbient();
+    }
+
+    public static bindVisibilityHandling(opts?: {
+        stopAmbientOnHidden?: boolean;
+        resumeAmbientOnVisible?: boolean;
+    }): void {
+        if (SoundManager.visibilityBound) return;
+
+        SoundManager.stopAmbientOnHidden = opts?.stopAmbientOnHidden ?? true;
+        SoundManager.resumeAmbientOnVisible = opts?.resumeAmbientOnVisible ?? false;
+
+        const handler = async () => {
+            if (document.visibilityState === "hidden") {
+                if (!SoundManager.stopAmbientOnHidden) return;
+
+                SoundManager.ambientWasPlayingBeforeHide = SoundManager.ambientPlaying;
+                SoundManager.pauseAmbient(); // keep position instead of restarting later
+                return;
+            }
+
+            if (SoundManager.resumeAmbientOnVisible && SoundManager.ambientWasPlayingBeforeHide) {
+                SoundManager.ambientWasPlayingBeforeHide = false;
+
+                try {
+                    await SoundManager.unlock();
+                    await SoundManager.playAmbient(); // resumes at stored offset
+                } catch {
+                    // If autoplay blocks, it will resume after next user interaction (unlock()).
+                }
+            }
+        };
+
+        document.addEventListener("visibilitychange", handler);
+
+        window.addEventListener("pagehide", () => {
+            if (!SoundManager.stopAmbientOnHidden) return;
+            SoundManager.ambientWasPlayingBeforeHide = SoundManager.ambientPlaying;
+            SoundManager.pauseAmbient();
+        });
+
+        SoundManager.visibilityBound = true;
     }
 
     /**
@@ -63,7 +122,18 @@ export class SoundManager {
         const ctx = listener.context;
 
         // Already unlocked / running
-        if (ctx.state === "running") return;
+        if (ctx.state === "running") {
+            // If we have a pending ambient resume request, try it now.
+            if (SoundManager.pendingAmbientResume) {
+                SoundManager.pendingAmbientResume = false;
+                try {
+                    await SoundManager.playAmbient();
+                } catch {
+                    // ignore
+                }
+            }
+            return;
+        }
 
         // If an unlock attempt is already in progress, await it.
         if (SoundManager.unlockPromise) {
@@ -73,7 +143,6 @@ export class SoundManager {
 
         // Start a single unlock attempt
         SoundManager.unlockPromise = (async () => {
-            // Re-check inside the promise in case state changed
             if (ctx.state === "suspended") {
                 await ctx.resume();
             }
@@ -84,6 +153,16 @@ export class SoundManager {
         } finally {
             SoundManager.unlockPromise = null;
         }
+
+        // Retry ambient resume if it was blocked earlier.
+        if (SoundManager.pendingAmbientResume) {
+            SoundManager.pendingAmbientResume = false;
+            try {
+                await SoundManager.playAmbient();
+            } catch {
+                // ignore
+            }
+        }
     }
 
     public static setVolume(level: number): void {
@@ -91,8 +170,8 @@ export class SoundManager {
         SoundManager.volumeLevel = clamped;
 
         // Apply to ambient immediately
-        if (SoundManager.ambient) {
-            SoundManager.ambient.setVolume(SoundManager.volumeLevel / 10);
+        if (SoundManager.ambientGain) {
+            SoundManager.ambientGain.gain.value = SoundManager.volumeLevel / 10;
         }
     }
 
@@ -117,11 +196,9 @@ export class SoundManager {
         audio.setLoop(false);
         audio.setVolume(volLevel);
 
-        // Start
         audio.play();
 
         // Clean up after finishing (best effort)
-        // Three's Audio wraps WebAudio nodes; stopping/disconnecting helps GC a bit.
         const source: any = (audio as any).source;
         if (source && typeof source.onended !== "undefined") {
             source.onended = () => {
@@ -135,25 +212,38 @@ export class SoundManager {
         }
     }
 
+    // ---------- Ambient (with pause/resume position) ----------
+
     public static async initAmbientSound(path: string): Promise<void> {
         const listener = SoundManager.requireListener();
 
         SoundManager.ambientPath = path;
 
-        const buffer = await SoundManager.loadBuffer(path);
-        const ambient = new THREE.Audio(listener);
+        // Stop any existing ambient and reset nodes (keep it simple and predictable)
+        SoundManager.stopAmbient();
 
-        ambient.setBuffer(buffer);
-        ambient.setLoop(true);
-        ambient.setVolume(SoundManager.volumeLevel / 10);
+        SoundManager.ambientBuffer = await SoundManager.loadBuffer(path);
 
-        SoundManager.ambient = ambient;
+        // Ensure gain node exists and is connected into Three’s listener chain
+        if (!SoundManager.ambientGain) {
+            const ctx = listener.context;
+            SoundManager.ambientGain = ctx.createGain();
+            SoundManager.ambientGain.connect(listener.getInput());
+        }
+
+        SoundManager.ambientGain.gain.value = SoundManager.volumeLevel / 10;
+
+        // Prepared, not playing yet
+        SoundManager.ambientOffsetSec = 0;
+        SoundManager.ambientPlaying = false;
+        SoundManager.pendingAmbientResume = false;
     }
 
     public static async playAmbient(): Promise<void> {
         const listener = SoundManager.requireListener();
+        const ctx = listener.context;
 
-        if (!SoundManager.ambient) {
+        if (!SoundManager.ambientBuffer) {
             if (SoundManager.ambientPath) {
                 await SoundManager.initAmbientSound(SoundManager.ambientPath);
             } else {
@@ -161,38 +251,109 @@ export class SoundManager {
             }
         }
 
+        if (SoundManager.ambientPlaying) return;
+
+        // Best-effort resume of audio context
         await SoundManager.safeResume(listener);
 
-        if (SoundManager.ambient && !SoundManager.ambient.isPlaying) {
-            SoundManager.ambient.play();
+        // If still suspended, autoplay is blocking us; remember intent and bail.
+        if (ctx.state !== "running") {
+            SoundManager.pendingAmbientResume = true;
+            return;
         }
+
+        // Create fresh source (BufferSource nodes are one-shot)
+        const source = ctx.createBufferSource();
+        source.buffer = SoundManager.ambientBuffer!;
+        source.loop = true;
+
+        // Ensure gain exists
+        if (!SoundManager.ambientGain) {
+            SoundManager.ambientGain = ctx.createGain();
+            SoundManager.ambientGain.connect(listener.getInput());
+        }
+        SoundManager.ambientGain.gain.value = SoundManager.volumeLevel / 10;
+
+        source.connect(SoundManager.ambientGain);
+
+        // Wrap offset into duration (important when looping)
+        const dur = SoundManager.ambientBuffer!.duration || 0;
+        const startOffset = dur > 0 ? (SoundManager.ambientOffsetSec % dur) : 0;
+
+        SoundManager.ambientStartedAtSec = ctx.currentTime;
+        SoundManager.ambientSource = source;
+        SoundManager.ambientPlaying = true;
+
+        source.onended = () => {
+            SoundManager.ambientPlaying = false;
+            SoundManager.ambientSource = null;
+        };
+
+        source.start(0, startOffset);
     }
 
-    public static stopAmbient(): void {
-        if (SoundManager.ambient && SoundManager.ambient.isPlaying) {
-            SoundManager.ambient.stop();
+    /**
+     * Pause ambient and remember position (so it resumes where it left off).
+     */
+    public static pauseAmbient(): void {
+        const listener = SoundManager.listener;
+        const ctx = listener?.context;
+
+        if (!SoundManager.ambientSource || !ctx || !SoundManager.ambientPlaying) return;
+
+        const elapsed = ctx.currentTime - SoundManager.ambientStartedAtSec;
+        const dur = SoundManager.ambientBuffer?.duration ?? 0;
+
+        if (dur > 0) {
+            SoundManager.ambientOffsetSec = (SoundManager.ambientOffsetSec + Math.max(0, elapsed)) % dur;
+        } else {
+            SoundManager.ambientOffsetSec += Math.max(0, elapsed);
         }
+
+        try {
+            SoundManager.ambientSource.stop();
+            SoundManager.ambientSource.disconnect();
+        } catch {
+            // ignore
+        }
+
+        SoundManager.ambientSource = null;
+        SoundManager.ambientPlaying = false;
+    }
+
+    /**
+     * Stop ambient and reset position to the beginning.
+     */
+    public static stopAmbient(): void {
+        SoundManager.pauseAmbient();
+        SoundManager.ambientOffsetSec = 0;
+        SoundManager.pendingAmbientResume = false;
     }
 
     // ---------- internals ----------
 
     private static requireListener(): THREE.AudioListener {
         if (!SoundManager.listener) {
-            throw new Error(
-                "SoundManager not initialized. Call SoundManager.init(cameraOrListener) first."
-            );
+            throw new Error("SoundManager not initialized. Call SoundManager.init(camera) first.");
         }
         return SoundManager.listener;
     }
 
     private static async safeResume(listener: THREE.AudioListener): Promise<void> {
+        // Delegate to unlock logic (with in-flight protection), but be forgiving.
+        try {
+            await SoundManager.unlock();
+        } catch {
+            // Autoplay restrictions can still block until a real user gesture happens.
+        }
+
+        // Some browsers can still be suspended after the attempt.
         const ctx = listener.context;
         if (ctx.state === "suspended") {
-            // This may still fail if not triggered by a user gesture in some browsers.
             try {
                 await ctx.resume();
             } catch {
-                // swallow: caller can still succeed later after user interaction
+                // ignore
             }
         }
     }
