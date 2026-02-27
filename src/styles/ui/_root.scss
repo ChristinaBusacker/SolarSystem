@@ -1,8 +1,10 @@
 // UI overlay root (slots) inside the stage.
+@use "../tokens" as t;
+
 #ui-root {
   position: absolute;
   inset: 0;
-  z-index: 20;
+  z-index: t.$z-ui-root;
 
   // Global click-through so camera controls keep working.
   pointer-events: none;
@@ -14,7 +16,7 @@
 #ui-root [data-slot="hud"] {
   position: absolute;
   left: 50%;
-  bottom: 16px;
+  bottom: t.$space-4;
   transform: translateX(-50%);
   pointer-events: none;
 }
@@ -22,14 +24,14 @@
 #ui-root [data-slot="stage-controls"] {
   position: absolute;
   top: 0;
-  left: 14px;
-  right: 14px;
+  left: t.$space-3;
+  right: t.$space-3;
   pointer-events: none;
 }
 
 #ui-root [data-slot="mobile-toggles"] {
   position: absolute;
-  right: 14px;
+  right: t.$space-3;
   bottom: 88px;
   pointer-events: none;
   transition: left 0.3s ease;
@@ -46,13 +48,13 @@
 
 #ui-root [data-slot="menu"] {
   position: absolute;
-  right: 14px;
-  top: 14px;
+  right: t.$space-3;
+  top: t.$space-3;
   pointer-events: none;
   transition: left 0.3s ease;
 }
 
-@media (max-width: 768px) {
+@media (max-width: t.$bp-mobile) {
   .sidebar-open #ui-root [data-slot="scene-toggles"] {
     left: -200px;
   }

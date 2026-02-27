@@ -2,18 +2,20 @@
    HUD speed slider (screenshot-style)
 ------------------------------------------------------------ */
 
+@use "../tokens" as t;
+@use "../typography" as typo;
+
 .hud {
   position: absolute;
   left: 50%;
-  bottom: 18px;
+  bottom: t.$space-4;
   transform: translateX(-50%);
-  width: min(400px, calc(100vw - 64px));
+  width: min(400px, calc(100vw - #{t.$space-7}));
   pointer-events: none;
-  z-index: 20;
+  z-index: t.$z-ui-root;
 }
 
 .hud-speed {
-  pointer-events: auto;
   user-select: none;
   text-align: center;
   color: #fff;
@@ -32,7 +34,7 @@
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: 14px;
+  gap: t.$space-3;
 }
 
 .hud-speed__min,
@@ -52,6 +54,7 @@
 }
 
 .hud-speed__track {
+  pointer-events: auto;
   position: relative;
   height: 26px;
   display: flex;
@@ -105,13 +108,15 @@
   font-size: 12px;
   letter-spacing: 0.18em;
   opacity: 0.9;
+  font-family: typo.$font-family-heading;
 }
 
 .hud-speed__pause {
   margin: 12px auto 0;
   width: 40px;
   height: 40px;
-  border-radius: 999px;
+  border-radius: t.$radius-pill;
+  pointer-events: auto;
   border: 2px solid rgba(255, 255, 255, 0.65);
   background: transparent;
   color: #fff;
@@ -119,9 +124,9 @@
   place-items: center;
   cursor: pointer;
   transition:
-    transform 160ms ease,
-    border-color 160ms ease,
-    background 160ms ease;
+    transform t.$dur-fast t.$ease-standard,
+    border-color t.$dur-fast t.$ease-standard,
+    background t.$dur-fast t.$ease-standard;
 }
 
 .hud-speed__pause:hover {
@@ -173,13 +178,13 @@
   border-left: 12px solid rgba(255, 255, 255, 0.9);
 }
 
-@media (max-width: 768px) {
+@media (max-width: t.$bp-mobile) {
   .hud {
-    bottom: 12px;
+    bottom: t.$space-3;
   }
 
   .hud-speed__row {
-    gap: 10px;
+    gap: t.$space-2;
   }
 
   .hud-speed__pause {

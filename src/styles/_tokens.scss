@@ -1,0 +1,60 @@
+// Design tokens for the UI.
+//
+// Keep these as SCSS variables/mixins so we can refactor safely without
+// committing to runtime CSS variables yet.
+
+// Spacing scale
+$space-0: 0;
+$space-1: 4px;
+$space-2: 8px;
+$space-3: 12px;
+$space-3_5: 14px;
+$space-4: 16px;
+$space-5: 24px;
+$space-6: 32px;
+$space-7: 48px;
+
+// Radii
+$radius-sm: 10px;
+$radius-md: 12px;
+$radius-lg: 16px;
+$radius-pill: 999px;
+
+// Z-layers
+$z-stage-controls: 12;
+$z-ui-root: 20;
+$z-canvas-ui: 30;
+$z-sidebar-overlay: 60;
+
+// Motion
+$dur-fast: 160ms;
+$dur-med: 220ms;
+$dur-slow: 280ms;
+
+$ease-standard: ease;
+$ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+// Breakpoints
+$bp-mobile: 768px;
+$bp-tablet: 900px;
+
+// Surfaces
+$glass-bg: rgba(10, 12, 18, 0.68);
+$glass-bg-weak: rgba(255, 255, 255, 0.03);
+$glass-border: rgba(255, 255, 255, 0.12);
+$glass-border-strong: rgba(255, 255, 255, 0.14);
+$text-strong: rgba(255, 255, 255, 0.92);
+$text: rgba(255, 255, 255, 0.9);
+$text-dim: rgba(255, 255, 255, 0.75);
+$shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.35);
+
+@mixin focus-ring($color: rgba(255, 255, 255, 0.55)) {
+  outline: 2px solid $color;
+  outline-offset: 2px;
+}
+
+@mixin glass-panel($bg: $glass-bg, $blur: 10px) {
+  background: $bg;
+  backdrop-filter: blur($blur);
+  box-shadow: $shadow-lg;
+}

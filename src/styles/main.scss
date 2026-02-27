@@ -1,4 +1,5 @@
 @use "./base";
+@use "./typography";
 @use "./layout";
 @use "./css2d";
 @use "./planet-icons.scss";
@@ -10,4 +11,3 @@
 @use "./ui/sidebar-left";
 @use "./ui/menu";
 @use "./ui/hud";
-@use "./typography";

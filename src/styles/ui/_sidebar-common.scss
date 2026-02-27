@@ -2,6 +2,8 @@
    Sidebar content (shared)
 ------------------------------------------------------------ */
 
+@use "../tokens" as t;
+
 .ui-sidebar-shell {
   position: relative;
   height: 100%;
@@ -15,16 +17,14 @@
   flex-direction: column;
   overscroll-behavior: contain;
 
-  background: rgba(10, 12, 18, 0.68);
-  backdrop-filter: blur(10px);
-  border-left: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+  @include t.glass-panel();
+  border-left: 1px solid t.$glass-border;
 
   opacity: 0;
   transform: translateX(12px);
   transition:
-    opacity 220ms ease,
-    transform 220ms ease;
+    opacity t.$dur-med t.$ease-standard,
+    transform t.$dur-med t.$ease-standard;
   will-change: opacity, transform;
 
   // Custom scrollbar palette (progressive enhancement).
@@ -37,7 +37,7 @@
 // Left sidebar slides in from the left.
 .ui-sidebar--left {
   border-left: 0;
-  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  border-right: 1px solid t.$glass-border;
   transform: translateX(-12px);
 }
 
@@ -65,9 +65,9 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 10px;
-  padding: 14px 14px 10px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  gap: t.$space-3;
+  padding: t.$space-3_5 t.$space-3_5 t.$space-2;
+  border-bottom: 1px solid t.$glass-border;
 }
 
 .ui-sidebar__title h2 {
@@ -88,22 +88,21 @@
   pointer-events: auto;
   width: 34px;
   height: 34px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: t.$radius-sm;
+  border: 1px solid t.$glass-border-strong;
   background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.92);
+  color: t.$text-strong;
   cursor: pointer;
 }
 
 .ui-icon-btn:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.55);
-  outline-offset: 2px;
+  @include t.focus-ring();
 }
 
 .ui-sidebar__content {
-  padding: 14px;
+  padding: t.$space-3_5;
   display: grid;
-  gap: 14px;
+  gap: t.$space-3_5;
   overflow: auto;
   overscroll-behavior: contain;
   touch-action: pan-y;
@@ -144,11 +143,11 @@
 
 .ui-section {
   display: grid;
-  gap: 10px;
-  padding: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.03);
+  gap: t.$space-3;
+  padding: t.$space-3;
+  border: 1px solid t.$glass-border;
+  border-radius: t.$radius-md;
+  background: t.$glass-bg-weak;
 }
 
 .ui-section h3 {
@@ -162,7 +161,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: t.$space-3;
   font-size: 13px;
   opacity: 0.95;
 }
@@ -202,11 +201,11 @@
 }
 
 // Mobile: right sidebar becomes a bottom sheet. Adjust borders and radius.
-@media (max-width: 768px) {
+@media (max-width: t.$bp-mobile) {
   #sidebar-right-root .ui-sidebar {
     border-left: 0;
-    border-top: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 16px 16px 0 0;
+    border-top: 1px solid t.$glass-border;
+    border-radius: t.$radius-lg t.$radius-lg 0 0;
 
     transform: translateY(10px);
   }

@@ -1,8 +1,10 @@
+@use "../tokens" as t;
+
 .ui-stage-controls {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 12;
+  z-index: t.$z-stage-controls;
 }
 
 .ui-stage-controls__top-left,
@@ -14,29 +16,29 @@
 }
 
 .ui-stage-controls__top-left {
-  top: 16px;
+  top: t.$space-4;
   left: 0;
 }
 
 .ui-stage-controls__top-right {
-  top: 12px;
-  right: 12px;
+  top: t.$space-3;
+  right: t.$space-3;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: t.$space-2;
 }
 
 .ui-stage-controls__top-center {
-  top: 12px;
+  top: t.$space-3;
   left: 50%;
   transform: translateX(-50%);
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: t.$space-2;
   max-width: min(60vw, 520px);
   transition:
-    opacity 180ms ease,
-    transform 180ms ease;
+    opacity t.$dur-fast t.$ease-standard,
+    transform t.$dur-fast t.$ease-standard;
 }
 
 .ui-stage-controls__top-center.is-hidden {
@@ -51,7 +53,7 @@
   justify-content: center;
   width: 48px;
   height: 48px;
-  border-radius: 12px;
+  border-radius: t.$radius-md;
   border: none;
   background: transparent;
   box-shadow: none;
@@ -59,9 +61,9 @@
   color: #fff;
   cursor: pointer;
   transition:
-    background 160ms ease,
-    border-color 160ms ease,
-    transform 160ms ease;
+    background t.$dur-fast t.$ease-standard,
+    border-color t.$dur-fast t.$ease-standard,
+    transform t.$dur-fast t.$ease-standard;
 
   &:hover {
     transform: scale(1.02);
@@ -74,7 +76,7 @@
     }
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: t.$bp-mobile) {
     &.info {
       display: none;
     }
@@ -122,7 +124,7 @@
 .ui-stage-focus__back {
   width: 25px;
   height: 42px;
-  border-radius: 12px;
+  border-radius: t.$radius-md;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -145,7 +147,7 @@
   display: inline-flex;
   align-items: center;
   min-height: 42px;
-  border-radius: 12px;
+  border-radius: t.$radius-md;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -162,10 +164,10 @@
   }
 }
 
-@media (max-width: 900px) {
+@media (max-width: t.$bp-tablet) {
   .ui-stage-controls__top-center {
     max-width: calc(100vw - 128px);
-    top: 14px;
+    top: t.$space-3_5;
   }
 
   .ui-stage-focus__title {

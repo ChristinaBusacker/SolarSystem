@@ -2,14 +2,16 @@
    Left sidebar (planet navigation)
 ------------------------------------------------------------ */
 
+@use "../tokens" as t;
+
 .ui-nav-group {
   display: grid;
-  gap: 10px;
+  gap: t.$space-3;
 }
 
 .ui-nav-group + .ui-nav-group {
-  margin-top: 16px;
-  padding-top: 14px;
+  margin-top: t.$space-4;
+  padding-top: t.$space-3_5;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -17,7 +19,7 @@
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 8px;
+  gap: t.$space-2;
 }
 
 .ui-nav-group__title {
@@ -25,7 +27,7 @@
   font-size: 12px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.92);
+  color: t.$text-strong;
 }
 
 .ui-nav-group__meta {
@@ -66,27 +68,27 @@
   display: grid;
   grid-template-columns: 24px 1fr;
   align-items: center;
-  gap: 10px;
+  gap: t.$space-3;
 
-  padding: 10px 10px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.03);
-  color: rgba(255, 255, 255, 0.92);
+  padding: t.$space-3 t.$space-3;
+  border-radius: t.$radius-md;
+  border: 1px solid t.$glass-border;
+  background: t.$glass-bg-weak;
+  color: t.$text-strong;
 
   cursor: pointer;
   text-align: left;
   transition:
-    background 150ms ease,
-    border-color 150ms ease,
-    transform 150ms ease;
+    background t.$dur-fast t.$ease-standard,
+    border-color t.$dur-fast t.$ease-standard,
+    transform t.$dur-fast t.$ease-standard;
 }
 
 .ui-planet--moon {
   grid-template-columns: 18px 1fr;
   gap: 8px;
-  padding: 8px 9px;
-  border-radius: 10px;
+  padding: t.$space-2 9px;
+  border-radius: t.$radius-sm;
   background: rgba(255, 255, 255, 0.018);
 }
 
@@ -162,7 +164,7 @@
 }
 
 .ui-planet__icon--pluto {
-  border-radius: 999px;
+  border-radius: t.$radius-pill;
   background-image: url("../assets/textures/2k_pluto.jpg");
   background-size: cover;
   box-shadow:
@@ -179,7 +181,7 @@
 .ui-planet__icon--haumea,
 .ui-planet__icon--makemake,
 .ui-planet__icon--eris {
-  border-radius: 999px;
+  border-radius: t.$radius-pill;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
 }
 
@@ -200,6 +202,6 @@
 }
 
 .ui-hint--compact {
-  margin-top: 14px;
+  margin-top: t.$space-3_5;
   font-size: 11px;
 }
