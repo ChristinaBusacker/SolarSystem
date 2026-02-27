@@ -76,7 +76,6 @@ export class UiRenderer {
     });
   }
 
-
   private bindPointerLeakGuard(): void {
     const stop = (event: Event) => {
       event.stopPropagation();

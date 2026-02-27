@@ -18,7 +18,7 @@ export function getLayoutState(): LayoutState {
 
 export function subscribeLayoutState(listener: (s: LayoutState) => void): () => void {
   listeners.add(listener);
-  // Call immediately with current state.
+
   listener(getLayoutState());
   return () => listeners.delete(listener);
 }

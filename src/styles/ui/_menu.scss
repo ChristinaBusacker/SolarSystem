@@ -1,0 +1,153 @@
+$itemWidth: 46px;
+$items: 10;
+$step: 50px;
+
+.menu {
+  pointer-events: all;
+
+  & svg {
+    max-width: 100%;
+  }
+
+  & .menu__toggle {
+    aspect-ratio: 1 / 1;
+    position: relative;
+    padding: 0;
+    border: none;
+    outline: none;
+    background-color: rgba(22, 22, 22, 0.1);
+    width: 50px;
+    & .on {
+      display: none;
+    }
+  }
+
+  .wrapper {
+    & .volume {
+      display: none;
+
+      & input[type="range"] {
+        width: 100%;
+        margin: 0;
+        background: transparent;
+        -webkit-appearance: none;
+        appearance: none;
+        height: 26px;
+        cursor: pointer;
+
+        /* used to position the value label later if desired */
+        --p: 0%;
+        &::-webkit-slider-runnable-track {
+          height: 2px;
+          background: rgba(255, 255, 255, 0.85);
+        }
+        &::-moz-range-track {
+          height: 2px;
+          background: rgba(255, 255, 255, 0.85);
+        }
+
+        &::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 26px;
+          height: 26px;
+          background: url("../assets/svgs/speed-slider.svg") center / contain
+            no-repeat;
+          border: 0;
+          margin-top: -12px;
+        }
+
+        &::-moz-range-thumb {
+          width: 26px;
+          height: 26px;
+          background: url("../assets/svgs/speed-slider.svg") center / contain
+            no-repeat;
+          border: 0;
+          border-radius: 0;
+        }
+      }
+    }
+  }
+
+  & .menu__buttons {
+    list-style: none;
+    padding: 0;
+    position: relative;
+
+    & li {
+      position: absolute;
+      top: 0;
+      right: 0;
+      transition: all 0.3s ease-in-out;
+      pointer-events: all;
+
+      & .menu_btn {
+        width: $itemWidth;
+        aspect-ratio: 1 / 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        outline: none;
+        background-color: rgba(22, 22, 22, 0.1);
+        color: white;
+        transition: transform 0.3s ease;
+        padding: 0;
+
+        &:hover {
+          transform: scale(1.1);
+          transition: transform 0.3s ease;
+          cursor: pointer;
+        }
+
+        & .on {
+          display: none;
+        }
+      }
+
+      .is-active {
+        & .on {
+          display: block;
+        }
+
+        & .off {
+          display: none;
+        }
+      }
+    }
+  }
+}
+
+.open .menu {
+  .menu__buttons {
+    li {
+      @for $i from 1 through $items {
+        &:nth-child(#{$i}) {
+          top: $i * $step;
+        }
+      }
+    }
+  }
+
+  & .menu__toggle {
+    & .on {
+      display: block;
+    }
+
+    & .off {
+      display: none;
+    }
+  }
+
+  .wrapper {
+    &.is-active {
+      display: grid;
+      grid-template-columns: 150px 50px;
+      gap: 10px;
+      .volume {
+        display: flex;
+        align-items: center;
+      }
+    }
+  }
+}

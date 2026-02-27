@@ -44,6 +44,14 @@
   transition: left 0.3s ease;
 }
 
+#ui-root [data-slot="menu"] {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  pointer-events: none;
+  transition: left 0.3s ease;
+}
+
 @media (max-width: 768px) {
   .sidebar-open #ui-root [data-slot="scene-toggles"] {
     left: -200px;

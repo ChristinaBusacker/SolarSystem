@@ -20,13 +20,12 @@ import { starfieldPointsShader } from "./shader/starfield-points.shader";
 import { UiRenderer } from "./ui/ui-renderer";
 import { HudRenderer } from "./ui/hud-renderer";
 import { StageControlsRenderer } from "./ui/stage-controls-renderer";
-import { SceneTogglesRenderer } from "./ui/scene-toggles-renderer";
+
 import { PlanetSidebarRenderer } from "./ui/planet-sidebar-renderer";
 import { openSidebar, subscribeLayoutState } from "./ui/layout-state";
 import { subscribeSceneVisibilityState } from "./ui/scene-visibility-state";
 import { AppRoute, router } from "./router/router";
-import { ZoomControlsRenderer } from "./ui/zoom-controls.-renderer";
-import { MobileTogglesRenderer } from "./ui/mobile-toggles-renderer";
+import { MenuRenderer } from "./ui/menu-renderer";
 
 export class Application {
   private static instance: Application | null = null;
@@ -87,6 +86,7 @@ export class Application {
   private viewportObserver: ResizeObserver | null = null;
 
   private uiRight?: UiRenderer;
+  private menuRenderer?: MenuRenderer
 
   // Current selection derived from the router (used for declutter logic).
   private currentSelectedBodySlug?: string;
@@ -217,24 +217,13 @@ export class Application {
       new StageControlsRenderer(stageControlsSlot).init();
     }
 
-    const sceneTogglesSlot = document.querySelector<HTMLElement>(
-      '#ui-root [data-slot="scene-toggles"]',
-    );
-
-    if (sceneTogglesSlot) {
-      new SceneTogglesRenderer(sceneTogglesSlot).init();
-    }
-
-    const mobileToggleSlot = document.querySelector<HTMLElement>(
-      '#ui-root [data-slot="mobile-toggles"]',
-    );
-
-    if (mobileToggleSlot) {
-      new MobileTogglesRenderer(mobileToggleSlot).init();
-    }
 
     const uiSlotHud = document.querySelector<HTMLElement>(
       '#ui-root [data-slot="hud"]',
+    );
+
+    const menuSlot = document.querySelector<HTMLElement>(
+      '#ui-root [data-slot="menu"]',
     );
 
     if (uiSlotHud) {
@@ -262,15 +251,15 @@ export class Application {
       this.uiRight.init();
     }
 
+    if (menuSlot) {
+      this.menuRenderer = new MenuRenderer(menuSlot);
+    }
+
+
     const uiLeftSidebarSlot =
       document.querySelector<HTMLElement>("#sidebar-left-slot");
     if (uiLeftSidebarSlot) {
       new PlanetSidebarRenderer(uiLeftSidebarSlot).init();
-    }
-
-    const uiZoomControls = document.querySelector<HTMLElement>('#ui-root [data-slot="zoom-controls"]');
-    if (uiZoomControls) {
-      new ZoomControlsRenderer(uiZoomControls).init();
     }
 
     // Apply open/close state to both sidebars and resize smoothly during transitions.
