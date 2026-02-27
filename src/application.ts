@@ -1,16 +1,9 @@
 import * as THREE from "three";
-import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer";
-import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass";
-import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
-import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass";
-import { SMAAPass } from "three/examples/jsm/postprocessing/SMAAPass";
-import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
 import { CSS2DRenderer } from "three/examples/jsm/renderers/CSS2DRenderer";
 import { bloomRadius, bloomStrength, bloomThreshold, simulationSpeed } from "../data/settings.data";
 import { AstronomicalManager } from "./manager/AstronomicalManager";
 import { CameraManager } from "./manager/CameraManager";
 import { MinorBodyManager } from "./manager/minor-body-manager";
-import { mixPassShader } from "./shader/mixpass.shader";
 import { starfieldPointsShader } from "./shader/starfield-points.shader";
 import { HudRenderer } from "./ui/hud-renderer";
 import { StageControlsRenderer } from "./ui/stage-controls-renderer";
@@ -22,6 +15,7 @@ import { openSidebar, subscribeLayoutState } from "./ui/layout-state";
 import { MenuRenderer } from "./ui/menu-renderer";
 import { PlanetSidebarRenderer } from "./ui/planet-sidebar-renderer";
 import { subscribeSceneVisibilityState } from "./ui/scene-visibility-state";
+import { RenderPipeline } from "./rendering/render-pipeline";
 
 export class Application {
   private static instance: Application | null = null;
@@ -31,10 +25,7 @@ export class Application {
   public scene = new THREE.Scene();
   public clock = new THREE.Clock();
 
-  public bloomComposer = new EffectComposer(this.webglRenderer);
-  public finalComposer = new EffectComposer(this.webglRenderer);
-
-  private smaaPass?: SMAAPass;
+  private renderPipeline = new RenderPipeline(this.webglRenderer, this.scene);
 
   public simulationSpeed = simulationSpeed;
 
@@ -50,7 +41,7 @@ export class Application {
 
   // The post-processing RenderPass camera must match the active camera.
   // We keep it in sync to avoid "offset sky" and other weirdness when switching bodies.
-  private lastComposerCamera?: THREE.Camera;
+  private lastPipelineCamera?: THREE.Camera;
 
   // Container size (scene-root).
   private lastViewportSize: { width: number; height: number } = {
@@ -150,54 +141,17 @@ export class Application {
   }
 
   public initPostProcessing() {
-    const renderScene = new RenderPass(this.scene, this.cameraManager.getActiveEntry().camera);
-
-    const bloomPass = new UnrealBloomPass(
-      new THREE.Vector2(this.getViewportSize().width, this.getViewportSize().height),
+    const { width, height } = this.getViewportSize();
+    const dpr = this.getRenderPixelRatio();
+    this.renderPipeline.init({
+      camera: this.cameraManager.getActiveEntry().camera,
+      width,
+      height,
+      dpr,
       bloomStrength,
       bloomRadius,
       bloomThreshold,
-    );
-
-    this.bloomComposer.addPass(renderScene);
-    this.bloomComposer.addPass(bloomPass);
-    this.bloomComposer.renderToScreen = false;
-
-    const { vertexShader, fragmentShader } = mixPassShader;
-
-    const mixPass = new ShaderPass(
-      new THREE.ShaderMaterial({
-        uniforms: {
-          baseTexture: { value: null },
-          bloomTexture: { value: this.bloomComposer.renderTarget2.texture },
-        },
-        vertexShader: vertexShader,
-        fragmentShader: fragmentShader,
-        defines: {},
-      }),
-      "baseTexture",
-    );
-    mixPass.needsSwap = true;
-
-    const outputPass = new OutputPass();
-
-    // SMAA helps smooth thin lines (orbits) when rendering through EffectComposer
-    const { width, height } = this.getViewportSize();
-    const dpr = this.getRenderPixelRatio();
-    this.smaaPass = new SMAAPass();
-    // SMAA expects pixel sizes.
-    this.smaaPass.setSize(Math.floor(width * dpr), Math.floor(height * dpr));
-
-    this.finalComposer.addPass(renderScene);
-    this.finalComposer.addPass(mixPass);
-    this.finalComposer.addPass(this.smaaPass);
-    this.finalComposer.addPass(outputPass);
-
-    // Ensure the composers start with correct DPI-scaled buffers.
-    this.bloomComposer.setPixelRatio?.(dpr);
-    this.finalComposer.setPixelRatio?.(dpr);
-    this.bloomComposer.setSize(width, height);
-    this.finalComposer.setSize(width, height);
+    });
   }
   public static getInstance(): Application {
     if (!Application.instance) {
@@ -333,8 +287,7 @@ export class Application {
     // look "mushy" because the canvas gets upscaled by CSS.
     this.lastDevicePixelRatio = this.getRenderPixelRatio();
     this.webglRenderer.setPixelRatio(this.lastDevicePixelRatio);
-    this.bloomComposer.setPixelRatio?.(this.lastDevicePixelRatio);
-    this.finalComposer.setPixelRatio?.(this.lastDevicePixelRatio);
+    this.renderPipeline.setPixelRatio(this.lastDevicePixelRatio);
 
     // Keep the canvas styled by CSS (100% size) and only update the render buffer size here.
     this.webglRenderer.setSize(width, height, false);
@@ -716,8 +669,7 @@ export class Application {
     if (dpr !== this.lastDevicePixelRatio) {
       this.lastDevicePixelRatio = dpr;
       this.webglRenderer.setPixelRatio(dpr);
-      this.bloomComposer.setPixelRatio?.(dpr);
-      this.finalComposer.setPixelRatio?.(dpr);
+      this.renderPipeline.setPixelRatio(dpr);
       this.lastRenderSize = { width: 0, height: 0 };
     }
 
@@ -733,10 +685,7 @@ export class Application {
     this.lastRenderSize = { width, height };
 
     this.webglRenderer.setSize(width, height, false);
-    this.bloomComposer.setSize(width, height);
-    this.finalComposer.setSize(width, height);
-    // SMAA expects pixel sizes, not CSS sizes.
-    this.smaaPass?.setSize(Math.floor(width * dpr), Math.floor(height * dpr));
+    this.renderPipeline.setSize(width, height);
   }
 
   private getViewportSize(): { width: number; height: number } {
@@ -794,14 +743,11 @@ export class Application {
           if (dpr !== this.lastDevicePixelRatio) {
             this.lastDevicePixelRatio = dpr;
             this.webglRenderer.setPixelRatio(dpr);
-            this.bloomComposer.setPixelRatio?.(dpr);
-            this.finalComposer.setPixelRatio?.(dpr);
+            this.renderPipeline.setPixelRatio(dpr);
           }
           this.lastRenderSize = { width: 0, height: 0 };
           this.webglRenderer.setSize(width, height, false);
-          this.bloomComposer.setSize(width, height);
-          this.finalComposer.setSize(width, height);
-          this.smaaPass?.setSize(Math.floor(width * dpr), Math.floor(height * dpr));
+          this.renderPipeline.setSize(width, height);
           this.lastRenderSize = { width, height };
         }, 60);
       }
@@ -821,13 +767,7 @@ export class Application {
   }
 
   public updateComposer(newCamera: THREE.Camera) {
-    [this.bloomComposer, this.finalComposer].forEach(composer => {
-      composer.passes.forEach(pass => {
-        if (pass instanceof RenderPass) {
-          pass.camera = newCamera;
-        }
-      });
-    });
+    this.renderPipeline.setCamera(newCamera);
   }
 
   private applyCss2dLabelClustering(): void {
@@ -963,9 +903,9 @@ export class Application {
     const camera = this.cameraManager.getActiveEntry().camera;
 
     // Keep post-processing cameras in sync with the active camera.
-    if (camera !== this.lastComposerCamera) {
+    if (camera !== this.lastPipelineCamera) {
       this.updateComposer(camera);
-      this.lastComposerCamera = camera;
+      this.lastPipelineCamera = camera;
     }
 
     // Keep starfield centered on the *render camera* and always inside the frustum.
@@ -1002,13 +942,13 @@ export class Application {
 
     this.astronomicalManager.preBloom();
     this.minorBodyManager.preBloom();
-    this.bloomComposer.render(deltaTime * this.simulationSpeed);
+    this.renderPipeline.renderBloom(deltaTime * this.simulationSpeed);
     this.astronomicalManager.postBloom();
     this.minorBodyManager.postBloom();
 
     if (this.starfield) this.starfield.visible = true;
 
-    this.finalComposer.render(deltaTime);
+    this.renderPipeline.renderFinal(deltaTime);
 
     this.cssRenderer.render(this.scene, camera);
     this.applyCss2dLabelClustering();
