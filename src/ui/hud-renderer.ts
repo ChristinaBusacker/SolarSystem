@@ -1,4 +1,5 @@
 import hudTemplate from "./templates/hud.tpl.html";
+import { UiActions } from "./ui-actions";
 
 export type OrbitVisibilityToggles = {
   planets: boolean;
@@ -22,6 +23,7 @@ const ENGINE_BASE_SECONDS = 60;
 
 export class HudRenderer {
   private readonly root: HTMLElement;
+  private readonly actions: UiActions;
   private state: HudState;
 
   private paused = false;
@@ -47,8 +49,9 @@ export class HudRenderer {
     { label: "1 y / s", secondsPerSecond: 12 * 30 * 24 * 60 * 60 },
   ];
 
-  constructor(root: HTMLElement, initial: HudState) {
+  constructor(root: HTMLElement, initial: HudState, actions: UiActions) {
     this.root = root;
+    this.actions = actions;
     this.state = { ...initial };
 
     const initialSpeed = Number(initial.simulationSpeed) || 0;
@@ -118,7 +121,7 @@ export class HudRenderer {
         this.paused = false;
 
         this.syncFromState();
-        this.emitSpeedChange(speed);
+        this.actions.setSimulationSpeed(speed);
       });
     }
 
@@ -131,21 +134,16 @@ export class HudRenderer {
         this.state.simulationSpeed = speed;
 
         this.syncFromState();
-        this.emitSpeedChange(speed);
+        this.actions.setSimulationSpeed(speed);
       });
     }
 
     const markerToggle = this.root.querySelector<HTMLButtonElement>("[data-toggle-markers]");
     if (markerToggle) {
       markerToggle.addEventListener("click", () => {
-        this.state.markersVisible = !this.state.markersVisible;
+        const visible = this.actions.toggleMarkers();
+        this.state.markersVisible = visible;
         this.syncMarkerToggle();
-
-        window.dispatchEvent(
-          new CustomEvent("ui:toggleMarkers", {
-            detail: { visible: this.state.markersVisible },
-          }),
-        );
       });
     }
 
@@ -154,9 +152,11 @@ export class HudRenderer {
     );
     if (orbitPlanetToggle) {
       orbitPlanetToggle.addEventListener("click", () => {
-        this.state.orbitsVisible.planets = !this.state.orbitsVisible.planets;
+        const visible = this.actions.toggleOrbits();
+        // Scene currently supports a single orbit visibility toggle.
+        this.state.orbitsVisible.planets = visible;
+        this.state.orbitsVisible.moons = visible;
         this.syncOrbitToggles();
-        this.emitOrbitVisibilityChange();
       });
     }
 
@@ -165,27 +165,13 @@ export class HudRenderer {
     );
     if (orbitMoonToggle) {
       orbitMoonToggle.addEventListener("click", () => {
-        this.state.orbitsVisible.moons = !this.state.orbitsVisible.moons;
+        const visible = this.actions.toggleOrbits();
+        // Scene currently supports a single orbit visibility toggle.
+        this.state.orbitsVisible.planets = visible;
+        this.state.orbitsVisible.moons = visible;
         this.syncOrbitToggles();
-        this.emitOrbitVisibilityChange();
       });
     }
-  }
-
-  private emitSpeedChange(speed: number): void {
-    window.dispatchEvent(
-      new CustomEvent("ui:speedChange", {
-        detail: { speed },
-      }),
-    );
-  }
-
-  private emitOrbitVisibilityChange(): void {
-    window.dispatchEvent(
-      new CustomEvent("ui:toggleOrbits", {
-        detail: { ...this.state.orbitsVisible },
-      }),
-    );
   }
 
   private syncFromState(): void {

@@ -23,6 +23,7 @@ export class Sun extends Astronomical {
     baseColor: THREE.Color;
     baseSize: number;
     baseOpacity: number;
+    opacity?: number;
   }> = [];
 
   // Number of flare elements that are anchored on the sun itself (distance=0).
@@ -135,7 +136,7 @@ export class Sun extends Astronomical {
 
     this.lensflare = new Lensflare();
     this.lensflare.renderOrder = 999;
-    (this.lensflare as any).frustumCulled = false;
+    this.lensflare.frustumCulled = false;
 
     const add = (
       tex: THREE.Texture,
@@ -145,9 +146,6 @@ export class Sun extends Astronomical {
       opacity: number,
     ): LensflareElement => {
       const el = new LensflareElement(tex, size, distance, new THREE.Color(colorHex));
-      // Some Three versions expose opacity/rotation, others don't. Safe-cast.
-      (el as any).opacity = opacity;
-      (el as any).rotation = 0;
 
       this.lensflare!.addElement(el);
       this.flareParts.push({
@@ -261,6 +259,8 @@ export class Sun extends Astronomical {
       // Rotate smear to align with "sun -> screen center"
       if (this.smearElement) {
         const ang = Math.atan2(-this.tmpSunNdc.y, -this.tmpSunNdc.x);
+        // on Purpose cause of a threejs types bug
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (this.smearElement as any).rotation = ang;
       }
 
@@ -275,10 +275,6 @@ export class Sun extends Astronomical {
 
         p.el.size = p.baseSize * sizeScale;
         p.el.color.copy(p.baseColor).multiplyScalar(globalStrength * t);
-
-        if ("opacity" in (p.el as any)) {
-          (p.el as any).opacity = p.baseOpacity * t;
-        }
       }
 
       // Keep lensflare alive as long as the core is visible.

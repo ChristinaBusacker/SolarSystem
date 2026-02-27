@@ -199,7 +199,8 @@ export class SoundManager {
 
     audio.play();
 
-    // Clean up after finishing (best effort)
+    // On purpose to be safe in runtime
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const source: any = audio.source;
     if (source && typeof source.onended !== "undefined") {
       source.onended = () => {

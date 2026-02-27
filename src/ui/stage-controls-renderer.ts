@@ -1,5 +1,6 @@
 import { router } from "../router/router";
 import { getLayoutState, subscribeLayoutState, toggleSidebar } from "./layout-state";
+import { UiActions } from "./ui-actions";
 import { renderTemplate } from "./template";
 import stageControlsTpl from "./templates/stage-controls.tpl.html";
 
@@ -13,6 +14,7 @@ interface StageControlsRenderState {
 
 export class StageControlsRenderer {
   private readonly root: HTMLElement;
+  private readonly actions: UiActions;
   private state: StageControlsRenderState = {
     leftSidebarOpen: false,
     rightSidebarOpen: true,
@@ -21,8 +23,9 @@ export class StageControlsRenderer {
     isFullscreen: false,
   };
 
-  public constructor(root: HTMLElement) {
+  public constructor(root: HTMLElement, actions: UiActions) {
     this.root = root;
+    this.actions = actions;
 
     const layout = getLayoutState();
     this.state.leftSidebarOpen = layout.leftOpen;
@@ -84,13 +87,11 @@ export class StageControlsRenderer {
 
       if (action === "toggle-left") {
         toggleSidebar("left");
-        window.dispatchEvent(new CustomEvent("ui:request-toggle-sidebar-left"));
         return;
       }
 
       if (action === "toggle-right") {
         toggleSidebar("right");
-        window.dispatchEvent(new CustomEvent("ui:request-toggle-sidebar"));
         return;
       }
 
@@ -100,20 +101,12 @@ export class StageControlsRenderer {
       }
 
       if (action === "zoom-in") {
-        window.dispatchEvent(
-          new CustomEvent("ui:zoom-step", {
-            detail: { direction: "in" as const },
-          }),
-        );
+        this.actions.zoomStep("in");
         return;
       }
 
       if (action === "zoom-out") {
-        window.dispatchEvent(
-          new CustomEvent("ui:zoom-step", {
-            detail: { direction: "out" as const },
-          }),
-        );
+        this.actions.zoomStep("out");
         return;
       }
 

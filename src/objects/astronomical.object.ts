@@ -370,14 +370,9 @@ export class Astronomical implements AstronomicalObject {
 
     div.onclick = ev => {
       ev.stopPropagation();
-      window.dispatchEvent(
-        new CustomEvent("ui:select-body", {
-          detail: {
-            name: this.data.slug,
-            kind: this.isMoon ? "moon" : "planet",
-          },
-        }),
-      );
+
+      if (this.isMoon) router.goMoon(this.data.slug);
+      else router.goPlanet(this.data.slug);
     };
 
     document.body.appendChild(div);
@@ -411,7 +406,7 @@ export class Astronomical implements AstronomicalObject {
           : astronomicalShader
         : earthShader;
 
-    const casterOptions: any = {
+    const casterOptions: Record<string, unknown> = {
       casterPosition1: { value: new THREE.Vector3(0, 0, 0) },
       casterRadius1: { value: 0.0 },
       casterPosition2: { value: new THREE.Vector3(0, 0, 0) },

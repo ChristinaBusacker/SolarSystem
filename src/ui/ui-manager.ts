@@ -2,7 +2,6 @@ import * as THREE from "three";
 import { CSS2DRenderer } from "three/examples/jsm/renderers/CSS2DRenderer";
 
 import { CameraManager } from "../manager/CameraManager";
-import { router } from "../router/router";
 import { ViewportService } from "../services/viewport.service";
 import { HudRenderer } from "./hud-renderer";
 import { openSidebar, subscribeLayoutState } from "./layout-state";
@@ -10,6 +9,7 @@ import { MenuRenderer } from "./menu-renderer";
 import { PlanetSidebarRenderer } from "./planet-sidebar-renderer";
 import { SceneVisibilityState, subscribeSceneVisibilityState } from "./scene-visibility-state";
 import { StageControlsRenderer } from "./stage-controls-renderer";
+import { UiActions, createSceneToggleActions } from "./ui-actions";
 import { UiRenderer } from "./ui-renderer";
 
 export type UiManagerDeps = {
@@ -34,6 +34,8 @@ export type UiManagerInit = {
 export class UiManager {
   private readonly deps: UiManagerDeps;
 
+  private readonly actions: UiActions;
+
   private uiRight?: UiRenderer;
   private hud?: HudRenderer;
   private menu?: MenuRenderer;
@@ -42,10 +44,26 @@ export class UiManager {
 
   public constructor(deps: UiManagerDeps) {
     this.deps = deps;
+
+    this.actions = {
+      ...createSceneToggleActions(),
+      setSimulationSpeed: speed => {
+        this.deps.onSimulationSpeedChange(speed);
+        this.hud?.setSimulationSpeed(speed);
+      },
+      zoomStep: direction => {
+        const activeEntry = this.deps.cameraManager.getActiveEntry();
+        const control = activeEntry?.control;
+        if (!control) return;
+
+        const step = 0.075;
+        const signedStep = direction === "in" ? -step : step;
+        control.zoom = THREE.MathUtils.clamp(control.zoom + signedStep, 0, 1);
+      },
+    };
   }
 
   public init(opts: UiManagerInit): void {
-    this.bindGlobalUiEvents();
     this.mountRenderers(opts);
     this.bindLayoutState();
     this.bindSceneVisibilityState();
@@ -65,7 +83,7 @@ export class UiManager {
       '#ui-root [data-slot="stage-controls"]',
     );
     if (stageControlsSlot) {
-      new StageControlsRenderer(stageControlsSlot).init();
+      new StageControlsRenderer(stageControlsSlot, this.actions).init();
     }
 
     const hudSlot = document.querySelector<HTMLElement>('#ui-root [data-slot="hud"]');
@@ -79,7 +97,7 @@ export class UiManager {
           moons: true,
         },
         markersVisible: true,
-      });
+      }, this.actions);
     }
 
     const uiRightSidebarSlot = document.querySelector<HTMLElement>("#sidebar-right-slot");
@@ -93,7 +111,7 @@ export class UiManager {
 
     const menuSlot = document.querySelector<HTMLElement>('#ui-root [data-slot="menu"]');
     if (menuSlot) {
-      this.menu = new MenuRenderer(menuSlot);
+      this.menu = new MenuRenderer(menuSlot, this.actions);
       this.menu.init();
     }
 
@@ -140,38 +158,6 @@ export class UiManager {
     });
   }
 
-  private bindGlobalUiEvents(): void {
-    window.addEventListener("ui:speedChange", (e: Event) => {
-      const ce = e as CustomEvent<{ speed: number }>;
-      const speed = ce.detail?.speed;
-      if (speed == null) return;
-      this.deps.onSimulationSpeedChange(speed);
-      this.hud?.setSimulationSpeed(speed);
-    });
-
-    window.addEventListener("ui:zoom-step", this.handleUiZoomStep as EventListener);
-
-    window.addEventListener("ui:select-body", (e: Event) => {
-      const ce = e as CustomEvent<{ name: string; kind: "planet" | "moon" }>;
-      const name = ce.detail?.name;
-      const kind = ce.detail?.kind;
-      if (!name || !kind) return;
-      if (kind === "moon") router.goMoon(name);
-      else router.goPlanet(name);
-    });
-  }
-
-  private readonly handleUiZoomStep = (e: Event): void => {
-    const ce = e as CustomEvent<{ direction?: "in" | "out" }>;
-    const direction = ce.detail?.direction;
-    if (direction !== "in" && direction !== "out") return;
-
-    const activeEntry = this.deps.cameraManager.getActiveEntry();
-    const control = activeEntry?.control;
-    if (!control) return;
-
-    const step = 0.075;
-    const signedStep = direction === "in" ? -step : step;
-    control.zoom = THREE.MathUtils.clamp(control.zoom + signedStep, 0, 1);
-  };
+  // NOTE: This class intentionally does not listen to `window` CustomEvents.
+  // UI components call the typed `UiActions` surface instead.
 }
