@@ -13,8 +13,9 @@ A **lightweight, framework-free** Solar System renderer built with **Three.js + 
   <img alt="Webpack" src="https://img.shields.io/badge/Webpack-bundled-8DD6F9?style=flat&logo=webpack&logoColor=1a1a1a" />
   <img alt="ESLint" src="https://img.shields.io/badge/ESLint-linting-4B32C3?style=flat&logo=eslint&logoColor=white" />
   <img alt="Prettier" src="https://img.shields.io/badge/Prettier-formatting-F7B93E?style=flat&logo=prettier&logoColor=1a1a1a" />
-  ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
+  
 </p>
+![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
 
 > Preview GIF/video will be added once the project is in its final visual state.
 
