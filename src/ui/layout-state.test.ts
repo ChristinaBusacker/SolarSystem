@@ -66,4 +66,24 @@ describe("layout-state", () => {
     // No further calls after unsubscribe
     expect(listener).toHaveBeenCalledTimes(2);
   });
+
+  it("does not notify subscribers on no-op commits", () => {
+    const listener = vi.fn();
+    const unsub = subscribeLayoutState(listener);
+
+    expect(listener).toHaveBeenCalledTimes(1);
+
+    openSidebar("left");
+    expect(listener).toHaveBeenCalledTimes(2);
+
+    // Opening left again should not emit.
+    openSidebar("left");
+    expect(listener).toHaveBeenCalledTimes(2);
+
+    // Closing when already closed should not emit.
+    closeSidebar("right");
+    expect(listener).toHaveBeenCalledTimes(2);
+
+    unsub();
+  });
 });

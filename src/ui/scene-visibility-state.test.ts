@@ -63,4 +63,19 @@ describe("scene-visibility-state", () => {
     setOrbitsVisible(false);
     expect(listener).toHaveBeenCalledTimes(2);
   });
+
+  it("does not notify on no-op updates", () => {
+    const listener = vi.fn();
+    const unsub = subscribeSceneVisibilityState(listener);
+
+    expect(listener).toHaveBeenCalledTimes(1);
+
+    // Setting the current value should not emit.
+    setMarkersVisible(true);
+    setOrbitsVisible(true);
+    setDeclutterAuto(true);
+    expect(listener).toHaveBeenCalledTimes(1);
+
+    unsub();
+  });
 });

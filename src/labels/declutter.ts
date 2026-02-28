@@ -148,9 +148,6 @@ export function computeDeclutterVisibility(args: {
     // Default: show everything in overview, except selected markers should be hidden.
     let labelVisible = true;
 
-    // Always hide label for the selected body (planet or moon).
-    if (selectedId && b.id === selectedId) labelVisible = false;
-
     if (state.isOverview) {
       // Overview rules:
       // - Moons: only show if camera is near their parent planet (otherwise too much clutter)
@@ -248,6 +245,11 @@ export function computeDeclutterVisibility(args: {
 
       if (occluded) labelVisible = false;
     }
+
+    // Always hide label for the selected body (planet or moon).
+    // IMPORTANT: Apply this *after* all other rules so nothing can accidentally
+    // turn the selected label back on (regression caught by unit tests).
+    if (selectedId && b.id === selectedId) labelVisible = false;
 
     labelVisibleById[b.id] = labelVisible;
   }
