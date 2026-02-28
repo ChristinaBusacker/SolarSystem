@@ -118,7 +118,15 @@ export class AppRouter {
   }
 
   private navigate(route: AppRoute, opts?: { replace?: boolean }): void {
-    const url = buildUrl(route);
+    // Keep internal route state consistent with URL normalization.
+    const normalized: AppRoute =
+      route.name === "planet"
+        ? { name: "planet", planet: normalizeBodyName(route.planet) }
+        : route.name === "moon"
+          ? { name: "moon", moon: normalizeBodyName(route.moon) }
+          : route;
+
+    const url = buildUrl(normalized);
     const replace = !!opts?.replace;
 
     if (this.usingNavigationApi) {
@@ -130,7 +138,7 @@ export class AppRouter {
     if (replace) window.history.replaceState({}, "", url);
     else window.history.pushState({}, "", url);
 
-    this.commit(route);
+    this.commit(normalized);
   }
 
   private commit(route: AppRoute): void {
