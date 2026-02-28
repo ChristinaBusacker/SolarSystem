@@ -214,8 +214,6 @@ export class AstronomicalManager {
       el.classList.toggle("hide-label", hidden);
     };
 
-    // Determine moon label LOD (keep moon markers visible, but hide labels when far)
-    const tmpPlanetPos = new THREE.Vector3();
     let focusPlanetPos: THREE.Vector3 | null = null;
     let focusPlanetSize = 0;
 

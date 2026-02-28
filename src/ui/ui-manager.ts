@@ -88,16 +88,20 @@ export class UiManager {
 
     const hudSlot = document.querySelector<HTMLElement>('#ui-root [data-slot="hud"]');
     if (hudSlot) {
-      this.hud = new HudRenderer(hudSlot, {
-        bodyName: "None",
-        simulationSpeed: opts.simulationSpeed,
-        paused: opts.simulationSpeed <= 0,
-        orbitsVisible: {
-          planets: true,
-          moons: true,
+      this.hud = new HudRenderer(
+        hudSlot,
+        {
+          bodyName: "None",
+          simulationSpeed: opts.simulationSpeed,
+          paused: opts.simulationSpeed <= 0,
+          orbitsVisible: {
+            planets: true,
+            moons: true,
+          },
+          markersVisible: true,
         },
-        markersVisible: true,
-      }, this.actions);
+        this.actions,
+      );
     }
 
     const uiRightSidebarSlot = document.querySelector<HTMLElement>("#sidebar-right-slot");

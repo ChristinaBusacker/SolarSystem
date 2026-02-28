@@ -147,7 +147,11 @@ export class StarfieldManager {
     scene.environment = null;
   }
 
-  public update(deltaTime: number, camera: THREE.PerspectiveCamera, devicePixelRatio: number): void {
+  public update(
+    deltaTime: number,
+    camera: THREE.PerspectiveCamera,
+    devicePixelRatio: number,
+  ): void {
     if (!this.starfield) return;
 
     // Keep starfield centered on the *render camera* and always inside the frustum.

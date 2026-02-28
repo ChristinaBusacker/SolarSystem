@@ -149,7 +149,8 @@ export class ViewportService {
     const { width, height } = this.getViewportSize();
 
     if (width < 2 || height < 2) return;
-    if (!force && width === this.lastViewportSize.width && height === this.lastViewportSize.height) return;
+    if (!force && width === this.lastViewportSize.width && height === this.lastViewportSize.height)
+      return;
     this.lastViewportSize = { width, height };
 
     const activeCamera = this.deps.cameraManager.getActiveEntry().camera;
@@ -170,7 +171,8 @@ export class ViewportService {
 
     if (this.isLayoutTransitioning) return;
 
-    if (!force && width === this.lastRenderSize.width && height === this.lastRenderSize.height) return;
+    if (!force && width === this.lastRenderSize.width && height === this.lastRenderSize.height)
+      return;
     this.lastRenderSize = { width, height };
 
     this.deps.webglRenderer.setSize(width, height, false);

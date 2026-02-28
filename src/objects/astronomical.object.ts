@@ -520,7 +520,7 @@ export class Astronomical implements AstronomicalObject {
       const shadowCasters = this.getShadowCasters();
 
       this.materials.forEach(material => {
-        const params: any = {};
+        const params: Record<string, { value: unknown }> = {};
 
         shadowCasters.forEach((caster, i) => {
           params[`casterPosition${i + 1}`] = { value: caster.position };

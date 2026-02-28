@@ -1,4 +1,3 @@
-import * as THREE from "three";
 import type { UpdateContext } from "../core/update-context";
 
 import { venusRawData } from "../../data/raw-object.data";
