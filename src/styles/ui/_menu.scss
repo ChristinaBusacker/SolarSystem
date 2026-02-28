@@ -17,6 +17,7 @@ $step: 50px;
     outline: none;
     background-color: rgba(22, 22, 22, 0.1);
     width: 50px;
+    cursor: pointer;
     & .on {
       display: none;
     }
@@ -99,18 +100,27 @@ $step: 50px;
           cursor: pointer;
         }
 
+        &.fullscreen {
+          svg {
+            width: 42px;
+          }
+        }
+
         & .on {
           display: none;
         }
       }
 
-      .is-active {
-        & .on {
-          display: block;
-        }
+      &.is-active,
+      & .wrapper.is-active {
+        & .menu_btn {
+          & .on {
+            display: block;
+          }
 
-        & .off {
-          display: none;
+          & .off {
+            display: none;
+          }
         }
       }
     }

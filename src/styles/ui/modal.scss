@@ -13,7 +13,7 @@
 }
 
 .ui-modal {
-  width: min(520px, 92vw);
+  width: 92vw;
   border-radius: $radius-lg;
   border: 1px solid $glass-border;
   background: $glass-bg;
@@ -21,6 +21,8 @@
   padding: $space-5;
   display: grid;
   gap: $space-3;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .ui-modal__title {
@@ -42,6 +44,7 @@
   gap: $space-2;
   justify-content: flex-end;
   margin-top: $space-2;
+  justify-content: space-between;
 }
 
 .ui-btn {
