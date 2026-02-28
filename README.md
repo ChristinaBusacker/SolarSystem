@@ -204,6 +204,8 @@ npm run build
 npm run check
 ```
 
+This repo also uses a `pre-commit` hook (Husky + lint-staged) to keep formatting and linting consistent.
+
 <details>
 <summary><b>All scripts</b></summary>
 
@@ -217,7 +219,11 @@ npm run check
   "lint:fix": "eslint . --ext .ts,.js --fix",
   "format": "prettier . --check",
   "format:write": "prettier . --write",
-  "check": "npm run lint && npm run format && npm run typecheck"
+  "test": "vitest run",
+  "test:watch": "vitest",
+  "test:coverage": "vitest run --coverage",
+  "check": "npm run lint && npm run format && npm run typecheck",
+  "check:all": "npm run check && npm run test"
 }
 ```
 
