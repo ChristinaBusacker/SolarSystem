@@ -69,7 +69,7 @@ export class AstronomicalManager {
     {
       selector: "Makemake",
       object: new SimpleAstronomicalBody(
-        "/assets/textures/3k_makemake.jpg",
+        "/assets/textures/2k_makemake.jpg",
         "/assets/normals/2k_moon.png",
         makemakeRawData,
       ),

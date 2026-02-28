@@ -232,7 +232,7 @@ export const astronomicalSidebarPlanetContent: Record<string, BodyInfoOverride> 
       "Has one known moon",
       "Named after a creator deity from Rapa Nui tradition",
     ],
-    texture: "/assets/textures/3k_makemake.jpg",
+    texture: "/assets/textures/2k_makemake.jpg",
   },
 
   eris: {
