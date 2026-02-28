@@ -3,6 +3,7 @@ import { CSS2DRenderer } from "three/examples/jsm/renderers/CSS2DRenderer";
 import { SIMULATION_SPEED } from "../data/settings.data";
 import { AstronomicalManager } from "./manager/AstronomicalManager";
 import { CameraManager } from "./manager/CameraManager";
+import { CinematicDirector } from "./manager/CinematicDirector";
 import { MinorBodyManager } from "./manager/minor-body-manager";
 import { StarfieldManager } from "./manager/StarfieldManager";
 import { UiManager } from "./ui/ui-manager";
@@ -31,6 +32,11 @@ export class Application {
   public astronomicalManager = new AstronomicalManager();
   public minorBodyManager = new MinorBodyManager();
 
+  private cinematicDirector = new CinematicDirector({
+    cameraManager: this.cameraManager,
+    astronomicalManager: this.astronomicalManager,
+  });
+
   private starfieldManager = new StarfieldManager();
 
   // The post-processing RenderPass camera must match the active camera.
@@ -50,6 +56,10 @@ export class Application {
 
   // Current selection derived from the router (used for declutter logic).
   private currentSelectedBodySlug?: string;
+
+  // Used to detect direct navigation to /cinematic on first load.
+  private firstRouteHandled = false;
+  private cinematicConfirmedOnce = false;
 
   private constructor() {
     this.viewportService = new ViewportService({
@@ -133,6 +143,44 @@ export class Application {
   }
 
   private applyRoute(route: AppRoute): void {
+    const isFirst = !this.firstRouteHandled;
+    this.firstRouteHandled = true;
+
+    if (route.name === "cinematic") {
+      // If the user lands directly on /cinematic, ask for confirmation.
+      // (Entering cinematic mode implies sound + hiding UI state.)
+      if (isFirst && !this.cinematicConfirmedOnce) {
+        this.uiManager.showConfirmModal({
+          title: "Cinematic mode",
+          message:
+            "Start a scripted camera tour with markers and orbits hidden? You can return to Overview anytime.",
+          primaryLabel: "Start cinematic",
+          secondaryLabel: "Back to overview",
+          onPrimary: () => {
+            this.cinematicConfirmedOnce = true;
+            this.enterCinematicMode();
+          },
+          onSecondary: () => {
+            router.goHome({ replace: true });
+          },
+        });
+
+        // Keep the default camera active while the prompt is visible.
+        this.cameraManager.switchCamera("Default");
+        this.uiManager.setSelectedBodyName(undefined);
+        this.currentSelectedBodySlug = undefined;
+        return;
+      }
+
+      this.uiManager.hideModal();
+      this.enterCinematicMode();
+      return;
+    }
+
+    // Leaving cinematic mode.
+    this.uiManager.hideModal();
+    if (this.cinematicDirector.isActive()) this.cinematicDirector.stop();
+
     if (route.name === "home") {
       this.cameraManager.switchCamera("Default");
       this.uiManager.setSelectedBodyName(undefined);
@@ -165,6 +213,15 @@ export class Application {
 
     // Show info panel when a body is selected.
     this.uiManager.openRightSidebar();
+  }
+
+  private enterCinematicMode(): void {
+    this.cameraManager.switchCamera("Cinematic");
+    this.uiManager.setSelectedBodyName(undefined);
+    this.currentSelectedBodySlug = undefined;
+
+    // Start the director. If called from a user gesture, it will also unlock sound.
+    void this.cinematicDirector.start();
   }
 
   private initWebGLRenderer() {
@@ -569,6 +626,9 @@ export class Application {
       this.updateComposer(camera);
       this.lastPipelineCamera = camera;
     }
+
+    // Scripted camera movement (if enabled).
+    this.cinematicDirector.update(ctx);
 
     this.starfieldManager.update(deltaTime, camera, dpr);
 

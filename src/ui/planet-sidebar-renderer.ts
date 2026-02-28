@@ -71,7 +71,12 @@ export class PlanetSidebarRenderer {
       const sceneBtn = target?.closest<HTMLElement>("[data-action='select-camera']");
       if (sceneBtn) {
         e.stopPropagation();
-        router.goHome();
+        const camera = sceneBtn.getAttribute("data-camera") ?? "Default";
+        if (camera === "Cinematic") {
+          router.goCinematic();
+        } else {
+          router.goHome();
+        }
       }
 
       // Legacy fallback for older buttons (kept so partial template edits don't explode)

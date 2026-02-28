@@ -1,0 +1,77 @@
+@use "../tokens" as *;
+
+.ui-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: $space-4;
+  pointer-events: auto;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+}
+
+.ui-modal {
+  width: min(520px, 92vw);
+  border-radius: $radius-lg;
+  border: 1px solid $glass-border;
+  background: $glass-bg;
+  box-shadow: $shadow-lg;
+  padding: $space-5;
+  display: grid;
+  gap: $space-3;
+}
+
+.ui-modal__title {
+  margin: 0;
+  font-size: 1.05rem;
+  letter-spacing: 0.02em;
+}
+
+.ui-modal__text {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: rgba(240, 247, 255, 0.86);
+}
+
+.ui-modal__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-2;
+  justify-content: flex-end;
+  margin-top: $space-2;
+}
+
+.ui-btn {
+  border: 1px solid $glass-border;
+  border-radius: $radius-md;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  color: rgba(240, 247, 255, 0.92);
+  background: rgba(255, 255, 255, 0.06);
+  transition:
+    background $dur-fast $ease-standard,
+    transform $dur-fast $ease-standard,
+    border-color $dur-fast $ease-standard;
+}
+
+.ui-btn:hover {
+  border-color: rgba(255, 255, 255, 0.24);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.ui-btn:active {
+  transform: scale(0.98);
+}
+
+.ui-btn--primary {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.ui-btn--ghost {
+  background: rgba(0, 0, 0, 0);
+}

@@ -33,6 +33,22 @@ export class CameraManager {
     scene.add(defaultControl.group);
 
     this.addCamera("Default", defaultCamera, defaultControl);
+
+    // Cinematic camera (scripted movement, no direct user controls).
+    const cinematicCamera = new THREE.PerspectiveCamera(
+      60,
+      window.innerWidth / window.innerHeight,
+      0.01,
+      90000000,
+    );
+    cinematicCamera.position.set(0, 0, 1);
+    const cinematicControl = new SimpleControl(0.01, 1, cinematicCamera);
+    scene.add(cinematicControl.group);
+    this.addCamera("Cinematic", cinematicCamera, cinematicControl);
+  }
+
+  private isCinematicActive(): boolean {
+    return this.activeCamera?.selector === "Cinematic";
   }
 
   private getInteractiveTarget(target: EventTarget | null): HTMLElement | null {
@@ -63,12 +79,14 @@ export class CameraManager {
     // Mouse
     app.addEventListener("mousedown", (e: MouseEvent) => {
       if (this.getInteractiveTarget(e.target)) return;
+      if (this.isCinematicActive()) return;
       this.isPointerDown = true;
       this.activeCamera?.control?.startRotate(e.clientX, e.clientY);
     });
 
     app.addEventListener("mousemove", (e: MouseEvent) => {
       if (!this.isPointerDown) return;
+      if (this.isCinematicActive()) return;
       this.activeCamera?.control?.moveRotate(e.clientX, e.clientY, 0.8);
     });
 
@@ -86,6 +104,7 @@ export class CameraManager {
         if (this.getInteractiveTarget(e.target)) return;
         // Prevent the browser page from scrolling on trackpads.
         e.preventDefault();
+        if (this.isCinematicActive()) return;
         this.activeCamera?.control?.applyWheel(e.deltaY);
       },
       { passive: false },
@@ -96,6 +115,7 @@ export class CameraManager {
       "touchstart",
       (e: TouchEvent) => {
         if (this.getInteractiveTarget(e.target)) return;
+        if (this.isCinematicActive()) return;
 
         if (e.touches.length === 1) {
           this.touchMode = "rotate";
@@ -120,6 +140,7 @@ export class CameraManager {
       "touchmove",
       (e: TouchEvent) => {
         if (this.getInteractiveTarget(e.target)) return;
+        if (this.isCinematicActive()) return;
 
         if (this.touchMode === "rotate" && e.touches.length === 1) {
           this.activeCamera?.control?.moveRotate(e.touches[0].clientX, e.touches[0].clientY, 1.0);
@@ -154,6 +175,11 @@ export class CameraManager {
 
     const endTouch = (e: TouchEvent) => {
       const control = this.activeCamera?.control;
+
+      if (this.isCinematicActive()) {
+        this.touchMode = "none";
+        return;
+      }
 
       if (e.touches.length === 0) {
         this.touchMode = "none";
@@ -278,6 +304,7 @@ export class CameraManager {
   }
 
   public updateControls(delta: number) {
+    if (this.isCinematicActive()) return;
     // Update only the active control to avoid drift and reduce work.
     this.activeCamera?.control?.update(delta);
   }

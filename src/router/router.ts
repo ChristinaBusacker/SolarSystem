@@ -8,7 +8,8 @@
 export type AppRoute =
   | { name: "home" }
   | { name: "planet"; planet: string }
-  | { name: "moon"; moon: string };
+  | { name: "moon"; moon: string }
+  | { name: "cinematic" };
 
 type Listener = (route: AppRoute) => void;
 
@@ -20,6 +21,7 @@ function normalizeBodyName(name: string): string {
 
 function buildUrl(route: AppRoute): string {
   if (route.name === "home") return "/";
+  if (route.name === "cinematic") return "/cinematic";
   if (route.name === "planet") {
     return `/planet/${encodeURIComponent(normalizeBodyName(route.planet))}`;
   }
@@ -29,6 +31,8 @@ function buildUrl(route: AppRoute): string {
 function parseUrl(urlLike: string): AppRoute {
   const url = new URL(urlLike, window.location.origin);
   const path = url.pathname.replace(/\/+$/, "") || "/";
+
+  if (path === "/cinematic") return { name: "cinematic" };
 
   // /planet/Earth
   let m = path.match(/^\/planet\/([^/]+)$/);
@@ -117,6 +121,10 @@ export class AppRouter {
     this.navigate({ name: "moon", moon }, opts);
   }
 
+  public goCinematic(opts?: { replace?: boolean }): void {
+    this.navigate({ name: "cinematic" }, opts);
+  }
+
   private navigate(route: AppRoute, opts?: { replace?: boolean }): void {
     // Keep internal route state consistent with URL normalization.
     const normalized: AppRoute =
@@ -146,6 +154,7 @@ export class AppRouter {
     const same =
       route.name === this.current.name &&
       (route.name === "home" ||
+        route.name === "cinematic" ||
         (route.name === "planet" &&
           this.current.name === "planet" &&
           route.planet === this.current.planet) ||

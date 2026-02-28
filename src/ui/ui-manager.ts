@@ -11,6 +11,7 @@ import { SceneVisibilityState, subscribeSceneVisibilityState } from "./scene-vis
 import { StageControlsRenderer } from "./stage-controls-renderer";
 import { UiActions, createSceneToggleActions } from "./ui-actions";
 import { UiRenderer } from "./ui-renderer";
+import { escapeHtml } from "./template";
 
 export type UiManagerDeps = {
   cssRenderer: CSS2DRenderer;
@@ -40,6 +41,9 @@ export class UiManager {
   private hud?: HudRenderer;
   private menu?: MenuRenderer;
 
+  private modalSlot?: HTMLElement;
+  private modalRoot?: HTMLElement;
+
   private lastLayoutKey: string | null = null;
 
   public constructor(deps: UiManagerDeps) {
@@ -67,6 +71,70 @@ export class UiManager {
     this.mountRenderers(opts);
     this.bindLayoutState();
     this.bindSceneVisibilityState();
+  }
+
+  public showConfirmModal(opts: {
+    title: string;
+    message: string;
+    primaryLabel: string;
+    secondaryLabel: string;
+    onPrimary: () => void;
+    onSecondary: () => void;
+  }): void {
+    if (!this.modalSlot) return;
+
+    this.hideModal();
+
+    const root = document.createElement("div");
+    root.className = "ui-modal-backdrop";
+    root.innerHTML = `
+      <div class="ui-modal" role="dialog" aria-modal="true" aria-label="${escapeHtml(opts.title)}">
+        <h3 class="ui-modal__title">${escapeHtml(opts.title)}</h3>
+        <p class="ui-modal__text">${escapeHtml(opts.message)}</p>
+        <div class="ui-modal__actions">
+          <button class="ui-btn ui-btn--primary" type="button" data-action="primary">${escapeHtml(
+            opts.primaryLabel,
+          )}</button>
+          <button class="ui-btn ui-btn--ghost" type="button" data-action="secondary">${escapeHtml(
+            opts.secondaryLabel,
+          )}</button>
+        </div>
+      </div>
+    `;
+
+    const click = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      const primary = target?.closest<HTMLElement>("[data-action='primary']");
+      const secondary = target?.closest<HTMLElement>("[data-action='secondary']");
+
+      if (primary) {
+        e.stopPropagation();
+        this.hideModal();
+        opts.onPrimary();
+        return;
+      }
+
+      if (secondary || target === root) {
+        e.stopPropagation();
+        this.hideModal();
+        opts.onSecondary();
+      }
+    };
+
+    root.addEventListener("click", click);
+
+    this.modalSlot.appendChild(root);
+    this.modalRoot = root;
+  }
+
+  public hideModal(): void {
+    if (!this.modalRoot) return;
+    try {
+      this.modalRoot.remove();
+    } catch {
+      // ignore
+    }
+    this.modalRoot = undefined;
   }
 
   public setSelectedBodyName(name?: string): void {
@@ -123,6 +191,9 @@ export class UiManager {
     if (uiLeftSidebarSlot) {
       new PlanetSidebarRenderer(uiLeftSidebarSlot).init();
     }
+
+    this.modalSlot =
+      document.querySelector<HTMLElement>('#ui-root [data-slot="modal"]') ?? undefined;
   }
 
   private bindLayoutState(): void {

@@ -6,7 +6,7 @@ function getPath(obj: any, path: string): unknown {
   return path.split(".").reduce((acc, key) => (acc != null ? acc[key] : undefined), obj);
 }
 
-function escapeHtml(value: unknown): string {
+export function escapeHtml(value: unknown): string {
   const s = String(value ?? "");
   return s
     .replace("&", "&amp;")
