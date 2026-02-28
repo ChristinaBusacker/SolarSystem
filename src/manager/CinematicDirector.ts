@@ -25,6 +25,8 @@ type CinematicShot = {
   durationSec: number;
   /** Number of revolutions around the target in the shot (orbit only). */
   revolutions?: number;
+  /** Optional: change flyby feel (e.g. ring sweep on Saturn). */
+  flybyStyle?: "default" | "ringSweep";
 };
 
 export type CinematicDirectorDeps = {
@@ -45,11 +47,28 @@ export class CinematicDirector {
 
   private active = false;
 
+  // A curated playlist. Keep durations fairly long to let scenes breathe.
   private playlist: CinematicShot[] = [
-    { kind: "orbit", target: "Saturn", durationSec: 12, revolutions: 0.35 },
-    { kind: "flyby", target: "Jupiter", durationSec: 10 },
-    { kind: "orbit", target: "Earth", durationSec: 10, revolutions: 0.45 },
-    { kind: "flyby", target: "Neptune", durationSec: 10 },
+    { kind: "flyby", target: "Titan", durationSec: 18 },
+    { kind: "orbit", target: "Saturn", durationSec: 12, revolutions: 0.22 },
+
+    { kind: "flyby", target: "Saturn", durationSec: 22, flybyStyle: "ringSweep" },
+
+    { kind: "orbit", target: "Jupiter", durationSec: 24, revolutions: 0.26 },
+    { kind: "flyby", target: "Europa", durationSec: 16 },
+    { kind: "flyby", target: "Io", durationSec: 16 },
+
+    { kind: "orbit", target: "Earth", durationSec: 22, revolutions: 0.32 },
+    { kind: "flyby", target: "Moon", durationSec: 16 },
+
+    { kind: "orbit", target: "Neptune", durationSec: 24, revolutions: 0.2 },
+    { kind: "flyby", target: "Triton", durationSec: 18 },
+
+    { kind: "orbit", target: "Uranus", durationSec: 24, revolutions: 0.22 },
+    { kind: "flyby", target: "Miranda", durationSec: 16 },
+
+    { kind: "flyby", target: "Mars", durationSec: 16 },
+    { kind: "orbit", target: "Sun", durationSec: 26, revolutions: 0.12 },
   ];
 
   private shotIndex = 0;
@@ -144,32 +163,38 @@ export class CinematicDirector {
 
     const targetPos = this.resolveTargetWorldPos(shot.target, this.tmpTarget);
 
-    // Determine a "nice" radius based on the target camera control (if present).
-    const targetEntry = this.deps.astronomicalManager.getEntry(shot.target);
+    // Determine a "nice" radius based on the target camera control (planet OR moon).
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const targetObj: any = targetEntry?.object as any;
+    const targetObj: any = this.deps.astronomicalManager.findBody(shot.target);
     const control = targetObj?.control;
 
     const distMin = Number.isFinite(control?.distanceMin) ? (control.distanceMin as number) : 0.02;
     const distMax = Number.isFinite(control?.distanceMax) ? (control.distanceMax as number) : 0.35;
 
-    const orbitRadius = THREE.MathUtils.clamp(distMax * 0.55, distMin * 1.25, distMax * 0.75);
-    const flyRadius = THREE.MathUtils.clamp(distMax * 0.35, distMin * 1.1, distMax * 0.6);
+    const orbitRadius = THREE.MathUtils.clamp(distMax * 0.58, distMin * 1.25, distMax * 0.78);
+    const flyRadius = THREE.MathUtils.clamp(distMax * 0.4, distMin * 1.1, distMax * 0.68);
 
     const baseAngle = this.shotIndex * 1.35;
 
     if (shot.kind === "orbit") {
       const rev = shot.revolutions ?? 0.35;
       const ang = baseAngle + eased * Math.PI * 2 * rev;
-      const y = Math.sin(eased * Math.PI * 2 * 0.7) * orbitRadius * 0.18;
+      const y = Math.sin(eased * Math.PI * 2 * 0.55) * orbitRadius * 0.16;
 
       this.tmpPos.set(Math.cos(ang) * orbitRadius, y, Math.sin(ang) * orbitRadius);
       cam.position.copy(targetPos).add(this.tmpPos);
       cam.lookAt(targetPos);
     } else {
       // Flyby: pass the planet on a tangential path with a gentle vertical drift.
-      this.tmpStart.set(-flyRadius * 1.35, flyRadius * 0.18, flyRadius * 0.85);
-      this.tmpEnd.set(flyRadius * 1.2, flyRadius * 0.05, -flyRadius * 0.65);
+      const style = shot.flybyStyle ?? "default";
+      if (style === "ringSweep") {
+        // Saturn ring sweep: very low elevation, more lateral motion.
+        this.tmpStart.set(-flyRadius * 1.55, flyRadius * 0.04, flyRadius * 1.05);
+        this.tmpEnd.set(flyRadius * 1.45, flyRadius * 0.02, -flyRadius * 0.95);
+      } else {
+        this.tmpStart.set(-flyRadius * 1.35, flyRadius * 0.16, flyRadius * 0.85);
+        this.tmpEnd.set(flyRadius * 1.2, flyRadius * 0.05, -flyRadius * 0.65);
+      }
 
       // Rotate path around Y for variety.
       this.tmpStart.applyAxisAngle(this.yAxis, baseAngle);
@@ -183,7 +208,7 @@ export class CinematicDirector {
         .copy(this.tmpEnd)
         .sub(this.tmpStart)
         .normalize()
-        .multiplyScalar(flyRadius * 0.08);
+        .multiplyScalar(flyRadius * 0.065);
       this.tmpEnd.copy(this.tmpTarget).add(this.tmpLead);
       cam.lookAt(this.tmpEnd);
     }
@@ -197,9 +222,8 @@ export class CinematicDirector {
   }
 
   private resolveTargetWorldPos(target: string, out: THREE.Vector3): THREE.Vector3 {
-    const entry = this.deps.astronomicalManager.getEntry(target);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const obj: any = entry?.object;
+    const obj: any = this.deps.astronomicalManager.findBody(target);
     const mesh: THREE.Object3D | undefined = obj?.mesh ?? obj?.group ?? obj?.orbitalGroup;
 
     if (mesh) {

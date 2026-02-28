@@ -105,6 +105,36 @@ export class AstronomicalManager {
     return this.entrys.find(entry => entry.selector === selector);
   }
 
+  /**
+   * Find a body by selector (e.g. "Saturn") or by moon name/slug (e.g. "Dione").
+   *
+   * This is intentionally lightweight and exists mainly for features like cinematic mode,
+   * where we want to target both planets and moons without routing.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public findBody(selectorOrName: string): any | undefined {
+    const direct = this.getEntry(selectorOrName);
+    if (direct) return direct.object;
+
+    const toSlug = (v: string): string => (v || "").toLowerCase().replace(/\s+/g, "-");
+    const slug = toSlug(selectorOrName);
+
+    for (const entry of this.entrys) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const anyObj: any = entry.object as any;
+      const moons = Array.isArray(anyObj?.moons) ? anyObj.moons : [];
+      for (const moon of moons) {
+        const moonName = String(moon?.data?.name ?? "");
+        const moonSlug = String(moon?.data?.slug ?? toSlug(moonName));
+        if (moonName === selectorOrName || toSlug(moonName) === slug || toSlug(moonSlug) === slug) {
+          return moon;
+        }
+      }
+    }
+
+    return undefined;
+  }
+
   public preBloom() {
     this.entrys.forEach(entry => {
       entry.object.preBloom();

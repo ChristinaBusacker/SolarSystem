@@ -28,6 +28,9 @@ export class Application {
 
   public simulationSpeed = SIMULATION_SPEED;
 
+  // Cinematic mode applies a curated simulation speed (15 min / s) and restores on exit.
+  private prevSimSpeedBeforeCinematic: number | null = null;
+
   public cameraManager = new CameraManager(this.scene);
   public astronomicalManager = new AstronomicalManager();
   public minorBodyManager = new MinorBodyManager();
@@ -180,6 +183,11 @@ export class Application {
     // Leaving cinematic mode.
     this.uiManager.hideModal();
     if (this.cinematicDirector.isActive()) this.cinematicDirector.stop();
+    if (this.prevSimSpeedBeforeCinematic != null) {
+      this.simulationSpeed = this.prevSimSpeedBeforeCinematic;
+      this.uiManager.setSimulationSpeed(this.prevSimSpeedBeforeCinematic);
+      this.prevSimSpeedBeforeCinematic = null;
+    }
 
     if (route.name === "home") {
       this.cameraManager.switchCamera("Default");
@@ -216,6 +224,16 @@ export class Application {
   }
 
   private enterCinematicMode(): void {
+    // Store current speed once per cinematic session.
+    if (this.prevSimSpeedBeforeCinematic == null) {
+      this.prevSimSpeedBeforeCinematic = this.simulationSpeed;
+    }
+
+    // Set cinematic speed: 15 min / s.
+    // (HudRenderer presets: secondsPerSecond / ENGINE_BASE_SECONDS => 900 / 60 = 15)
+    this.simulationSpeed = 15;
+    this.uiManager.setSimulationSpeed(15);
+
     this.cameraManager.switchCamera("Cinematic");
     this.uiManager.setSelectedBodyName(undefined);
     this.currentSelectedBodySlug = undefined;

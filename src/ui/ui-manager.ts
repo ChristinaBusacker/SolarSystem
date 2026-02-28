@@ -142,6 +142,18 @@ export class UiManager {
     if (name) this.hud?.setSelectedBodyName(name);
   }
 
+  /**
+   * Programmatically adjust simulation speed.
+   *
+   * This intentionally goes through the same code path as UI interactions:
+   * - Updates the app-level speed via the injected callback
+   * - Syncs the HUD slider/label
+   */
+  public setSimulationSpeed(speed: number): void {
+    this.deps.onSimulationSpeedChange(speed);
+    this.hud?.setSimulationSpeed(speed);
+  }
+
   public openRightSidebar(): void {
     openSidebar("right");
   }
