@@ -243,6 +243,24 @@ Production build uses the production env config.
 
 ---
 
+## Testing
+
+The project uses **Vitest** for unit testing. The focus is on deterministic logic (state, routing rules,
+declutter/occlusion helpers), not GPU output.
+
+```bash
+# run unit tests
+npm run test
+
+# watch mode
+npm run test:watch
+
+# coverage (text + HTML)
+npm run test:coverage
+```
+
+---
+
 ## Assets & credits
 
 Most textures are sourced from (and sometimes adjusted/combined for this project):
