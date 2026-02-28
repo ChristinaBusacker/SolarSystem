@@ -13,6 +13,7 @@ import { SoundManager } from "./manager/SoundManager";
 import { RenderPipeline } from "./rendering/render-pipeline";
 import { AppRoute, router } from "./router/router";
 import { ViewportService } from "./services/viewport.service";
+import { registerCinematicDevtools } from "./dev/cinematic-devtools";
 
 export class Application {
   private static instance: Application | null = null;
@@ -118,6 +119,13 @@ export class Application {
     this.uiManager.init({
       simulationSpeed: this.simulationSpeed,
     });
+
+    // Devtools: expose a small console API for iterating on cinematic shots without reloads.
+    // Available in dev builds as `window.cine`.
+    if (process.env.NODE_ENV !== "production") {
+      registerCinematicDevtools(this.cinematicDirector);
+    }
+
     setTimeout(() => {
       this.initRouter();
     }, 1000);

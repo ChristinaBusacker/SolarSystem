@@ -54,8 +54,32 @@ export class CinematicDirector {
 
   private active = false;
 
+  private paused = false;
+
+  private debugLogging = false;
+
   // A curated playlist. Keep durations fairly long to let scenes breathe.
   private playlist: CinematicShot[] = [
+    { kind: "flyby", target: "Mercury", durationSec: 10, revolutions: 0.16, distanceRel: 0.3 },
+    { kind: "orbit", target: "Mercury", durationSec: 14, revolutions: 0.16, distanceRel: 0.15 },
+
+    // Inner system.
+    { kind: "flyby", target: "Venus", durationSec: 22, distanceRel: 0.48 },
+
+    // Earth + Moon.
+    { kind: "orbit", target: "Earth", durationSec: 22, revolutions: 0.22, distanceRel: 0.36 },
+    { kind: "flyby", target: "Moon", durationSec: 12, distanceRel: 0.32 },
+
+    { kind: "flyby", target: "Mars", durationSec: 10, revolutions: 0.16, distanceRel: 0.3 },
+    { kind: "orbit", target: "Mars", durationSec: 14, revolutions: 0.16, distanceRel: 0.15 },
+
+    // Jupiter + moons.
+    { kind: "flyby", target: "Europa", durationSec: 22, distanceRel: 0.42, blendSec: 6 },
+    { kind: "orbit", target: "Jupiter", durationSec: 16, revolutions: 0.15, distanceRel: 0.6 },
+    { kind: "flyby", target: "Io", durationSec: 20, distanceRel: 0.4 },
+
+    { kind: "flyby", target: "Mercury", durationSec: 20, distanceRel: 0.46 },
+
     // Saturn: slow orbit -> moon flyby -> ring sweep.
     { kind: "orbit", target: "Saturn", durationSec: 34, revolutions: 0.16, distanceRel: 0.2 },
     { kind: "flyby", target: "Titan", durationSec: 22, distanceRel: 0.45 },
@@ -66,19 +90,6 @@ export class CinematicDirector {
       flybyStyle: "ringSweep",
       distanceRel: 0.58,
     },
-
-    // Jupiter + moons.
-    { kind: "orbit", target: "Jupiter", durationSec: 34, revolutions: 0.15, distanceRel: 0.6 },
-    { kind: "flyby", target: "Europa", durationSec: 22, distanceRel: 0.42 },
-    { kind: "flyby", target: "Io", durationSec: 20, distanceRel: 0.4 },
-
-    // Inner system.
-    { kind: "flyby", target: "Venus", durationSec: 22, distanceRel: 0.48 },
-    { kind: "flyby", target: "Mercury", durationSec: 20, distanceRel: 0.46 },
-
-    // Earth + Moon.
-    { kind: "orbit", target: "Earth", durationSec: 32, revolutions: 0.22, distanceRel: 0.56 },
-    { kind: "flyby", target: "Moon", durationSec: 22, distanceRel: 0.42 },
 
     // Ice giants.
     { kind: "orbit", target: "Neptune", durationSec: 36, revolutions: 0.14, distanceRel: 0.6 },
@@ -124,6 +135,69 @@ export class CinematicDirector {
     return this.active;
   }
 
+  public isPaused(): boolean {
+    return this.paused;
+  }
+
+  public setPaused(paused: boolean): void {
+    this.paused = paused;
+  }
+
+  public isDebugLogging(): boolean {
+    return this.debugLogging;
+  }
+
+  public setDebugLogging(enabled?: boolean): void {
+    this.debugLogging = enabled == null ? !this.debugLogging : !!enabled;
+    // eslint-disable-next-line no-console
+    if (this.debugLogging) console.info("[cinematic] debug logging enabled");
+  }
+
+  public getPlaylist(): CinematicShot[] {
+    return this.playlist;
+  }
+
+  public getShotIndex(): number {
+    return this.shotIndex;
+  }
+
+  public getCurrentShot(): CinematicShot | null {
+    return this.playlist.length ? this.playlist[this.shotIndex % this.playlist.length] : null;
+  }
+
+  /** Jump to a shot (devtools-friendly). */
+  public setShotIndex(index: number): void {
+    if (!Number.isFinite(index) || this.playlist.length === 0) return;
+    const i = ((index % this.playlist.length) + this.playlist.length) % this.playlist.length;
+    this.prepareTransitionTo(i);
+    this.shotIndex = i;
+    this.shotTime = 0;
+    this.transitionTime = 0;
+  }
+
+  public nextShot(): void {
+    if (this.playlist.length === 0) return;
+    this.setShotIndex(this.shotIndex + 1);
+  }
+
+  public prevShot(): void {
+    if (this.playlist.length === 0) return;
+    this.setShotIndex(this.shotIndex - 1);
+  }
+
+  public restartShot(): void {
+    this.setShotIndex(this.shotIndex);
+  }
+
+  /** Update the current shot in-place (intended for devtools). */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public updateCurrentShot(patch: any): void {
+    if (!patch || this.playlist.length === 0) return;
+    const i = this.shotIndex % this.playlist.length;
+    const cur = this.playlist[i];
+    this.playlist[i] = { ...cur, ...patch };
+  }
+
   /**
    * Start cinematic mode.
    *
@@ -141,6 +215,7 @@ export class CinematicDirector {
     closeAllSidebars();
 
     this.active = true;
+    this.paused = false;
     this.shotIndex = 0;
     this.shotTime = 0;
     this.transitionTime = 0;
@@ -195,6 +270,8 @@ export class CinematicDirector {
   public update(ctx: UpdateContext): void {
     if (!this.active) return;
 
+    if (this.paused) return;
+
     // Enforce cinematic visibility (in case UI toggles fight back).
     const vis = getSceneVisibilityState();
     if (vis.markersVisible) setMarkersVisible(false);
@@ -206,6 +283,18 @@ export class CinematicDirector {
     const cam = entry.camera;
 
     const shot = this.playlist[this.shotIndex % this.playlist.length];
+
+    if (this.debugLogging && this.shotTime === 0) {
+      // eslint-disable-next-line no-console
+      console.info("[cinematic] start shot", {
+        index: this.shotIndex,
+        kind: shot.kind,
+        target: shot.target,
+        durationSec: shot.durationSec,
+        distance: shot.distance,
+        distanceRel: shot.distanceRel,
+      });
+    }
 
     // Update the stage title only when it changes (avoid spamming renders).
     if (shot && shot.target !== this.lastFocusTitle) {
@@ -304,6 +393,16 @@ export class CinematicDirector {
       this.shotIndex++;
       this.shotTime = 0;
     }
+  }
+
+  private prepareTransitionTo(nextIndex: number): void {
+    const entry = this.deps.cameraManager.getActiveEntry();
+    const cam = entry?.camera;
+    if (!cam) return;
+
+    this.transitionFromPos.copy(cam.position);
+    const next = this.playlist.length ? this.playlist[nextIndex % this.playlist.length] : null;
+    this.resolveTargetWorldPos(next?.target ?? "Sun", this.transitionFromLookAt);
   }
 
   private resolveShotDistance(
