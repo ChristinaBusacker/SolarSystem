@@ -1,5 +1,6 @@
 import { router } from "../router/router";
 import { getLayoutState, subscribeLayoutState, toggleSidebar } from "./layout-state";
+import { subscribeFocusTitleOverride } from "./focus-title-state";
 import { UiActions } from "./ui-actions";
 import { renderTemplate } from "./template";
 import stageControlsTpl from "./templates/stage-controls.tpl.html";
@@ -10,6 +11,7 @@ interface StageControlsRenderState {
   focusTitle: string;
   hasFocusedBody: boolean;
   isFullscreen: boolean;
+  focusTitleOverride: string | null;
 }
 
 export class StageControlsRenderer {
@@ -21,6 +23,7 @@ export class StageControlsRenderer {
     focusTitle: "",
     hasFocusedBody: false,
     isFullscreen: false,
+    focusTitleOverride: null,
   };
 
   public constructor(root: HTMLElement, actions: UiActions) {
@@ -45,11 +48,24 @@ export class StageControlsRenderer {
         this.state.hasFocusedBody = true;
         this.state.focusTitle = this.slugToLabel(route.moon);
       } else {
-        this.state.hasFocusedBody = false;
-        this.state.focusTitle = "";
+        // Allow a focus title override (used by Cinematic mode).
+        const override = this.state.focusTitleOverride;
+        this.state.hasFocusedBody = Boolean(override);
+        this.state.focusTitle = override ?? "";
       }
 
       this.render();
+    });
+
+    subscribeFocusTitleOverride(title => {
+      this.state.focusTitleOverride = title;
+
+      const route = router.getCurrent();
+      if (route.name !== "planet" && route.name !== "moon") {
+        this.state.hasFocusedBody = Boolean(title);
+        this.state.focusTitle = title ?? "";
+        this.render();
+      }
     });
 
     document.addEventListener("fullscreenchange", this.handleFullscreenChange);

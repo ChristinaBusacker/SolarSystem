@@ -16,6 +16,7 @@ import {
   setOrbitsVisible,
   type SceneVisibilityState,
 } from "../ui/scene-visibility-state";
+import { clearFocusTitleOverride, setFocusTitleOverride } from "../ui/focus-title-state";
 
 type ShotKind = "orbit" | "flyby";
 
@@ -23,6 +24,12 @@ type CinematicShot = {
   kind: ShotKind;
   target: string;
   durationSec: number;
+  /** Optional distance control: absolute world units for this shot. */
+  distance?: number;
+  /** Optional distance control: 0..1 relative in [distanceMin..distanceMax]. */
+  distanceRel?: number;
+  /** Blend duration (seconds) when entering this shot (softens cuts). */
+  blendSec?: number;
   /** Number of revolutions around the target in the shot (orbit only). */
   revolutions?: number;
   /** Optional: change flyby feel (e.g. ring sweep on Saturn). */
@@ -49,30 +56,55 @@ export class CinematicDirector {
 
   // A curated playlist. Keep durations fairly long to let scenes breathe.
   private playlist: CinematicShot[] = [
-    { kind: "flyby", target: "Titan", durationSec: 18 },
-    { kind: "orbit", target: "Saturn", durationSec: 12, revolutions: 0.22 },
+    // Saturn: slow orbit -> moon flyby -> ring sweep.
+    { kind: "orbit", target: "Saturn", durationSec: 34, revolutions: 0.16, distanceRel: 0.2 },
+    { kind: "flyby", target: "Titan", durationSec: 22, distanceRel: 0.45 },
+    {
+      kind: "flyby",
+      target: "Saturn",
+      durationSec: 28,
+      flybyStyle: "ringSweep",
+      distanceRel: 0.58,
+    },
 
-    { kind: "flyby", target: "Saturn", durationSec: 22, flybyStyle: "ringSweep" },
+    // Jupiter + moons.
+    { kind: "orbit", target: "Jupiter", durationSec: 34, revolutions: 0.15, distanceRel: 0.6 },
+    { kind: "flyby", target: "Europa", durationSec: 22, distanceRel: 0.42 },
+    { kind: "flyby", target: "Io", durationSec: 20, distanceRel: 0.4 },
 
-    { kind: "orbit", target: "Jupiter", durationSec: 24, revolutions: 0.26 },
-    { kind: "flyby", target: "Europa", durationSec: 16 },
-    { kind: "flyby", target: "Io", durationSec: 16 },
+    // Inner system.
+    { kind: "flyby", target: "Venus", durationSec: 22, distanceRel: 0.48 },
+    { kind: "flyby", target: "Mercury", durationSec: 20, distanceRel: 0.46 },
 
-    { kind: "orbit", target: "Earth", durationSec: 22, revolutions: 0.32 },
-    { kind: "flyby", target: "Moon", durationSec: 16 },
+    // Earth + Moon.
+    { kind: "orbit", target: "Earth", durationSec: 32, revolutions: 0.22, distanceRel: 0.56 },
+    { kind: "flyby", target: "Moon", durationSec: 22, distanceRel: 0.42 },
 
-    { kind: "orbit", target: "Neptune", durationSec: 24, revolutions: 0.2 },
-    { kind: "flyby", target: "Triton", durationSec: 18 },
+    // Ice giants.
+    { kind: "orbit", target: "Neptune", durationSec: 36, revolutions: 0.14, distanceRel: 0.6 },
+    { kind: "flyby", target: "Triton", durationSec: 24, distanceRel: 0.44 },
 
-    { kind: "orbit", target: "Uranus", durationSec: 24, revolutions: 0.22 },
-    { kind: "flyby", target: "Miranda", durationSec: 16 },
+    { kind: "orbit", target: "Uranus", durationSec: 34, revolutions: 0.15, distanceRel: 0.6 },
+    { kind: "flyby", target: "Miranda", durationSec: 22, distanceRel: 0.44 },
 
-    { kind: "flyby", target: "Mars", durationSec: 16 },
-    { kind: "orbit", target: "Sun", durationSec: 26, revolutions: 0.12 },
+    // Mars + a little drift.
+    { kind: "orbit", target: "Mars", durationSec: 28, revolutions: 0.22, distanceRel: 0.56 },
+
+    // Sun overview.
+    { kind: "orbit", target: "Sun", durationSec: 40, revolutions: 0.09, distanceRel: 0.72 },
   ];
 
   private shotIndex = 0;
   private shotTime = 0;
+
+  private transitionTime = 999;
+  private readonly transitionFromPos = new THREE.Vector3();
+  private readonly transitionFromLookAt = new THREE.Vector3();
+  private readonly desiredPos = new THREE.Vector3();
+  private readonly desiredLookAt = new THREE.Vector3();
+  private readonly blendedLookAt = new THREE.Vector3();
+
+  private lastFocusTitle: string | null = null;
 
   private prevVisibility: SceneVisibilityState | null = null;
   private prevLayout: LayoutState | null = null;
@@ -111,6 +143,21 @@ export class CinematicDirector {
     this.active = true;
     this.shotIndex = 0;
     this.shotTime = 0;
+    this.transitionTime = 0;
+
+    // Prime title for UI.
+    const firstShot = this.playlist[0];
+    if (firstShot) {
+      setFocusTitleOverride(firstShot.target);
+      this.lastFocusTitle = firstShot.target;
+    }
+
+    // Start with a soft transition from the current camera state.
+    const entry = this.deps.cameraManager.getActiveEntry();
+    if (entry?.camera) {
+      this.transitionFromPos.copy(entry.camera.position);
+      this.resolveTargetWorldPos(firstShot?.target ?? "Sun", this.transitionFromLookAt);
+    }
 
     // Sound: best effort (will only work after a gesture).
     try {
@@ -140,6 +187,9 @@ export class CinematicDirector {
 
     this.prevVisibility = null;
     this.prevLayout = null;
+
+    this.lastFocusTitle = null;
+    clearFocusTitleOverride();
   }
 
   public update(ctx: UpdateContext): void {
@@ -156,6 +206,13 @@ export class CinematicDirector {
     const cam = entry.camera;
 
     const shot = this.playlist[this.shotIndex % this.playlist.length];
+
+    // Update the stage title only when it changes (avoid spamming renders).
+    if (shot && shot.target !== this.lastFocusTitle) {
+      this.lastFocusTitle = shot.target;
+      setFocusTitleOverride(shot.target);
+    }
+
     this.shotTime += ctx.delta;
 
     const t = THREE.MathUtils.clamp(this.shotTime / Math.max(0.001, shot.durationSec), 0, 1);
@@ -171,8 +228,15 @@ export class CinematicDirector {
     const distMin = Number.isFinite(control?.distanceMin) ? (control.distanceMin as number) : 0.02;
     const distMax = Number.isFinite(control?.distanceMax) ? (control.distanceMax as number) : 0.35;
 
-    const orbitRadius = THREE.MathUtils.clamp(distMax * 0.58, distMin * 1.25, distMax * 0.78);
-    const flyRadius = THREE.MathUtils.clamp(distMax * 0.4, distMin * 1.1, distMax * 0.68);
+    const orbitRadiusDefault = THREE.MathUtils.clamp(
+      distMax * 0.58,
+      distMin * 1.25,
+      distMax * 0.78,
+    );
+    const flyRadiusDefault = THREE.MathUtils.clamp(distMax * 0.4, distMin * 1.1, distMax * 0.68);
+
+    const orbitRadius = this.resolveShotDistance(shot, distMin, distMax, orbitRadiusDefault);
+    const flyRadius = this.resolveShotDistance(shot, distMin, distMax, flyRadiusDefault);
 
     const baseAngle = this.shotIndex * 1.35;
 
@@ -182,8 +246,8 @@ export class CinematicDirector {
       const y = Math.sin(eased * Math.PI * 2 * 0.55) * orbitRadius * 0.16;
 
       this.tmpPos.set(Math.cos(ang) * orbitRadius, y, Math.sin(ang) * orbitRadius);
-      cam.position.copy(targetPos).add(this.tmpPos);
-      cam.lookAt(targetPos);
+      this.desiredPos.copy(targetPos).add(this.tmpPos);
+      this.desiredLookAt.copy(targetPos);
     } else {
       // Flyby: pass the planet on a tangential path with a gentle vertical drift.
       const style = shot.flybyStyle ?? "default";
@@ -201,7 +265,7 @@ export class CinematicDirector {
       this.tmpEnd.applyAxisAngle(this.yAxis, baseAngle);
 
       this.tmpPos.copy(this.tmpStart).lerp(this.tmpEnd, eased);
-      cam.position.copy(targetPos).add(this.tmpPos);
+      this.desiredPos.copy(targetPos).add(this.tmpPos);
 
       // Lead the lookAt slightly for a more cinematic feel.
       this.tmpLead
@@ -210,15 +274,58 @@ export class CinematicDirector {
         .normalize()
         .multiplyScalar(flyRadius * 0.065);
       this.tmpEnd.copy(this.tmpTarget).add(this.tmpLead);
-      cam.lookAt(this.tmpEnd);
+      this.desiredLookAt.copy(this.tmpEnd);
+    }
+
+    // Blend-in on shot boundaries to avoid hard cuts.
+    const blendSec = shot.blendSec ?? 1.8;
+    if (this.transitionTime < blendSec) {
+      const a = THREE.MathUtils.clamp(this.transitionTime / Math.max(0.001, blendSec), 0, 1);
+      const alpha = a * a * (3 - 2 * a);
+
+      cam.position.copy(this.transitionFromPos).lerp(this.desiredPos, alpha);
+      this.blendedLookAt.copy(this.transitionFromLookAt).lerp(this.desiredLookAt, alpha);
+      cam.lookAt(this.blendedLookAt);
+
+      this.transitionTime += ctx.delta;
+    } else {
+      cam.position.copy(this.desiredPos);
+      cam.lookAt(this.desiredLookAt);
     }
 
     cam.updateMatrixWorld();
 
     if (this.shotTime >= shot.durationSec) {
+      // Prepare a soft transition into the next shot.
+      this.transitionFromPos.copy(cam.position);
+      this.transitionFromLookAt.copy(this.desiredLookAt);
+      this.transitionTime = 0;
+
       this.shotIndex++;
       this.shotTime = 0;
     }
+  }
+
+  private resolveShotDistance(
+    shot: CinematicShot,
+    distMin: number,
+    distMax: number,
+    fallback: number,
+  ): number {
+    // Keep a small safety margin so we never end up inside the body surface.
+    const min = distMin * 1.05;
+    const max = distMax * 0.92;
+
+    if (Number.isFinite(shot.distance)) {
+      return THREE.MathUtils.clamp(shot.distance as number, min, max);
+    }
+
+    if (Number.isFinite(shot.distanceRel)) {
+      const t = THREE.MathUtils.clamp(shot.distanceRel as number, 0, 1);
+      return THREE.MathUtils.lerp(min, max, t);
+    }
+
+    return THREE.MathUtils.clamp(fallback, min, max);
   }
 
   private resolveTargetWorldPos(target: string, out: THREE.Vector3): THREE.Vector3 {

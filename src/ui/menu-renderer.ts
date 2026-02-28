@@ -10,7 +10,6 @@ import { UiActions } from "./ui-actions";
 interface MenuRenderState {
   isOpen: boolean;
   isFullscreen: boolean;
-  isSoundActive: boolean;
 }
 
 export class MenuRenderer {
@@ -19,7 +18,6 @@ export class MenuRenderer {
   private state: MenuRenderState = {
     isOpen: false,
     isFullscreen: false,
-    isSoundActive: false,
   };
 
   public constructor(root: HTMLElement, actions: UiActions) {
@@ -41,6 +39,9 @@ export class MenuRenderer {
 
     document.addEventListener("fullscreenchange", this.handleFullscreenChange.bind(this));
 
+    // Keep sound toggle in sync even if sound is started elsewhere (e.g. Cinematic mode).
+    SoundManager.subscribeAmbientState(() => this.ensureSoundState());
+
     this.render();
     this.bindActions();
   }
@@ -55,10 +56,13 @@ export class MenuRenderer {
   }
 
   private ensureSoundState() {
-    if (this.state.isSoundActive) {
-      const elem = this.root.querySelector('[data-menu-action="toggle-audio"]');
-      elem?.parentElement?.classList.add("is-active");
-    }
+    // Keep UI in sync with SoundManager state (important for Cinematic mode,
+    // which can start ambient sound without touching the menu toggle).
+    const isActive = SoundManager.isAmbientPlaying();
+    this.state.isFullscreen = Boolean(document.fullscreenElement);
+
+    const elem = this.root.querySelector('[data-menu-action="toggle-audio"]');
+    elem?.parentElement?.classList.toggle("is-active", isActive);
   }
 
   private syncSceneToggles(): void {
@@ -113,9 +117,8 @@ export class MenuRenderer {
       }
 
       if (action === "toggle-audio") {
-        this.state.isSoundActive = !this.state.isSoundActive;
-        actionNode.parentElement.classList.toggle("is-active");
-        return SoundManager.toggleAmbient();
+        void SoundManager.toggleAmbient().finally(() => this.ensureSoundState());
+        return;
       }
 
       if (action === "go-home") {

@@ -29,6 +29,8 @@ export class SoundManager {
   private static ambientStartedAtSec = 0; // ctx.currentTime when we started/resumed
   private static ambientPlaying = false;
 
+  private static ambientStateListeners = new Set<(playing: boolean) => void>();
+
   // If autoplay blocked a resume, remember and retry on next unlock() call.
   private static pendingAmbientResume = false;
 
@@ -179,6 +181,25 @@ export class SoundManager {
     return SoundManager.volumeLevel;
   }
 
+  /**
+   * Whether ambient audio is currently playing.
+   *
+   * Note: This reflects SoundManager state, not browser autoplay capability.
+   */
+  public static isAmbientPlaying(): boolean {
+    return SoundManager.ambientPlaying;
+  }
+
+  public static subscribeAmbientState(listener: (playing: boolean) => void): () => void {
+    SoundManager.ambientStateListeners.add(listener);
+    listener(SoundManager.ambientPlaying);
+    return () => SoundManager.ambientStateListeners.delete(listener);
+  }
+
+  private static emitAmbientState(): void {
+    SoundManager.ambientStateListeners.forEach(l => l(SoundManager.ambientPlaying));
+  }
+
   public static async playSound(path: string, volumeOverride?: number): Promise<void> {
     const listener = SoundManager.requireListener();
 
@@ -285,10 +306,12 @@ export class SoundManager {
     SoundManager.ambientStartedAtSec = ctx.currentTime;
     SoundManager.ambientSource = source;
     SoundManager.ambientPlaying = true;
+    SoundManager.emitAmbientState();
 
     source.onended = () => {
       SoundManager.ambientPlaying = false;
       SoundManager.ambientSource = null;
+      SoundManager.emitAmbientState();
     };
 
     source.start(0, startOffset);
@@ -321,6 +344,7 @@ export class SoundManager {
 
     SoundManager.ambientSource = null;
     SoundManager.ambientPlaying = false;
+    SoundManager.emitAmbientState();
   }
 
   /**
@@ -330,6 +354,7 @@ export class SoundManager {
     SoundManager.pauseAmbient();
     SoundManager.ambientOffsetSec = 0;
     SoundManager.pendingAmbientResume = false;
+    SoundManager.emitAmbientState();
   }
 
   // ---------- internals ----------
