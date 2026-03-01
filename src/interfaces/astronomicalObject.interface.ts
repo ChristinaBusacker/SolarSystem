@@ -19,6 +19,7 @@ export interface AstronomicalObject {
   cssObject: CSS2DObject;
   preBloom: () => void;
   postBloom: () => void;
+  initDisplacement?: (displacmentPath: string, height: number) => void;
   init: () => void;
   render: (ctx: UpdateContext) => void;
 }

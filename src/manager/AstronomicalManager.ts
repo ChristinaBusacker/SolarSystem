@@ -90,6 +90,10 @@ export class AstronomicalManager {
 
   public initObjects(scene: THREE.Scene, cameraRegistry: CameraRegistry) {
     this.entrys.forEach(entry => {
+      if (entry.selector === "Haumea") {
+        entry.object.initDisplacement("/assets/displacement/haumea.jpg", 0.03);
+      }
+
       // Provide a registry so bodies can register their cameras without importing the app singleton.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const anyObj = entry.object as any;

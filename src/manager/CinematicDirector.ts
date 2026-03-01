@@ -60,49 +60,43 @@ export class CinematicDirector {
 
   // A curated playlist. Keep durations fairly long to let scenes breathe.
   private playlist: CinematicShot[] = [
-    { kind: "flyby", target: "Mercury", durationSec: 10, revolutions: 0.16, distanceRel: 0.3 },
-    { kind: "orbit", target: "Mercury", durationSec: 14, revolutions: 0.16, distanceRel: 0.15 },
-
-    // Inner system.
-    { kind: "flyby", target: "Venus", durationSec: 22, distanceRel: 0.48 },
-
-    // Earth + Moon.
-    { kind: "orbit", target: "Earth", durationSec: 22, revolutions: 0.22, distanceRel: 0.36 },
-    { kind: "flyby", target: "Moon", durationSec: 12, distanceRel: 0.32 },
-
-    { kind: "flyby", target: "Mars", durationSec: 10, revolutions: 0.16, distanceRel: 0.3 },
-    { kind: "orbit", target: "Mars", durationSec: 14, revolutions: 0.16, distanceRel: 0.15 },
-
-    // Jupiter + moons.
-    { kind: "flyby", target: "Europa", durationSec: 22, distanceRel: 0.42, blendSec: 6 },
-    { kind: "orbit", target: "Jupiter", durationSec: 16, revolutions: 0.15, distanceRel: 0.6 },
-    { kind: "flyby", target: "Io", durationSec: 20, distanceRel: 0.4 },
-
-    { kind: "flyby", target: "Mercury", durationSec: 20, distanceRel: 0.46 },
-
-    // Saturn: slow orbit -> moon flyby -> ring sweep.
-    { kind: "orbit", target: "Saturn", durationSec: 34, revolutions: 0.16, distanceRel: 0.2 },
-    { kind: "flyby", target: "Titan", durationSec: 22, distanceRel: 0.45 },
+    // Sun overview.
+    { kind: "orbit", target: "Io", durationSec: 20, distanceRel: 0.2 },
+    { kind: "orbit", target: "Jupiter", durationSec: 16, revolutions: 0.15, distanceRel: 0.2 },
+    { kind: "flyby", target: "Mars", durationSec: 10, revolutions: 0.16, distanceRel: 0.2 },
+    { kind: "orbit", target: "Mars", durationSec: 10, revolutions: -0.42, distanceRel: 0.1 },
     {
-      kind: "flyby",
+      kind: "orbit",
+      target: "Earth",
+      durationSec: 12,
+      revolutions: 0.72,
+      distanceRel: 0.06,
+      flybyStyle: "ringSweep",
+    },
+    { kind: "orbit", target: "Mimas", durationSec: 22, revolutions: 0.42, distanceRel: 0.45 },
+    {
+      kind: "orbit",
       target: "Saturn",
       durationSec: 28,
       flybyStyle: "ringSweep",
-      distanceRel: 0.58,
+      distanceRel: 0.38,
     },
-
-    // Ice giants.
-    { kind: "orbit", target: "Neptune", durationSec: 36, revolutions: 0.14, distanceRel: 0.6 },
+    { kind: "orbit", target: "Iapetus", durationSec: 16, revolutions: 0.52, distanceRel: 0.15 },
+    { kind: "orbit", target: "Neptune", durationSec: 36, revolutions: 0.34, distanceRel: 0.11 },
     { kind: "flyby", target: "Triton", durationSec: 24, distanceRel: 0.44 },
 
     { kind: "orbit", target: "Uranus", durationSec: 34, revolutions: 0.15, distanceRel: 0.6 },
     { kind: "flyby", target: "Miranda", durationSec: 22, distanceRel: 0.44 },
+    { kind: "orbit", target: "Pluto", durationSec: 36, revolutions: 0.34, distanceRel: 0.2 },
+    { kind: "orbit", target: "Ceres", durationSec: 36, revolutions: 0.44, distanceRel: 0.4 },
+    { kind: "flyby", target: "Eris", durationSec: 36, revolutions: 0.14, distanceRel: 0.2 },
+    { kind: "flyby", target: "Haumea", durationSec: 16, revolutions: 0.44, distanceRel: 0.2 },
 
-    // Mars + a little drift.
-    { kind: "orbit", target: "Mars", durationSec: 28, revolutions: 0.22, distanceRel: 0.56 },
+    { kind: "orbit", target: "Venus", durationSec: 24, revolutions: 0.84, distanceRel: 0.2 },
+    { kind: "flyby", target: "Mercury", durationSec: 12, distanceRel: 0.26 },
 
-    // Sun overview.
-    { kind: "orbit", target: "Sun", durationSec: 40, revolutions: 0.09, distanceRel: 0.72 },
+    { kind: "orbit", target: "Phobos", durationSec: 12, distanceRel: 0.16 },
+    { kind: "flyby", target: "Callisto", durationSec: 12, distanceRel: 0.16 },
   ];
 
   private shotIndex = 0;
@@ -121,6 +115,9 @@ export class CinematicDirector {
   private prevLayout: LayoutState | null = null;
 
   private tmpTarget = new THREE.Vector3();
+  private smoothedTarget = new THREE.Vector3();
+  private hasSmoothedTarget = false;
+  private smoothedTargetKey: string | null = null;
   private tmpPos = new THREE.Vector3();
   private tmpStart = new THREE.Vector3();
   private tmpEnd = new THREE.Vector3();
@@ -218,6 +215,9 @@ export class CinematicDirector {
     this.paused = false;
     this.shotIndex = 0;
     this.shotTime = 0;
+
+    this.hasSmoothedTarget = false;
+    this.smoothedTargetKey = null;
     this.transitionTime = 0;
 
     // Prime title for UI.
@@ -265,12 +265,19 @@ export class CinematicDirector {
 
     this.lastFocusTitle = null;
     clearFocusTitleOverride();
+
+    this.hasSmoothedTarget = false;
+    this.smoothedTargetKey = null;
   }
 
   public update(ctx: UpdateContext): void {
     if (!this.active) return;
 
     if (this.paused) return;
+
+    // Mobile browsers can produce very spiky frame times.
+    // Clamping dt keeps camera motion and target tracking stable and reduces jitter.
+    const dt = Math.min(ctx.delta, 1 / 20);
 
     // Enforce cinematic visibility (in case UI toggles fight back).
     const vis = getSceneVisibilityState();
@@ -302,12 +309,25 @@ export class CinematicDirector {
       setFocusTitleOverride(shot.target);
     }
 
-    this.shotTime += ctx.delta;
+    this.shotTime += dt;
 
     const t = THREE.MathUtils.clamp(this.shotTime / Math.max(0.001, shot.durationSec), 0, 1);
     const eased = t * t * (3 - 2 * t); // smoothstep
 
-    const targetPos = this.resolveTargetWorldPos(shot.target, this.tmpTarget);
+    // Target smoothing: on mobile, large simulation steps can make bodies "jump" between frames.
+    // Smooth the world position a bit so the camera doesn't visibly shake while tracking.
+    const rawTargetPos = this.resolveTargetWorldPos(shot.target, this.tmpTarget);
+    if (!this.hasSmoothedTarget || this.smoothedTargetKey !== shot.target) {
+      this.hasSmoothedTarget = true;
+      this.smoothedTargetKey = shot.target;
+      this.smoothedTarget.copy(rawTargetPos);
+    } else {
+      // Critically-damped style smoothing.
+      const alpha = 1 - Math.exp(-dt / 0.15);
+      this.smoothedTarget.lerp(rawTargetPos, alpha);
+    }
+
+    const targetPos = this.smoothedTarget;
 
     // Determine a "nice" radius based on the target camera control (planet OR moon).
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -376,7 +396,7 @@ export class CinematicDirector {
       this.blendedLookAt.copy(this.transitionFromLookAt).lerp(this.desiredLookAt, alpha);
       cam.lookAt(this.blendedLookAt);
 
-      this.transitionTime += ctx.delta;
+      this.transitionTime += dt;
     } else {
       cam.position.copy(this.desiredPos);
       cam.lookAt(this.desiredLookAt);

@@ -34,11 +34,11 @@ export class Mars extends Astronomical {
       moon.orbitingParent = this;
 
       if (moon.data.slug === "phobos") {
-        moon.initDisplacement("/assets/displacement/phobos4.jpg", 0.0004);
+        moon.initDisplacement("/assets/displacement/phobos.jpg", 0.0004);
       }
 
       if (moon.data.slug === "deimos") {
-        moon.initDisplacement("/assets/displacement/deimos3.jpg", 0.0002);
+        moon.initDisplacement("/assets/displacement/deimos.jpg", 0.0002);
       }
 
       moon.init();

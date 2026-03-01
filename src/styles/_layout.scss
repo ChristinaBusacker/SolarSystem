@@ -20,6 +20,11 @@
   flex: 1 1 auto;
   min-width: 0; // avoid flex overflow
   background: #000;
+
+  // Prevent mobile browsers from trying to scroll/zoom the page when interacting
+  // with the 3D stage. Camera interactions are handled in JS.
+  touch-action: none;
+  overscroll-behavior: none;
 }
 
 #app {

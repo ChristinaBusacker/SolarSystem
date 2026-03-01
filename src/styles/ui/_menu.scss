@@ -89,7 +89,7 @@ $step: 50px;
         justify-content: center;
         border: none;
         outline: none;
-        background-color: rgba(22, 22, 22, 0.1);
+        background-color: transparent !important;
         color: white;
         transition: transform 0.3s ease;
         padding: 0;

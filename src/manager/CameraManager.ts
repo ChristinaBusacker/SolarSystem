@@ -115,7 +115,12 @@ export class CameraManager {
       "touchstart",
       (e: TouchEvent) => {
         if (this.getInteractiveTarget(e.target)) return;
-        if (this.isCinematicActive()) return;
+        // In cinematic mode we don't control the camera, but we still must prevent
+        // browser scrolling/zooming on touch devices (otherwise the viewport bounces and jitters).
+        if (this.isCinematicActive()) {
+          e.preventDefault();
+          return;
+        }
 
         if (e.touches.length === 1) {
           this.touchMode = "rotate";
@@ -140,7 +145,10 @@ export class CameraManager {
       "touchmove",
       (e: TouchEvent) => {
         if (this.getInteractiveTarget(e.target)) return;
-        if (this.isCinematicActive()) return;
+        if (this.isCinematicActive()) {
+          e.preventDefault();
+          return;
+        }
 
         if (this.touchMode === "rotate" && e.touches.length === 1) {
           this.activeCamera?.control?.moveRotate(e.touches[0].clientX, e.touches[0].clientY, 1.0);
