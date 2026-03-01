@@ -197,6 +197,9 @@ export class Application {
       this.prevSimSpeedBeforeCinematic = null;
     }
 
+    // Clear cinematic body class when leaving the mode.
+    document.body.classList.remove("cinematic");
+
     if (route.name === "home") {
       this.cameraManager.switchCamera("Default");
       this.uiManager.setSelectedBodyName(undefined);
@@ -237,10 +240,14 @@ export class Application {
       this.prevSimSpeedBeforeCinematic = this.simulationSpeed;
     }
 
-    // Set cinematic speed: 15 min / s.
-    // (HudRenderer presets: secondsPerSecond / ENGINE_BASE_SECONDS => 900 / 60 = 15)
-    this.simulationSpeed = 15;
-    this.uiManager.setSimulationSpeed(15);
+    // Set cinematic speed to real-time to keep target tracking stable, especially on mobile.
+    // HudRenderer preset: secondsPerSecond / ENGINE_BASE_SECONDS => 1 / 60.
+    const realtimeSpeed = 1 / 60;
+    this.simulationSpeed = realtimeSpeed;
+    this.uiManager.setSimulationSpeed(realtimeSpeed);
+
+    // Add a body class so UI can adapt (hide HUD/menu items, etc.).
+    document.body.classList.add("cinematic");
 
     this.cameraManager.switchCamera("Cinematic");
     this.uiManager.setSelectedBodyName(undefined);

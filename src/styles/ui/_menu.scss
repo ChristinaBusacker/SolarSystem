@@ -160,3 +160,14 @@ $step: 50px;
     }
   }
 }
+
+body.cinematic {
+  & .menu {
+    & .marker-item,
+    & .orbits-item,
+    & .declutter-item,
+    & .zoom-item {
+      display: none;
+    }
+  }
+}

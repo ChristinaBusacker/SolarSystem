@@ -159,6 +159,7 @@
   flex-direction: column;
   margin-top: 10px !important;
   cursor: pointer;
+  user-select: none;
 
   & svg {
     width: 16px;

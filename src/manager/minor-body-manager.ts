@@ -52,7 +52,6 @@ export class MinorBodyManager {
     groupName: "AmbientDebrisField",
     pointsName: "AmbientDebrisFieldPoints",
     count: 1024,
-    // Very sparse cinematic filler across the planetary region (not a real belt).
     innerRadius: asteroidBeltZone.innerRadiusKm / AstronomicalDataParser.FINN_TO_KM,
     outerRadius: kuiperBeltOuterZone.outerRadiusKm / AstronomicalDataParser.FINN_TO_KM,
     maxEccentricity: 0.55,

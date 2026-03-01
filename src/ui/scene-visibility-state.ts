@@ -8,7 +8,6 @@ export interface SceneVisibilityState {
 let state: SceneVisibilityState = {
   markersVisible: true,
   orbitsVisible: true,
-  // Cinematic default.
   declutterAuto: true,
 };
 

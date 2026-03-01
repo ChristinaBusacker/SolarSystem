@@ -21,7 +21,7 @@
   padding: $space-5;
   display: grid;
   gap: $space-3;
-  max-width: 100%;
+  max-width: min(100%, 500px);
   box-sizing: border-box;
 }
 

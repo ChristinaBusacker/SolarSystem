@@ -141,13 +141,16 @@ export class MenuRenderer {
       }
     });
 
-    const volume = this.root.querySelector<HTMLInputElement>("[data-volume-slider]");
-    if (volume) {
-      volume.addEventListener("input", () => {
-        const next = Number(volume.value);
-        if (Number.isFinite(next)) SoundManager.setVolume(next);
-      });
-    }
+    // IMPORTANT: The menu is re-rendered on route changes, so direct listeners on the slider
+    // get detached. Use event delegation so the slider keeps working across re-renders.
+    this.root.addEventListener("input", event => {
+      const target = event.target as HTMLElement | null;
+      const slider = target?.closest<HTMLInputElement>("[data-volume-slider]");
+      if (!slider) return;
+
+      const next = Number(slider.value);
+      if (Number.isFinite(next)) SoundManager.setVolume(next);
+    });
   }
 
   private async toggleFullscreen(): Promise<void> {

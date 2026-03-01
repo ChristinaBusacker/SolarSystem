@@ -11,7 +11,11 @@
     </button>
   </div>
 
-  <div class="ui-stage-controls__top-center {{focusHiddenClass}}" data-stage-action="toggle-right">
+  <!-- Body focus (planet/moon): clickable, shows info icon and opens the details sidebar. -->
+  <div
+    class="ui-stage-controls__top-center {{focusBodyHiddenClass}}"
+    data-stage-action="toggle-right"
+  >
     <div class="ui-stage-focus__title heading" title="{{focusTitle}}">
       {{focusTitle}}
       <svg
@@ -45,6 +49,11 @@
         </g>
       </svg>
     </div>
+  </div>
+
+  <!-- Cinematic focus: non-interactive title only (no info icon, no click). -->
+  <div class="ui-stage-controls__top-center {{focusCinematicHiddenClass}}" aria-hidden="false">
+    <div class="ui-stage-focus__title heading" title="{{focusTitle}}">{{focusTitle}}</div>
   </div>
 
   <div class="ui-stage-controls__top-right">{{menu}}</div>

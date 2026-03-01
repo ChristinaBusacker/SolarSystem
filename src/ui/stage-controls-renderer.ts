@@ -9,7 +9,7 @@ interface StageControlsRenderState {
   leftSidebarOpen: boolean;
   rightSidebarOpen: boolean;
   focusTitle: string;
-  hasFocusedBody: boolean;
+  focusMode: "none" | "body" | "cinematic";
   isFullscreen: boolean;
   focusTitleOverride: string | null;
 }
@@ -21,7 +21,7 @@ export class StageControlsRenderer {
     leftSidebarOpen: false,
     rightSidebarOpen: true,
     focusTitle: "",
-    hasFocusedBody: false,
+    focusMode: "none",
     isFullscreen: false,
     focusTitleOverride: null,
   };
@@ -42,15 +42,15 @@ export class StageControlsRenderer {
 
     router.subscribe(route => {
       if (route.name === "planet") {
-        this.state.hasFocusedBody = true;
+        this.state.focusMode = "body";
         this.state.focusTitle = this.slugToLabel(route.planet);
       } else if (route.name === "moon") {
-        this.state.hasFocusedBody = true;
+        this.state.focusMode = "body";
         this.state.focusTitle = this.slugToLabel(route.moon);
       } else {
         // Allow a focus title override (used by Cinematic mode).
         const override = this.state.focusTitleOverride;
-        this.state.hasFocusedBody = Boolean(override);
+        this.state.focusMode = override ? "cinematic" : "none";
         this.state.focusTitle = override ?? "";
       }
 
@@ -62,7 +62,7 @@ export class StageControlsRenderer {
 
       const route = router.getCurrent();
       if (route.name !== "planet" && route.name !== "moon") {
-        this.state.hasFocusedBody = Boolean(title);
+        this.state.focusMode = title ? "cinematic" : "none";
         this.state.focusTitle = title ?? "";
         this.render();
       }
@@ -78,7 +78,8 @@ export class StageControlsRenderer {
     this.root.innerHTML = renderTemplate(stageControlsTpl, {
       leftStateClass: this.state.leftSidebarOpen ? "is-active" : "",
       rightStateClass: this.state.rightSidebarOpen ? "is-active" : "",
-      focusHiddenClass: this.state.hasFocusedBody ? "" : "is-hidden",
+      focusBodyHiddenClass: this.state.focusMode === "body" ? "" : "is-hidden",
+      focusCinematicHiddenClass: this.state.focusMode === "cinematic" ? "" : "is-hidden",
       focusTitle: this.state.focusTitle,
       fullscreenIconClass: this.state.isFullscreen
         ? "ui-stage-btn__icon--fullscreen-exit"

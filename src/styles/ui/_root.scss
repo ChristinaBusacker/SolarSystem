@@ -62,3 +62,9 @@
     right: -200px;
   }
 }
+
+body.cinematic {
+  & #ui-root [data-slot="hud"] {
+    display: none;
+  }
+}
